@@ -2186,35 +2186,15 @@ class Proton3DScene {
 	//except with an object rather than
 	//parameters.
 	init( extras = {} ) {
-		extras.refreshRate = extras.refreshRate || this.refreshRate || 10
-		extras.width = extras.width || window.innerWidth;
-		extras.height = extras.height || window.innerHeight;
-		extras.antialias = extras.antialias || false;
 		//variables
 		var scene = this;
 		this.element = (extras.sceneElement || document.createElement( "scene" ));
-		this.canvas = (extras.canvasElement || document.createElement( "canvas" ));
-		this.context = this.canvas.getContext( "webgl2" );
-		this.objects = new Physijs.Scene();
-		this.objects.setGravity( new THREE.Vector3( 0, ( extras.gravity || -9.81 ), 0 ) );
 		this.camera = new Proton3DObject({
 			type: "perspectivecamera",
 			viewportWidth: extras.width,
 			viewportHeight: extras.height
 		});
-		this.renderer = new THREE.WebGLRenderer( {
-			alpha: true,
-			antialias: extras.antialias,
-			canvas: this.canvas,
-			context: this.context,
-			powerPreference: "high-performance"
-		} );
-		this.renderer.setSize( extras.width, extras.height );
-		this.renderer.shadowMap.enabled = true;
-		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 		this.audio = new Audio();
-		//some element - y stuff
-		this.element.appendChild( this.renderer.domElement );
 		//ifs
 		if ( extras.parent == undefined ) {
 
@@ -2225,31 +2205,23 @@ class Proton3DScene {
 			extras.parent.appendChild( this.element );
 
 		}
+		//creating a scene
+		extras.element = this.element;
+		Proton3DInterpreter.create3DScene( extras );
 		//watching for variables
 		this.background = ""
 		this.backgroundImage = "";
-		this.backgroundColor = "";
 		scene.watch( "background", function ( id, oldval, newval ) {
 			this.element.style.background = newval;
 		} );
 		scene.watch( "backgroundImage", function ( id, oldval, newval ) {
 			this.canvas.style.background = newval;
 		} );
-		scene.watch( "backgroundColor", function ( id, oldval, newval ) {
-			this._backgroundColor = newval;
-			this.objects.background = new THREE.Color( newval );
-		} );
+		//updating
 		scene.update( scene );
 		scene.updateExtraFunctions( scene );
 		//objectList
 		this.objectList = []
-		//PBR
-		scene.PBRCamera = new THREE.CubeCamera( 1, 10,  32, {
-			type: THREE.FloatType
-		} );
-		scene.objects.add( scene.PBRCamera );
-		scene.PBRCamera.renderTarget.texture.format = THREE.RGBAFormat;
-		scene.PBRCamera.renderTarget.texture.generateMipmaps = true;
 	}
 	update( scene ) {
 		requestAnimationFrame( function () {
@@ -5509,17 +5481,10 @@ const Proton3DInterpreter {
 		extras.height = extras.height || window.innerHeight;
 		extras.antialias = extras.antialias || false;
 		//variables
-		var scene = this;
-		this.element = (extras.sceneElement || document.createElement( "scene" ));
-		this.canvas = (extras.canvasElement || document.createElement( "canvas" ));
+		this.canvas = document.createElement( "canvas" );
 		this.context = this.canvas.getContext( "webgl2" );
 		this.objects = new Physijs.Scene();
 		this.objects.setGravity( new THREE.Vector3( 0, ( extras.gravity || -9.81 ), 0 ) );
-		this.camera = new Proton3DObject({
-			type: "perspectivecamera",
-			viewportWidth: extras.width,
-			viewportHeight: extras.height
-		});
 		this.renderer = new THREE.WebGLRenderer( {
 			alpha: true,
 			antialias: extras.antialias,
@@ -5530,44 +5495,17 @@ const Proton3DInterpreter {
 		this.renderer.setSize( extras.width, extras.height );
 		this.renderer.shadowMap.enabled = true;
 		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-		this.audio = new Audio();
 		//some element - y stuff
-		this.element.appendChild( this.renderer.domElement );
-		//ifs
-		if ( extras.parent == undefined ) {
-
-			document.body.appendChild( this.element );
-
-		} else if ( extras.parent ) {
-
-			extras.parent.appendChild( this.element );
-
-		}
-		//watching for variables
-		this.background = ""
-		this.backgroundImage = "";
-		this.backgroundColor = "";
-		scene.watch( "background", function ( id, oldval, newval ) {
-			this.element.style.background = newval;
-		} );
-		scene.watch( "backgroundImage", function ( id, oldval, newval ) {
-			this.canvas.style.background = newval;
-		} );
-		scene.watch( "backgroundColor", function ( id, oldval, newval ) {
-			this._backgroundColor = newval;
-			this.objects.background = new THREE.Color( newval );
-		} );
-		scene.update( scene );
-		scene.updateExtraFunctions( scene );
-		//objectList
-		this.objectList = []
+		extras.element.appendChild( this.canvas );
 		//PBR
-		scene.PBRCamera = new THREE.CubeCamera( 1, 10,  32, {
+		this.PBRCamera = new THREE.CubeCamera( 1, 10,  32, {
 			type: THREE.FloatType
 		} );
-		scene.objects.add( scene.PBRCamera );
-		scene.PBRCamera.renderTarget.texture.format = THREE.RGBAFormat;
-		scene.PBRCamera.renderTarget.texture.generateMipmaps = true;
+		this.objects.add( this.PBRCamera );
+		this.PBRCamera.renderTarget.texture.format = THREE.RGBAFormat;
+		this.PBRCamera.renderTarget.texture.generateMipmaps = true;
+		//
+		return this.canvas
 	},
 	initPBR() {
 
