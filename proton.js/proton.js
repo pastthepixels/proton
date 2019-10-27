@@ -2186,6 +2186,9 @@ class Proton3DScene {
 	//except with an object rather than
 	//parameters.
 	init( extras = {} ) {
+		//some [extras] stuff
+		extras.width = extras.width || window.innerWidth;
+		extras.height = extras.height || window.innerHeight;
 		//variables
 		var scene = this;
 		this.element = (extras.sceneElement || document.createElement( "scene" ));
@@ -2233,22 +2236,12 @@ class Proton3DScene {
 			return
 
 		}
-		//physics
-		scene.objects.simulate()
+		//rendering using Proton3DInterpreter.render
+		Proton3DInterpreter.render( this )
 		//extraFunctions
 		scene.priorityExtraFunctions.forEach( function ( e ) {
 			e();
 		} );
-		//rendering using renderer.render
-		if ( scene.composer ) {
-
-			scene.composer.render();
-
-		} else {
-
-			scene.renderer.render( scene.objects, getMeshByName( scene.camera.name ) );
-
-		}
 	}
 	updateExtraFunctions( scene ) {
 		requestIdleCallback( function () {
@@ -2268,207 +2261,10 @@ class Proton3DScene {
 		return this.objectList
 	}
 	add( object ) {
-		this.objects.add( object.name? getMeshByName( object.name ) : object );
-		this.objectList.push( object )
-		//physically based rendering
-		var skipPBRReplacement = object.skipPBRReplacement,
-			skipPBRReplacement_light = object.skipPBRReplacement_light,
-			object = getMeshByName( object.name ) || object,
-			oldMaterial = object.material,
-			x = this;
-		if ( this.usePBR != false && !skipPBRReplacement && !skipPBRReplacement_light && object.material ) {
-
-			object.usePBRCamera = false;
-			object.PBRCamera = this.PBRCamera;
-			//
-			object.pbr = function (scene, PBRCamera = scene.PBRCamera) {
-				PBRCamera.position.copy( object.position );
-				PBRCamera.rotation.copy( object.rotation );
-				PBRCamera.update( scene.renderer, scene.objects );
-				if ( object.material[0] != null ) {
-
-					object.material.forEach( function ( material ) {
-						material.envMap = PBRCamera.renderTarget.texture
-					} )
-
-				} else {
-
-					object.material.envMap = PBRCamera.renderTarget.texture
-
-				}
-			}
-			//
-			this.initPBR( object.material, object, undefined, undefined, skipPBRReplacement, object.material? object.material.name : null );
-			object.pbr(this);
-
-		} else if ( !skipPBRReplacement ) {
-
-			this.initPBR( object.material, object, undefined, undefined, skipPBRReplacement, object.material? object.material.name : null, false );
-
-		}
-	}
-	initPBR( material, object, materialLocation, scene = this, skipPBRReplacement = false, materialName, usePBRInTheFirstPlace = true ) {
-		if ( material == undefined ) {
-
-			return
-
-		}
-		if ( material[0] != null ) {
-
-			material.forEach( function (m, i) {
-				scene.initPBR( m, object, i, scene, skipPBRReplacement, m.name, usePBRInTheFirstPlace );
-			} )
-
-		} else {
-			var oldMaterial, newMaterial, hasProto, supportedPropertyList = [
-				"color",
-				"alphaMap",
-			//	"alphaTest",
-				"aoMap",
-				"aoMapIntensity",
-			//	"blendDst",
-			//	"blendDstAlpha",
-			//	"blendEquation",
-			//	"blendEquationAlpha",
-			//	"blendSrc",
-			//	"blendSrcAlpha",
-			//	"blending",
-				"bumpMap",
-				"bumpScale",
-			//	"clipIntersection",
-			//	"clipShadows",
-			//	"clippingPlanes",
-			//	"colorWrite",
-			//	"combine",
-			//	"depthFunc",
-			//	"depthTest",
-			//	"depthWrite",
-				"displacementBias",
-				"displacementMap",
-				"displacementScale",
-			//	"dithering",
-				"emmisive",
-				"emmisiveIntensity",
-				"emmisiveMap",
-				"envMap",
-				"envMapIntensity",
-				"flatShading",
-			//	"fog",
-				"lightMap",
-				"lightMapIntensity",
-			//	"lights",
-				"map",
-				"metalness",
-				"metalnessMap",
-				"morphTargets",
-				"morphNormals",
-				"normalMap",
-				"normalMapType",
-				"normalScale",
-				"opacity",
-				"reflectivity",
-				"refractionRatio",
-				"shadowSide",
-				"roughness",
-				"roughnessMap",
-				"side",
-				"skinning",
-				"specular",
-				"specularMap",
-				"transparent",
-				"wireframe",
-				"wireframeLinecap",
-				"wireframeLinejoin",
-				"wireframeLinewidth"
-			];
-			if ( usePBRInTheFirstPlace ) {
-
-				hasProto = material.__proto__.type != null;
-				oldMaterial = hasProto? material.__proto__ : material;
-				newMaterial = new THREE.MeshStandardMaterial( {
-					shadowSide: THREE.BackSide,
-					roughness: ( oldMaterial.roughness || (oldMaterial.shininess / 100) * 3  || 0.3 ),
-					dithering: true
-				} );
-				for ( var i in oldMaterial ) {
-
-					if ( supportedPropertyList.indexOf( i ) < 0 ) {
-
-						continue
-
-					}
-					if ( newMaterial[i] != null ) {
-
-						newMaterial[i] = oldMaterial[i]
-
-					}
-
-				}
-				if ( oldMaterial.bumpMap != null ) {
-
-					newMaterial.bumpMap = oldMaterial.bumpMap
-
-				}
-				if ( oldMaterial.map != null ) {
-
-					newMaterial.map = oldMaterial.map
-
-				}
-				if ( oldMaterial.normalMap != null ) {
-
-					newMaterial.normalMap = oldMaterial.normalMap
-
-				}
-				newMaterial.envMap = scene.PBRCamera.renderTarget.texture;
-				newMaterial.shadowSide = THREE.BackSide;
-				newMaterial.color = oldMaterial.color;
-
-			} else {
-
-				newMaterial = hasProto? material.__proto__ : material
-
-			}
-			if ( materialLocation != null ) {
-
-				var m = hasProto? new Physijs.createMaterial(
-					newMaterial,
-					0.999,
-					0.111
-				) : newMaterial;
-				m.transparent = true;
-				object.material[materialLocation] = m;
-				if ( materialName ) {
-
-					getMaterialByName( materialName ).name += "__OBSOLETE"
-					m.name = materialName;
-					materials.push( m )
-
-				}
-
-			} else {
-
-				var m = hasProto? new Physijs.createMaterial(
-					newMaterial,
-					0.999,
-					0.111
-				) : newMaterial;
-				m.transparent = true;
-				object.material = m;
-				if ( materialName ) {
-
-					getMaterialByName( materialName ).name += "__OBSOLETE"
-					m.name = materialName;
-					materials.push( m )
-
-				}
-
-			}
-
-
-		}
+		return Proton3DInterpreter.addToScene( object, this )
 	}
 	remove( object ) {
-		this.objects.remove( getMeshByName( object.name ) || object )
+		return Proton3DInterpreter.removeFromScene( object, this )
 	}
 	dynamicResize() {
 		var x = this;
@@ -2627,7 +2423,6 @@ class Proton3DScene {
 				var rotation = x.camera.getRotation(),
 					z = obj.getLinearVelocity();
 				obj.setLinearVelocity( z.x, jumpHeight, z.z );
-				x.objects.simulate()
 
 			}
 		}
@@ -2640,7 +2435,6 @@ class Proton3DScene {
 			} else {
 
 				obj.setLinearVelocity( y.x * speed * ( negatise? -1 : 1 ), z.y, y.z * speed * ( negatise? -1 : 1 ) );
-				x.objects.simulate()
 
 			}
 
@@ -2769,7 +2563,7 @@ class Proton3DScene {
 			vector,
 			new THREE.Vector3( 0, 1, 0 )
 		);
-		this.objects.addConstraint( door.constraint );
+		Proton3DInterpreter.objects.addConstraint( door.constraint );
 		door.constraint.setLimits(
 			faceInwards? ( radian( 0 ) + door.getRotation().y ) : ( radian( -90 ) + door.getRotation().y ),
 			faceInwards? ( radian( 90 ) + door.getRotation().y ) : ( radian( 0 ) + door.getRotation().y ),
@@ -5472,13 +5266,11 @@ protonjs.importObject = function( extras = {} ) {
 //				that value must have the same structure as when it was found by
 //				the user.
 //
-const Proton3DInterpreter {
+const Proton3DInterpreter = {
 
 	//creating and modifing Proton3DScenes -- loc:10.1
 	create3DScene( extras ) {
 		extras.refreshRate = extras.refreshRate || this.refreshRate || 10
-		extras.width = extras.width || window.innerWidth;
-		extras.height = extras.height || window.innerHeight;
 		extras.antialias = extras.antialias || false;
 		//variables
 		this.canvas = document.createElement( "canvas" );
@@ -5507,14 +5299,221 @@ const Proton3DInterpreter {
 		//
 		return this.canvas
 	},
-	initPBR() {
+	addToScene( object, scene ) {
+		this.objects.add( object.name? getMeshByName( object.name ) : object );
+		scene.objectList.push( object )
+		//physically based rendering
+		var skipPBRReplacement = object.skipPBRReplacement,
+			skipPBRReplacement_light = object.skipPBRReplacement_light,
+			object = getMeshByName( object.name ) || object,
+			oldMaterial = object.material;
+		if ( scene.usePBR != false && !skipPBRReplacement && !skipPBRReplacement_light && object.material ) {
 
+			object.usePBRCamera = false;
+			object.PBRCamera = scene.PBRCamera;
+			//
+			object.pbr = function () {
+				Proton3DInterpreter.PBRCamera.position.copy( object.position );
+				Proton3DInterpreter.PBRCamera.rotation.copy( object.rotation );
+				Proton3DInterpreter.PBRCamera.update( Proton3DInterpreter.renderer, Proton3DInterpreter.objects );
+				if ( object.material[0] != null ) {
+
+					object.material.forEach( function ( material ) {
+						material.envMap = Proton3DInterpreter.PBRCamera.renderTarget.texture
+					} )
+
+				} else {
+
+					object.material.envMap = Proton3DInterpreter.PBRCamera.renderTarget.texture
+
+				}
+			}
+			//
+			this.initPBR( object.material, object, scene, undefined, skipPBRReplacement, object.material? object.material.name : null );
+			object.pbr();
+
+		} else if ( !skipPBRReplacement ) {
+
+			this.initPBR( object.material, object, scene, undefined, skipPBRReplacement, object.material? object.material.name : null, false );
+
+		}
 	},
-	addToScene() {
+	initPBR( material, object, materialLocation, scene = this, skipPBRReplacement = false, materialName, usePBRInTheFirstPlace = true ) {
+		if ( material == undefined ) {
 
+			return
+
+		}
+		if ( material[0] != null ) {
+
+			material.forEach( function (m, i) {
+				scene.initPBR( m, object, i, scene, skipPBRReplacement, m.name, usePBRInTheFirstPlace );
+			} )
+
+		} else {
+			var oldMaterial, newMaterial, hasProto, supportedPropertyList = [
+				"color",
+				"alphaMap",
+			//	"alphaTest",
+				"aoMap",
+				"aoMapIntensity",
+			//	"blendDst",
+			//	"blendDstAlpha",
+			//	"blendEquation",
+			//	"blendEquationAlpha",
+			//	"blendSrc",
+			//	"blendSrcAlpha",
+			//	"blending",
+				"bumpMap",
+				"bumpScale",
+			//	"clipIntersection",
+			//	"clipShadows",
+			//	"clippingPlanes",
+			//	"colorWrite",
+			//	"combine",
+			//	"depthFunc",
+			//	"depthTest",
+			//	"depthWrite",
+				"displacementBias",
+				"displacementMap",
+				"displacementScale",
+			//	"dithering",
+				"emmisive",
+				"emmisiveIntensity",
+				"emmisiveMap",
+				"envMap",
+				"envMapIntensity",
+				"flatShading",
+			//	"fog",
+				"lightMap",
+				"lightMapIntensity",
+			//	"lights",
+				"map",
+				"metalness",
+				"metalnessMap",
+				"morphTargets",
+				"morphNormals",
+				"normalMap",
+				"normalMapType",
+				"normalScale",
+				"opacity",
+				"reflectivity",
+				"refractionRatio",
+				"shadowSide",
+				"roughness",
+				"roughnessMap",
+				"side",
+				"skinning",
+				"specular",
+				"specularMap",
+				"transparent",
+				"wireframe",
+				"wireframeLinecap",
+				"wireframeLinejoin",
+				"wireframeLinewidth"
+			];
+			if ( usePBRInTheFirstPlace ) {
+
+				hasProto = material.__proto__.type != null;
+				oldMaterial = hasProto? material.__proto__ : material;
+				newMaterial = new THREE.MeshStandardMaterial( {
+					shadowSide: THREE.BackSide,
+					roughness: ( oldMaterial.roughness || (oldMaterial.shininess / 100) * 3  || 0.3 ),
+					dithering: true
+				} );
+				for ( var i in oldMaterial ) {
+
+					if ( supportedPropertyList.indexOf( i ) < 0 ) {
+
+						continue
+
+					}
+					if ( newMaterial[i] != null ) {
+
+						newMaterial[i] = oldMaterial[i]
+
+					}
+
+				}
+				if ( oldMaterial.bumpMap != null ) {
+
+					newMaterial.bumpMap = oldMaterial.bumpMap
+
+				}
+				if ( oldMaterial.map != null ) {
+
+					newMaterial.map = oldMaterial.map
+
+				}
+				if ( oldMaterial.normalMap != null ) {
+
+					newMaterial.normalMap = oldMaterial.normalMap
+
+				}
+				newMaterial.envMap = Proton3DInterpreter.PBRCamera.renderTarget.texture;
+				newMaterial.shadowSide = THREE.BackSide;
+				newMaterial.color = oldMaterial.color;
+
+			} else {
+
+				newMaterial = hasProto? material.__proto__ : material
+
+			}
+			if ( materialLocation != null ) {
+
+				var m = hasProto? new Physijs.createMaterial(
+					newMaterial,
+					0.999,
+					0.111
+				) : newMaterial;
+				m.transparent = true;
+				object.material[materialLocation] = m;
+				if ( materialName ) {
+
+					getMaterialByName( materialName ).name += "__OBSOLETE"
+					m.name = materialName;
+					materials.push( m )
+
+				}
+
+			} else {
+
+				var m = hasProto? new Physijs.createMaterial(
+					newMaterial,
+					0.999,
+					0.111
+				) : newMaterial;
+				m.transparent = true;
+				object.material = m;
+				if ( materialName ) {
+
+					getMaterialByName( materialName ).name += "__OBSOLETE"
+					m.name = materialName;
+					materials.push( m )
+
+				}
+
+			}
+
+
+		}
 	},
-	removeFromScene() {
+	removeFromScene( object, scene ) {
+		this.objects.remove( getMeshByName( object.name ) || object )
+	},
+	render( scene ) {
+		//physics
+		this.objects.simulate()
+		//rendering using renderer.render
+		if ( this.composer ) {
 
+			this.composer.render();
+
+		} else {
+
+			this.renderer.render( this.objects, getMeshByName( scene.camera.name ) );
+
+		}
 	}
 
 }
