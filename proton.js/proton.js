@@ -2210,6 +2210,7 @@ class Proton3DScene {
 		}
 		//creating a scene
 		extras.element = this.element;
+		extras.scene = this
 		Proton3DInterpreter.create3DScene( extras );
 		//watching for variables
 		this.background = ""
@@ -2451,7 +2452,6 @@ class Proton3DScene {
 					x.priorityExtraFunctions.splice( checkForRotations - 1, 1 );
 					door.checkForEnding = function () {
 						var rotation = door.rotation.clone().y;
-						console.log(angle(rotation))
 						if ( parseInt( angle( door.rotation.y - door.initialRotation ) ) <= 2 && parseInt( angle( door.rotation.y - door.initialRotation ) ) >= -2 ||
 							door.position.distanceTo( door.initialPosition ) < 0.1 ) {
 							//
@@ -3899,422 +3899,13 @@ class Proton3DObject {
 		//gives the decision to skip a material replacement when initilizing pbr
 		this.skipPBRReplacement = false
 		//creates a mesh
-		switch( extras.type ) {
-
-			case "orthographiccamera":
-				var camera = new THREE.OrthographicCamera(
-					( extras.viewportLeft || -10 ),
-					( extras.viewportRight || -10 ),
-					( extras.viewportTop || -10 ),
-					( extras.viewportBottom || -10 ),
-					( extras.near || 0.26 ),
-					( extras.far || 100 )
-				);
-				camera.name = this.name;
-				meshes.push( camera )
-				//
-				this.setLinearVelocity = null;
-				this.setLinearVelocity = null;
-				this.getAngularVelocity = null
-				this.getAngularVelocity = null;
-				this.changeViewingWidth = function( value ) {
-					camera.left = value / -1;
-					camera.right = value / 1;
-					camera.updateProjectionMatrix()
-				}
-				this.changeViewingHeight = function ( value ) {
-					camera.top = value / 1;
-					camera.bottom = value / -1;
-					camera.updateProjectionMatrix()
-				}
-				this.changeNear = function ( value ) {
-					camera.near = value
-					camera.updateProjectionMatrix()
-				}
-				this.changeFar = function ( value ) {
-					camera.far = value
-					camera.updateProjectionMatrix()
-				}
-				this.changeAspectRatio = function ( value ) {
-					camera.aspect = value;
-					camera.updateProjectionMatrix()
-				}
-				//
-				break;
-
-			case "perspectivecamera":
-				var camera = new THREE.PerspectiveCamera(
-					( extras.fov || 75 ),
-					( extras.viewportWidth / extras.viewportHeight ),
-					( extras.near || 0.26 ),
-					( extras.far || 100 )
-				);
-				camera.name = this.name;
-				meshes.push( camera )
-				//
-				this.setLinearVelocity = null;
-				this.setLinearVelocity = null;
-				this.getAngularVelocity = null
-				this.getAngularVelocity = null;
-				this.changeFOV = function ( value ) {
-					camera.fov = value;
-					camera.updateProjectionMatrix()
-				}
-				this.changeAspectRatio = function ( value ) {
-					camera.aspect = value;
-					camera.updateProjectionMatrix()
-				}
-				this.getZoom = function () {
-					return camera.zoom
-				}
-				this.setZoom = function ( value ) {
-					camera.zoom = value
-					camera.updateProjectionMatrix()
-				}
-				this.changeNear = function ( value ) {
-					camera.near = value
-					camera.updateProjectionMatrix()
-				}
-				this.changeFar = function ( value ) {
-					camera.far = value
-					camera.updateProjectionMatrix()
-				}
-				//
-				break;
-
-			case "spotlight":
-				var spotlight = new THREE.SpotLight( new THREE.Color( extras.color || "#fff" ), extras.intensity || 15 )
-				spotlight.shadow.camera = new THREE.OrthographicCamera( -( 100 ), 100, 100, -( 100 ), 0.25, 1000 );
-				spotlight.castShadow = true;
-				//very low quality: 1024
-				//low quality: 2048
-				//medium quality: 8192
-				//high quality: 16384
-				spotlight.shadow.mapSize.width = 8192;
-				spotlight.shadow.mapSize.height = 8192;
-				spotlight.penumbra = 1;
-				spotlight.shadow.radius = 1.5;
-				spotlight.shadow.bias = -0.00005;
-				spotlight.name = this.name;
-				meshes.push( spotlight );
-				//
-				this.setLinearVelocity = null;
-				this.setLinearVelocity = null;
-				this.getAngularVelocity = null
-				this.getAngularVelocity = null;
-				this.changeColor = function ( hexString ) {
-					spotlight.color = new THREE.Color( hexString )
-				}
-				this.changeIntensity = function ( value ) {
-					spotlight.intensity = value
-				}
-				this.getIntensity = function ( value ) {
-					return spotlight.intensity
-				}
-				//
-				break;
-
-			case "directionallight":
-				var directionallight = new THREE.DirectionalLight( new THREE.Color( color ), intensity )
-				directionallight.shadow.camera = new THREE.OrthographicCamera( -100, 100, 100, -100, 0.25, 1000 );
-				directionallight.shadow.radius = 1.5;
-				directionallight.shadow.bias = -0.00005;
-				directionallight.name = this.name;
-				meshes.push( directionallight );
-				//
-				this.setLinearVelocity = null;
-				this.setLinearVelocity = null;
-				this.getAngularVelocity = null
-				this.getAngularVelocity = null;
-				this.changeColor = function ( hexString ) {
-					directionallight.color = new THREE.Color( hexString )
-				}
-				this.changeIntensity = function ( value ) {
-					directionallight.intensity = value
-				}
-				//
-				break;
-
-			case "sky":
-				var sky = new THREE.Sky();
-
-				this.skipPBRReplacement = true;
-				sky.scale.setScalar( 450000 );
-				sky.material.uniforms = {
-					"luminance": {
-						value: 1
-					},
-					"turbidity": {
-						value: 10
-					},
-					"rayleigh": {
-						value: 2
-					},
-					"mieCoefficient": {
-						value: 0.005
-					},
-					"mieDirectionalG": {
-						value: 0.8
-					},
-					"sunPosition": {
-						value: new THREE.Vector3( 10, 10, 10 )
-					}
-				}
-				for ( var i in sky.material.uniforms ) {
-					this[ i ] = sky.material.uniforms[ i ].value
-					//set the listeners
-					if ( i != "sunPosition" ) {
-
-						this.watch( i, function ( id, oldval, newval ) {
-							sky.material.uniforms[ id ].value = newval;
-						} );
-
-					}
-				}
-				for ( var i in extras ) {
-					//set the value
-					if ( sky.material.uniforms[ i ] ) {
-
-						this[ i ] = extras[ i ];
-						sky.material.uniforms[ i ].value = extras[ i ];
-					}
-				}
-				if ( extras.sun ) {
-
-					//
-					this.sun = extras.sun;
-					this.sun.setPosition(
-						this.sunPosition.x,
-						this.sunPosition.y,
-						this.sunPosition.z
-					)
-					//
-					this.watch( "sunPosition", function ( id, oldval, newval ) {
-						sky.material.uniforms[ id ].value = newval;
-						//
-						this.sun.setPosition(
-							newval.x,
-							newval.y,
-							newval.z
-						)
-					} );
-
-				}
-				sky.name = this.name;
-				meshes.push( sky )
-				break
-
-			case "cube":
-
-				extras.type = "cube";
-				//create the cube
-				var cube;
-				if ( extras.noPhysics ) {
-
-					cube = new THREE.Mesh(
-						protonjs.__changeMeshGeometry( null, extras ).geometry,
-						protonjs.__changeMeshMaterial( extras ).material
-					)
-
-				} else {
-
-					cube = new Physijs.BoxMesh(
-						protonjs.__changeMeshGeometry( null, extras ).geometry,
-						protonjs.__changeMeshMaterial( extras ).material,
-						( extras.mass || 0 )
-					)
-
-				}
-				cube.name = this.name;
-				meshes.push( cube );
-				//creates an array
-				console.log(this)
-				this.width = extras.width || 1;
-				this.height = extras.height || 1;
-				this.depth = extras.depth || 1;
-				console.log(this.width);
-				//creates listeners for each array
-				createBaseObj3dListeners( this, extras );
-				var obj = this;
-				//geometry
-				this.watch( "width", function ( id, oldval, newval ) {
-					obj._width = newval;
-					protonjs.__changeMeshGeometry( obj, obj, this.name );
-				} );
-				this.watch( "height", function ( id, oldval, newval ) {
-					obj._height = newval;
-					protonjs.__changeMeshGeometry( obj, obj, this.name );
-				} );
-				this.watch( "depth", function ( id, oldval, newval ) {
-					obj._depth = newval;
-					protonjs.__changeMeshGeometry( obj, obj, this.name );
-				} );
-				//
-				for ( var i in extras ) {
-					if ( extras[i] && this[i] == undefined ) {
-
-						this[i] = extras[i];
-
-					}
-				}
-				break
-
-			case "sphere":
-				extras.type = "sphere";
-				//creates the base variables
-				var sphere;
-				//create the sphere!
-				if ( extras.noPhysics ) {
-
-					sphere = new THREE.Mesh(
-						protonjs.__changeMeshGeometry( null, extras ).geometry,
-						protonjs.__changeMeshMaterial( extras ).material
-					)
-
-				} else {
-
-					sphere = new Physijs.SphereMesh(
-						protonjs.__changeMeshGeometry( null, extras ).geometry,
-						protonjs.__changeMeshMaterial( extras ).material,
-						( extras.mass || 0 )
-					)
-
-				}
-				sphere.name = this.name;
-				meshes.push( sphere );
-				//creates some properties
-				this.radius = 1;
-				//adds listeners for each property
-				var obj = this;
-				createBaseObj3dListeners( this, extras );
-				//geometry
-				this.watch( "radius", function ( id, oldval, newval ) {
-					obj._radius = newval;
-					changeGeometryParameters( obj );
-				} );
-				//
-				for ( var i in extras ) {
-					if ( extras[i] && this[i] == undefined ) {
-
-						this[i] = extras[i];
-
-					}
-				}
-				break
-
-			case "cylinder":
-				extras.type = "cylinder"
-				//create the base variables
-				var cylinder;
-				//create the cylinder
-				if ( extras.noPhysics ) {
-
-					cylinder = new THREE.Mesh(
-						protonjs.__changeMeshGeometry( null, extras ).geometry,
-						protonjs.__changeMeshMaterial( extras ).material
-					)
-
-				} else {
-
-					new Physijs.CylinderMesh(
-						protonjs.__changeMeshGeometry( null, extras ).geometry,
-						protonjs.__changeMeshMaterial( extras ).material,
-						( extras.mass || 0 )
-					);
-
-				}
-				cylinder.name = this.name;
-				meshes.push( cylinder );
-				//creates extra values
-				this.radiusTop = 1;
-				this.radiusBottom = 1;
-				this.height = 1;
-				//creates listeners for each value
-				var obj = this;
-				createBaseObj3dListeners( this, extras );
-				//
-				this.watch( "radiusTop", function ( id, oldval, newval ) {
-					obj._radiusTop = newval;
-					protonjs.__changeMeshGeometry( obj );
-				} );
-				this.watch( "radiusBottom", function ( id, oldval, newval ) {
-					obj._radiusTop = newval;
-					protonjs.__changeMeshGeometry( obj );
-				} );
-				this.watch( "height", function ( id, oldval, newval ) {
-					obj._height = newval;
-					protonjs.__changeMeshGeometry( obj );
-				} );
-				//
-				for ( var i in extras ) {
-					if ( extras[i] && this[i] == undefined ) {
-
-						this[i] = extras[i];
-
-					}
-				}
-				break
-
-			default:
-
-				var mesh = extras.mesh;
-				if ( mesh.name === "" || mesh.name == undefined ) {
-
-					mesh.name = this.name
-
-				} else {
-
-					this.name = mesh.name
-
-				}
-				function namecheck ( p3dobject ) {
-					if ( getMeshByName( mesh.name ) ) {
-
-						p3dobject.name += "_copy"
-						mesh.name += "_copy"
-
-					}
-					if ( getMeshByName( mesh.name ) ) {
-
-						namecheck( p3dobject )
-
-					}
-				}
-				namecheck( this )
-				if ( !mesh.material[ 0 ] ) {
-
-					this.material =  new Proton3DMaterial( this, {
-						material: mesh.material
-					} )
-
-				} else {
-
-					var y = this;
-					this.material = [];
-					mesh.material.forEach( function ( material, i ) {
-
-						y.material.push( new Proton3DMaterial( mesh, {
-							material: material,
-							materialLocation: i
-						} ) )
-
-					} );
-
-				}
-				meshes.push( mesh );
-
+		Proton3DInterpreter.create3DObject( extras, this )
+		if ( extras.type && ( extras.type == "sky" || extras.type.includes( "light" ) || extras.type.includes( "camera" ) ) ) {
+			this.setLinearVelocity = null;
+			this.setLinearVelocity = null;
+			this.getAngularVelocity = null
+			this.getAngularVelocity = null;
 		}
-		//creates the mesh's material -- must be at the very end to ensure that the material is initialized with an object
-		if ( getMeshByName( this.name ).material && extras.type != "sky" && !extras.mesh ) {
-
-			this.material = extras.material || new Proton3DMaterial( getMeshByName( this.name ), {
-				name: extras.materialName,
-				material: getMeshByName( this.name ).material
-			} )
-
-		}
-		//sets the mesh's parent
-		getMeshByName( this.name ).p3dParent = this
 		//sets the mesh's position + rotation
 		this.setPosition( extras.x, extras.y, extras.z )
 		this.setRotation( extras.rotationX, extras.rotationY, extras.rotationZ )
@@ -4423,225 +4014,112 @@ class Proton3DObject {
 	}
 	//the accessors' corresponding functions
 	getShadowOptions() {
-		return {
-			cast: getMeshByName( this.name ).castShadow,
-			receive: getMeshByName( this.name ).receiveShadow
-		}
+		return Proton3DInterpreter.Proton3DObject.getShadowOptions( this )
 	}
 	setShadowOptions( cast = null, receive = null ) {
-		getMeshByName( this.name ).castShadow = cast || getMeshByName( this.name ).castShadow
-		getMeshByName( this.name ).receiveShadow = receive || getMeshByName( this.name ).receiveShadow
+		return Proton3DInterpreter.Proton3DObject.setShadowOptions( cast, receive, this )
 	}
 	playAudio ( src, listener ) {
-		var sound = new THREE.PositionalAudio( listener );
-		getMeshByName( this.name ).add( sound );
-		var audio = new Audio( src );
-		sound.setMediaElementSource( audio );
-		return audio;
+		return Proton3DInterpreter.Proton3DObject.playAudio( src, listener, this )
 	}
 	applyImpulse( force, offset = new THREE.Vector3( 0, 0, 0 ) ) {
-		getMeshByName( this.name ).applyImpulse( force, offset )
+		return Proton3DInterpreter.Proton3DObject.applyImpulse( force, offset, this )
 	}
 	delete() {
-		if ( this.children ) {
-
-			this.children.forEach( function ( child ) {
-				if ( child.parent ) {
-
-					child.parent.remove( child )
-
-				}
-			} )
-
-		}
-		if ( this.parent ) {
-
-			this.parent.remove( this )
-
-		}
+		return Proton3DInterpreter.Proton3DObject.delete( this )
 	}
 	setMass( value ) {
-		getMeshByName( this.name ).mass = value
+		return Proton3DInterpreter.Proton3DObject.setMass( value, this )
 	}
 	getMass() {
-		return getMeshByName( this.name ).mass
+		return Proton3DInterpreter.Proton3DObject.getMass( this )
 	}
 	setOnUse( useFunction ){
-		this.__onUse = useFunction
+		return Proton3DInterpreter.Proton3DObject.setOnUse( useFunction, this )
 	}
 	setOnNear( nearFunction ){
-		this.__onNear = nearFunction
+		return Proton3DInterpreter.Proton3DObject.setOnNear( nearFunction, this )
 	}
 	setPickupDistance( value ){
-		this.__pickupDistance = value
+		return Proton3DInterpreter.Proton3DObject.setPickupDistance( value, this )
 	}
 	setPickup( pickupness, returnAfterUse ) {
-		this.__pickupable = pickupness
-		this.__returnAfterPickup = returnAfterUse
+		return Proton3DInterpreter.Proton3DObject.setPickup( pickupness, returnAfterUse, this )
 	}
 	getOnUse(){
-		return this.__onUse
+		return Proton3DInterpreter.Proton3DObject.getOnUse( this )
 	}
 	getOnNear(){
-		return this.__onNear
+		return Proton3DInterpreter.Proton3DObject.getOnNear( this )
 	}
 	getPickupDistance(){
-
+		return Proton3DInterpreter.Proton3DObject.getPickupDistance( this )
 	}
 	getPickup() {
-
+		return Proton3DInterpreter.Proton3DObject.getPickup( this )
 	}
 	makeListeningObject( THREEListener = new THREE.AudioListener() ) {
-		getMeshByName( this.name ).add( THREEListener )
-	}
-	setMeshVariable( name, value ) {
-		getMeshByName( this.name )[ name ] = value
-	}
-	getMeshVariable( name ) {
-		return getMeshByName( this.name )[ name ]
+		return Proton3DInterpreter.Proton3DObject.makeListeningObject( THREEListener, this )
 	}
 	setLinearVelocity( x = 0, y = 0, z = 0 ) {
-		if ( !x.x ) {
-
-			x = new THREE.Vector3( x, y, z )
-
-		}
-		getMeshByName( this.name ).setLinearVelocity( x )
+		return Proton3DInterpreter.Proton3DObject.setLinearVelocity( x, y, z, this )
 	}
 	setAngularVelocity( x = 0, y = 0, z = 0 ) {
-		if ( !x.x ) {
-
-			x = new THREE.Vector3( x, y, z )
-
-		}
-		getMeshByName( this.name ).setAngularVelocity( x )
+		return Proton3DInterpreter.Proton3DObject.setAngularVelocity( x, y, z, this )
 	}
 	setLinearFactor( x = 0, y = 0, z = 0 ) {
-		if ( !x.x ) {
-
-			x = new THREE.Vector3( x, y, z )
-
-		}
-		getMeshByName( this.name ).setLinearFactor( x )
+		return Proton3DInterpreter.Proton3DObject.setLinearFactor( x, y, z, this )
 	}
 	setAngularFactor( x = 0, y = 0, z = 0 ) {
-		if ( !x.x ) {
-
-			x = new THREE.Vector3( x, y, z )
-
-		}
-		getMeshByName( this.name ).setAngularFactor( x )
+		return Proton3DInterpreter.Proton3DObject.setAngularFactor( x, y, z, this )
 	}
-	addEventListener( name, callback) {
-		getMeshByName( this.name ).addEventListener( name, callback )
+	addEventListener( name, callback ) {
+		return Proton3DInterpreter.Proton3DObject.addEventListener( name, callback, this )
 	}
-	removeEventListener( name, callback) {
-		getMeshByName( this.name ).removeEventListener( name, callback )
+	removeEventListener( name, callback ) {
+		return Proton3DInterpreter.Proton3DObject.removeEventListener( name, callback, this )
 	}
 	setRotation( x, y, z ) {
-		if ( x == undefined ) {
-
-			x = this.getRotation().x
-
-		}
-		if ( y == undefined ) {
-
-			y = this.getRotation().y
-
-		}
-		if ( z == undefined ) {
-
-			z = this.getRotation().z
-
-		}
-		getMeshByName( this.name ).rotation.set( x, y, z );
-		getMeshByName( this.name ).__dirtyRotation = true
+		return Proton3DInterpreter.Proton3DObject.setRotation( x, y, z, this )
 	}
 	setPosition( x, y, z ) {
-		if ( typeof x === "object" ) {
-
-			getMeshByName( this.name ).position.set( x.x, x.y, x.z );
-
-		}
-		if ( x == undefined ) {
-
-			x = this.getPosition().x
-
-		}
-		if ( y == undefined ) {
-
-			y = this.getPosition().y
-
-		}
-		if ( z == undefined ) {
-
-			z = this.getPosition().z
-
-		}
-		getMeshByName( this.name ).position.set( x, y, z );
-		getMeshByName( this.name ).__dirtyPosition = true
+		return Proton3DInterpreter.Proton3DObject.setPosition( x, y, z, this )
 	}
 	getRotation() {
-		return getMeshByName( this.name ).rotation//.clone()
+		return Proton3DInterpreter.Proton3DObject.getRotation( this )
 	}
 	getPosition() {
-		return getMeshByName( this.name ).position//.clone()
+		return Proton3DInterpreter.Proton3DObject.getPosition( this )
 	}
 	applyLocRotChange(){
-		getMeshByName( this.name ).__dirtyPosition = true
-		getMeshByName( this.name ).__dirtyRotation = true
+		return Proton3DInterpreter.Proton3DObject.applyLocRotChange( this )
 	}
 	getLinearVelocity() {
-		return getMeshByName( this.name ).getLinearVelocity()
+		return Proton3DInterpreter.Proton3DObject.getLinearVelocity( this )
 	}
 	getAngularVelocity() {
-		return getMeshByName( this.name ).getAngularVelocity()
+		return Proton3DInterpreter.Proton3DObject.getAngularVelocity( this )
 	}
 	isMesh( object ) {
-		//the object has to be a proton3dobject, as with all of these functions.
-		return object.name == this.name
+		return Proton3DInterpreter.Proton3DObject.isMesh( object, this )
 	}
 	getWorldDirection() {
-		if ( getMeshByName( this.name ).getWorldDirection ) {
-
-			return getMeshByName( this.name ).getWorldDirection( new THREE.Vector3() )
-
-		} else {
-
-			var point = new THREE.Mesh(
-					new THREE.BoxBufferGeometry( 0.001, 0.001, 0.001 ),
-					new THREE.MeshBasicMaterial()
-				),
-				mesh = getMeshByName( this.name );
-			point.position.set( 0, 0.5, 2 )
-			mesh.add( point )
-			var position = ( new THREE.Vector3() ).setFromMatrixPosition( point.matrixWorld );
-			mesh.remove( point )
-			return position.sub( getMeshByName( this.name ).position)
-
-		}
+		return Proton3DInterpreter.Proton3DObject.getWorldDirection( this )
 	}
 	lookAt( x = 0, y = 0, z = 0 ) {
-		if ( getMeshByName( this.name ).lookAt ) {
-			getMeshByName( this.name ).lookAt( new THREE.Vector3( x, y, z ) )
-			getMeshByName( this.name ).__dirtyRotation = true;
-		}
+		return Proton3DInterpreter.Proton3DObject.lookAt( x, y, z, this )
 	}
 	getWorldPosition() {
-		return ( new THREE.Vector3() ).setFromMatrixPosition( getMeshByName( this.name ).matrixWorld )
+		return Proton3DInterpreter.Proton3DObject.getWorldPosition( this )
 	}
 	getCollidingObjects() {
-		return getMeshByName( this.name )._physijs.touches
+		return Proton3DInterpreter.Proton3DObject.getCollidingObjects( this )
 	}
 	add( object ) {
-		getMeshByName( this.name ).add( getMeshByName( object.name ) );
-		object.parent = this;
-		this.children.push( object );
+		return Proton3DInterpreter.Proton3DObject.add( object, this )
 	}
 	remove( object ) {
-		getMeshByName( this.name ).remove( getMeshByName( object.name ) );
-		object.parent = null;
-		removeFromArray( this.children, object );
+		return Proton3DInterpreter.Proton3DObject.remove( object, this )
 	}
 }
 class Proton3DMaterial {
@@ -4854,397 +4332,6 @@ function createCylinder( name, radiusTop, radiusBottom, height, segments, mass )
 	return createMesh( sphere, name );
 }
 */
-
-protonjs.importObject = function( extras = {} ) {
-	var loader,
-		x = this,
-		objects = [],
-		mesh;
-	//gets the loader and loads the file
-	switch ( extras.fileType.toLowerCase() ) {
-
-		case "obj":
-			loader = new THREE.OBJLoader2( extras.loadManager );
-			loader.setLogging( false, false );
-			if ( typeof extras.mtlPath === "string" ) {
-
-				loader.loadMtl( extras.mtlPath, null, function ( materials ) {
-					loader.setMaterials( materials );
-					loader.load( extras.objPath, function ( object ) {
-						finishLoad( object, object.detail.loaderRootNode )
-					} );
-				} );
-
-			} else {
-
-				loader.load( extras.objPath, function ( object ) {
-					finishLoad( object, object.detail.loaderRootNode )
-				} );
-
-			}
-			break;
-
-		case "gltf":
-
-			loader = new THREE.GLTFLoader( extras.loadManager );
-			loader.load( extras.gltfPath, function ( object ) {
-				finishLoad( object, object.scene )
-			} );
-			break;
-
-	}
-	//finishes the loading stuff
-	function finishLoad( object, threeObject ) {
-		mesh = threeObject;
-		if ( extras.noPhysics != true ) {
-
-			mesh.children.forEach( function ( c, i ) {
-				var m,
-					oldGeometry;
-				//some geometry stuff  {
-				if ( c.isMesh && c.geometry != null && !c._physijs ) {
-
-					c.updateMatrix();
-				//	oldGeometry = c.geometry.clone();
-					c.geometry = new THREE.Geometry().fromBufferGeometry( c.geometry );
-					if ( extras.accountForExtraProperties ) {
-
-						c.geometry.vertices.forEach( function ( vertex ) {
-							vertex.multiply( c.scale );
-						} );
-
-					}
-					if ( extras.starterPos && extras.fileType.toLowerCase() === "gltf" ) {
-
-						c.position.add( extras.starterPos )
-
-					}
-
-				} else if ( !c._physijs ) {
-
-					if ( c.position && extras.starterPos ) {
-
-						c.position.add( extras.starterPos );
-
-					}
-					objects.push( c );
-					return;
-
-				} else if ( c._physijs ) {
-
-					return
-
-				}
-				if ( c.name && c.name.includes( " --noPhysics" ) ) {
-
-					objects.push( c );
-					return;
-
-				}
-				//some material stuff
-				function toMeshPhongMaterial( material ) {
-					var newmaterial = new THREE.MeshPhongMaterial();
-					if ( material.type === "MeshPhongMaterial" ) {
-
-						return Physijs.createMaterial(
-							material,
-							1,
-							0
-						);
-
-					}
-					for ( var i in material ) {
-						if ( typeof material[ i ] === "function" || material[ i ] === material.type || material[ i ] === material.id || material[ i ] === material.uuid ) {
-
-							continue
-
-						}
-						newmaterial[ i ] = material[ i ]
-					}
-					return Physijs.createMaterial(
-						newmaterial,
-						1,
-						0
-					);
-				}
-				if ( c.material[ 0 ] != null ) {
-
-					c.material.forEach( function ( material, i ) {
-						c.material[ i ] = toMeshPhongMaterial( material )
-					} )
-
-				} else {
-
-					c.material = toMeshPhongMaterial( c.material )
-
-				}
-				//}
-				if ( extras.objectType ) {
-
-					switch ( typeof extras.objectType ) {
-
-						case "object":
-
-							extras.objectType[ i ].charAt( 0 ).toUpperCase() + extras.objectType.slice( 1 );
-							break;
-
-						default:
-
-							m = extras.objectType.charAt( 0 ).toUpperCase() + extras.objectType.slice( 1 );
-
-					}
-
-				}
-				if ( c.name && c.name.includes( "--geometry-" ) ) {
-
-					m = c.name.slice( c.name.indexOf( "--geometry-" ) + 11, c.name.length )
-					m = m.charAt( 0 ).toUpperCase() + m.slice( 1 );
-					if ( m.includes( "_" ) ) {
-
-						m = m.slice( 0, m.indexOf( "_" ) );
-
-					}
-
-				}
-				//
-				if ( extras.collisionMaterialTransparent ) {
-
-					extras.collisionMaterial = new THREE.MeshBasicMaterial();
-					extras.collisionMaterial.transparent = true;
-					extras.collisionMaterial.opacity = 0.001;
-					extras.collisionMaterial.depthWrite = false;
-
-				}
-				//
-				var mass = 0;
-				if ( extras.mass ) {
-
-					switch ( typeof extras.mass ) {
-
-						case "object":
-
-							mass = extras.mass[ i ]
-							break;
-
-						default:
-
-							mass = extras.mass
-
-					}
-
-				}
-				if ( c.name && c.name.includes( "--mass" ) ) {
-
-					mass = c.name.slice( c.name.indexOf( "--mass-" ) + 7, c.name.length )
-					if ( mass.includes( "_" ) ) {
-
-						mass = mass.slice( 0, mass.indexOf( "_" ) );
-
-					}
-					mass = parseFloat( mass );
-
-				}
-				//
-				var physicalObject = eval( `new Physijs.` + ( m || "Box" ) + `Mesh(
-					(  extras.collisionGeometry || c.geometry  ),
-					(  extras.collisionMaterial || c.material  ),
-					mass
-				)` );
-				if( c.name && c.name.replace( /_/ig, " " ).indexOf( " --" ) > -1 ) {
-
-					c.name = c.name.replace( /_/ig, " " ).slice( 0, c.name.indexOf( " --" ) );
-
-				} else if( c.name ) {
-
-					c.name = c.name.replace( /_/ig, " " )
-
-				}
-				physicalObject.name = c.name;
-				physicalObject.userData = c.userData;
-				physicalObject.material.transparent = true;
-				if ( extras.starterPos && extras.fileType.toLowerCase() != "gltf" ) {
-
-					physicalObject.position.set(
-						extras.starterPos.x + c.position.x,
-						extras.starterPos.y + c.position.y,
-						extras.starterPos.z + c.position.z,
-					);
-					physicalObject.__dirtyPosition = true;
-					c.position.set( 0, 0, 0 )
-
-				}
-				if ( extras.accountForExtraProperties ) {
-
-					physicalObject.rotation.set(
-						c.rotation.x,
-						c.rotation.y,
-						c.rotation.z
-					)
-					physicalObject.position.set(
-						c.position.x,
-						c.position.y,
-						c.position.z
-					)
-
-				}
-				//
-				if ( extras.useCollisionBox ) {
-
-					extras.collisionBoxPosition = ( extras.collisionBoxPosition || new THREE.Vector3( 0, 0, 0 ) );
-					c.position.set( extras.collisionBoxPosition.x, extras.collisionBoxPosition.y, extras.collisionBoxPosition.z );
-					physicalObject.add( c );
-					mesh.children.push( physicalObject );
-					objects.push( physicalObject );
-					return;
-
-				}
-				if ( extras.accountForExtraProperties ) {
-
-					mesh.children.push( physicalObject );
-					objects.push( physicalObject );
-					return;
-
-				}
-				if ( extras.fileType != "gltf" ) {
-
-					physicalObject.add( c );
-					mesh.children.push( physicalObject );
-					objects.push( physicalObject );
-
-				} else {
-
-					physicalObject.children = c.children
-					for ( var i in physicalObject ) {
-						if ( i != "position" && i != "rotation" && i != "quaternion" && i != "scale" ) {
-
-							c[ i ] = physicalObject[ i ];
-
-						}
-					}
-					objects.push( c );
-
-				}
-				physicalObject.geometry = new THREE.BufferGeometry().fromGeometry( physicalObject.geometry );
-				c.geometry = new THREE.BufferGeometry().fromGeometry( c.geometry );
-				if ( mesh.children.length === 1 ) {
-
-					mesh = mesh.children[ 0 ];
-
-				}
-			} );
-
-		} else {
-
-			if ( extras.starterPos ) {
-
-				mesh.position.add( extras.starterPos )
-
-			}
-			mesh.children.forEach( function ( child ) {
-				if ( extras.starterPos ) {
-
-					child.position.add( extras.starterPos )
-
-				}
-				objects.push( child )
-			} )
-
-
-		}
-		mesh.children.forEach( castShadow );
-
-		function castShadow( c ) {
-			if ( extras.castShadow ) {
-
-				c.castShadow = true
-
-			}
-			if ( extras.receiveShadow ) {
-
-				c.receiveShadow = true
-
-			}
-			c.children.forEach( castShadow );
-		}
-	//	createBaseObj3dListeners( x, extras );
-		//animations
-		if ( extras.fileType.toLowerCase() === "gltf" && object.animations && object.animations.length ) {
-
-			x.animations = [];
-			if ( extras.starterPos ) {
-
-				mesh.position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z );
-				object.scene.position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z );
-
-			}
-			for ( var i in object.animations ) {
-				var mixer = new THREE.AnimationMixer( mesh );
-				var animation = {
-					action: mixer.clipAction( object.animations[i] ),
-					play: function ( animatingObjects = [] ) {
-						if ( !this.action.paused ) {
-
-							return
-
-						}
-						this.action.clampWhenFinished = true;
-						this.action.enable = true;
-						this.action.stop();
-						this.action.reset();
-						this.action.play();
-						var frame = 0,
-							action = this.action,
-							animation = setInterval( function () {
-								if ( action.paused ) {
-
-									action.stop();
-									action.reset();
-									clearInterval(animation);
-									action.paused = true;
-									return;
-
-								}
-								mixer.update( frame += 0.005 );
-								mesh.children.forEach( function ( object ) {
-									if ( animatingObjects.indexOf(object) > -1 ) {
-
-										object.position.add(extras.starterPos);
-
-									}
-									object.__dirtyPosition = true;
-									object.__dirtyRotation = true;
-								} );
-							}, 16 )
-					}
-				}
-				animation.action.paused = true;
-				x.animations[ i ] = animation;
-			}
-		}
-		//
-		x.children = [];
-		objects.forEach( function ( mesh, i ) {
-			var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } )
-			x.children.push( object )
-			if ( extras.objects ) {
-
-				extras.objects.add( object )
-
-			}
-		} )
-		//
-		if ( extras.onload ) {
-
-			extras.onload( threeObject );
-
-		}
-		if ( x.onload ) {
-
-			x.onload( threeObject );
-
-		}
-	}
-}
 //\\//\\//\\//\\//\\//\\//\\//\\//\\// //
 //\\ Proton3DInterpreter						 / //
 //\\ (the star of the Proton3D show) / // loc:10 - 10.9
@@ -5289,8 +4376,10 @@ const Proton3DInterpreter = {
 		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 		//some element - y stuff
 		extras.element.appendChild( this.canvas );
+		//updating a scene
+		Proton3DInterpreter.render( extras.scene )
 		//PBR
-		this.PBRCamera = new THREE.CubeCamera( 1, 10,  32, {
+		this.PBRCamera = new THREE.CubeCamera( 1, 10, 32, {
 			type: THREE.FloatType
 		} );
 		this.objects.add( this.PBRCamera );
@@ -5309,32 +4398,29 @@ const Proton3DInterpreter = {
 			oldMaterial = object.material;
 		if ( scene.usePBR != false && !skipPBRReplacement && !skipPBRReplacement_light && object.material ) {
 
-			object.usePBRCamera = false;
-			object.PBRCamera = scene.PBRCamera;
-			//
-			object.pbr = function () {
-				Proton3DInterpreter.PBRCamera.position.copy( object.position );
-				Proton3DInterpreter.PBRCamera.rotation.copy( object.rotation );
-				Proton3DInterpreter.PBRCamera.update( Proton3DInterpreter.renderer, Proton3DInterpreter.objects );
+			object.pbr = function (scene = Proton3DInterpreter, PBRCamera = scene.PBRCamera) {
+				PBRCamera.position.copy( object.position );
+				PBRCamera.rotation.copy( object.rotation );
+				PBRCamera.update( scene.renderer, scene.objects );
 				if ( object.material[0] != null ) {
 
 					object.material.forEach( function ( material ) {
-						material.envMap = Proton3DInterpreter.PBRCamera.renderTarget.texture
+						material.envMap = PBRCamera.renderTarget.texture
 					} )
 
 				} else {
 
-					object.material.envMap = Proton3DInterpreter.PBRCamera.renderTarget.texture
+					object.material.envMap = PBRCamera.renderTarget.texture
 
 				}
 			}
 			//
-			this.initPBR( object.material, object, scene, undefined, skipPBRReplacement, object.material? object.material.name : null );
-			object.pbr();
+			this.initPBR( object.material, object, undefined, scene, skipPBRReplacement, object.material? object.material.name : null );
+			object.pbr( this );
 
 		} else if ( !skipPBRReplacement ) {
 
-			this.initPBR( object.material, object, scene, undefined, skipPBRReplacement, object.material? object.material.name : null, false );
+			this.initPBR( object.material, object, undefined, scene, skipPBRReplacement, object.material? object.material.name : null, false );
 
 		}
 	},
@@ -5347,7 +4433,7 @@ const Proton3DInterpreter = {
 		if ( material[0] != null ) {
 
 			material.forEach( function (m, i) {
-				scene.initPBR( m, object, i, scene, skipPBRReplacement, m.name, usePBRInTheFirstPlace );
+				Proton3DInterpreter.initPBR( m, object, i, scene, skipPBRReplacement, m.name, usePBRInTheFirstPlace );
 			} )
 
 		} else {
@@ -5514,6 +4600,1020 @@ const Proton3DInterpreter = {
 			this.renderer.render( this.objects, getMeshByName( scene.camera.name ) );
 
 		}
-	}
+	},
 
+
+	//creating and modifing Proton3DObjects -- loc:10.2
+	create3DObject( extras, object ) {
+		//the different object types that you see here must be used when swapping this function.
+		//any extras are welcome, though!
+		switch( extras.type ) {
+
+			case "orthographiccamera":
+				var camera = new THREE.OrthographicCamera(
+					( extras.viewportLeft || -10 ),
+					( extras.viewportRight || -10 ),
+					( extras.viewportTop || -10 ),
+					( extras.viewportBottom || -10 ),
+					( extras.near || 0.26 ),
+					( extras.far || 100 )
+				);
+				camera.name = object.name;
+				meshes.push( camera )
+				//
+				object.changeViewingWidth = function( value ) {
+					camera.left = value / -1;
+					camera.right = value / 1;
+					camera.updateProjectionMatrix()
+				}
+				object.changeViewingHeight = function ( value ) {
+					camera.top = value / 1;
+					camera.bottom = value / -1;
+					camera.updateProjectionMatrix()
+				}
+				object.changeNear = function ( value ) {
+					camera.near = value
+					camera.updateProjectionMatrix()
+				}
+				object.changeFar = function ( value ) {
+					camera.far = value
+					camera.updateProjectionMatrix()
+				}
+				object.changeAspectRatio = function ( value ) {
+					camera.aspect = value;
+					camera.updateProjectionMatrix()
+				}
+				//
+				break;
+
+			case "perspectivecamera":
+				var camera = new THREE.PerspectiveCamera(
+					( extras.fov || 75 ),
+					( extras.viewportWidth / extras.viewportHeight ),
+					( extras.near || 0.26 ),
+					( extras.far || 100 )
+				);
+				camera.name = object.name;
+				meshes.push( camera )
+				//
+				object.changeFOV = function ( value ) {
+					camera.fov = value;
+					camera.updateProjectionMatrix()
+				}
+				object.changeAspectRatio = function ( value ) {
+					camera.aspect = value;
+					camera.updateProjectionMatrix()
+				}
+				object.getZoom = function () {
+					return camera.zoom
+				}
+				object.setZoom = function ( value ) {
+					camera.zoom = value
+					camera.updateProjectionMatrix()
+				}
+				object.changeNear = function ( value ) {
+					camera.near = value
+					camera.updateProjectionMatrix()
+				}
+				object.changeFar = function ( value ) {
+					camera.far = value
+					camera.updateProjectionMatrix()
+				}
+				//
+				break;
+
+			case "spotlight":
+				var spotlight = new THREE.SpotLight( new THREE.Color( extras.color || "#fff" ), extras.intensity || 15 )
+				spotlight.shadow.camera = new THREE.OrthographicCamera( -( 100 ), 100, 100, -( 100 ), 0.25, 1000 );
+				spotlight.castShadow = true;
+				//very low quality: 1024
+				//low quality: 2048
+				//medium quality: 8192
+				//high quality: 16384
+				spotlight.shadow.mapSize.width = 8192;
+				spotlight.shadow.mapSize.height = 8192;
+				spotlight.penumbra = 1;
+				spotlight.shadow.radius = 1.5;
+				spotlight.shadow.bias = -0.00005;
+				spotlight.name = object.name;
+				meshes.push( spotlight );
+				//
+				object.changeColor = function ( hexString ) {
+					spotlight.color = new THREE.Color( hexString )
+				}
+				object.changeIntensity = function ( value ) {
+					spotlight.intensity = value
+				}
+				object.getIntensity = function ( value ) {
+					return spotlight.intensity
+				}
+				//
+				break;
+
+			case "directionallight":
+				var directionallight = new THREE.DirectionalLight( new THREE.Color( color ), intensity )
+				directionallight.shadow.camera = new THREE.OrthographicCamera( -100, 100, 100, -100, 0.25, 1000 );
+				directionallight.shadow.radius = 1.5;
+				directionallight.shadow.bias = -0.00005;
+				directionallight.name = object.name;
+				meshes.push( directionallight );
+				//
+				object.changeColor = function ( hexString ) {
+					directionallight.color = new THREE.Color( hexString )
+				}
+				object.changeIntensity = function ( value ) {
+					directionallight.intensity = value
+				}
+				//
+				break;
+
+			case "sky":
+				var sky = new THREE.Sky();
+
+				object.skipPBRReplacement = true;
+				sky.scale.setScalar( 450000 );
+				sky.material.uniforms = {
+					"luminance": {
+						value: 1
+					},
+					"turbidity": {
+						value: 10
+					},
+					"rayleigh": {
+						value: 2
+					},
+					"mieCoefficient": {
+						value: 0.005
+					},
+					"mieDirectionalG": {
+						value: 0.8
+					},
+					"sunPosition": {
+						value: new THREE.Vector3( 10, 10, 10 )
+					}
+				}
+				for ( var i in sky.material.uniforms ) {
+					object[ i ] = sky.material.uniforms[ i ].value
+					//set the listeners
+					if ( i != "sunPosition" ) {
+
+						object.watch( i, function ( id, oldval, newval ) {
+							sky.material.uniforms[ id ].value = newval;
+						} );
+
+					}
+				}
+				for ( var i in extras ) {
+					//set the value
+					if ( sky.material.uniforms[ i ] ) {
+
+						object[ i ] = extras[ i ];
+						sky.material.uniforms[ i ].value = extras[ i ];
+					}
+				}
+				if ( extras.sun ) {
+
+					//
+					object.sun = extras.sun;
+					object.sun.setPosition(
+						object.sunPosition.x,
+						object.sunPosition.y,
+						object.sunPosition.z
+					)
+					//
+					object.watch( "sunPosition", function ( id, oldval, newval ) {
+						sky.material.uniforms[ id ].value = newval;
+						//
+						object.sun.setPosition(
+							newval.x,
+							newval.y,
+							newval.z
+						)
+					} );
+
+				}
+				sky.name = object.name;
+				meshes.push( sky )
+				break
+
+			case "cube":
+
+				extras.type = "cube";
+				//create the cube
+				var cube;
+				if ( extras.noPhysics ) {
+
+					cube = new THREE.Mesh(
+						protonjs.__changeMeshGeometry( null, extras ).geometry,
+						protonjs.__changeMeshMaterial( extras ).material
+					)
+
+				} else {
+
+					cube = new Physijs.BoxMesh(
+						protonjs.__changeMeshGeometry( null, extras ).geometry,
+						protonjs.__changeMeshMaterial( extras ).material,
+						( extras.mass || 0 )
+					)
+
+				}
+				cube.name = object.name;
+				meshes.push( cube );
+				//creates an array
+				console.log(object)
+				object.width = extras.width || 1;
+				object.height = extras.height || 1;
+				object.depth = extras.depth || 1;
+				console.log(object.width);
+				//creates listeners for each array
+				createBaseObj3dListeners( object, extras );
+				var obj = object;
+				//geometry
+				object.watch( "width", function ( id, oldval, newval ) {
+					obj._width = newval;
+					protonjs.__changeMeshGeometry( obj, obj, object.name );
+				} );
+				object.watch( "height", function ( id, oldval, newval ) {
+					obj._height = newval;
+					protonjs.__changeMeshGeometry( obj, obj, object.name );
+				} );
+				object.watch( "depth", function ( id, oldval, newval ) {
+					obj._depth = newval;
+					protonjs.__changeMeshGeometry( obj, obj, object.name );
+				} );
+				//
+				for ( var i in extras ) {
+					if ( extras[i] && object[i] == undefined ) {
+
+						object[i] = extras[i];
+
+					}
+				}
+				break
+
+			case "sphere":
+				extras.type = "sphere";
+				//creates the base variables
+				var sphere;
+				//create the sphere!
+				if ( extras.noPhysics ) {
+
+					sphere = new THREE.Mesh(
+						protonjs.__changeMeshGeometry( null, extras ).geometry,
+						protonjs.__changeMeshMaterial( extras ).material
+					)
+
+				} else {
+
+					sphere = new Physijs.SphereMesh(
+						protonjs.__changeMeshGeometry( null, extras ).geometry,
+						protonjs.__changeMeshMaterial( extras ).material,
+						( extras.mass || 0 )
+					)
+
+				}
+				sphere.name = object.name;
+				meshes.push( sphere );
+				//creates some properties
+				object.radius = 1;
+				//adds listeners for each property
+				var obj = object;
+				createBaseObj3dListeners( object, extras );
+				//geometry
+				object.watch( "radius", function ( id, oldval, newval ) {
+					obj._radius = newval;
+					changeGeometryParameters( obj );
+				} );
+				//
+				for ( var i in extras ) {
+					if ( extras[i] && object[i] == undefined ) {
+
+						object[i] = extras[i];
+
+					}
+				}
+				break
+
+			case "cylinder":
+				extras.type = "cylinder"
+				//create the base variables
+				var cylinder;
+				//create the cylinder
+				if ( extras.noPhysics ) {
+
+					cylinder = new THREE.Mesh(
+						protonjs.__changeMeshGeometry( null, extras ).geometry,
+						protonjs.__changeMeshMaterial( extras ).material
+					)
+
+				} else {
+
+					new Physijs.CylinderMesh(
+						protonjs.__changeMeshGeometry( null, extras ).geometry,
+						protonjs.__changeMeshMaterial( extras ).material,
+						( extras.mass || 0 )
+					);
+
+				}
+				cylinder.name = object.name;
+				meshes.push( cylinder );
+				//creates extra values
+				object.radiusTop = 1;
+				object.radiusBottom = 1;
+				object.height = 1;
+				//creates listeners for each value
+				var obj = object;
+				createBaseObj3dListeners( object, extras );
+				//
+				object.watch( "radiusTop", function ( id, oldval, newval ) {
+					obj._radiusTop = newval;
+					protonjs.__changeMeshGeometry( obj );
+				} );
+				object.watch( "radiusBottom", function ( id, oldval, newval ) {
+					obj._radiusTop = newval;
+					protonjs.__changeMeshGeometry( obj );
+				} );
+				object.watch( "height", function ( id, oldval, newval ) {
+					obj._height = newval;
+					protonjs.__changeMeshGeometry( obj );
+				} );
+				//
+				for ( var i in extras ) {
+					if ( extras[i] && object[i] == undefined ) {
+
+						object[i] = extras[i];
+
+					}
+				}
+				break
+
+			default:
+
+				var mesh = extras.mesh;
+				if ( mesh.name === "" || mesh.name == undefined ) {
+
+					mesh.name = object.name
+
+				} else {
+
+					object.name = mesh.name
+
+				}
+				function namecheck ( p3dobject ) {
+					if ( getMeshByName( mesh.name ) ) {
+
+						p3dobject.name += "_copy"
+						mesh.name += "_copy"
+
+					}
+					if ( getMeshByName( mesh.name ) ) {
+
+						namecheck( p3dobject )
+
+					}
+				}
+				namecheck( object )
+				if ( !mesh.material[ 0 ] ) {
+
+					object.material =  new Proton3DMaterial( object, {
+						material: mesh.material
+					} )
+
+				} else {
+
+					var y = object;
+					object.material = [];
+					mesh.material.forEach( function ( material, i ) {
+
+						y.material.push( new Proton3DMaterial( mesh, {
+							material: material,
+							materialLocation: i
+						} ) )
+
+					} );
+
+				}
+				meshes.push( mesh );
+
+		}
+		//creates the mesh's material -- must be at the very end to ensure that the material is initialized with an object
+		if ( getMeshByName( object.name ).material && extras.type != "sky" && !extras.mesh ) {
+
+			object.material = extras.material || new Proton3DMaterial( getMeshByName( object.name ), {
+				name: extras.materialName,
+				material: getMeshByName( object.name ).material
+			} )
+
+		}
+		//sets the mesh's parent
+		getMeshByName( object.name ).p3dParent = object
+	},
+	Proton3DObject: {
+		getShadowOptions( P3DObject ) {
+			return {
+				cast: getMeshByName( P3DObject.name ).castShadow,
+				receive: getMeshByName( P3DObject.name ).receiveShadow
+			}
+		},
+		setShadowOptions( cast = null, receive = null, P3DObject ) {
+			getMeshByName( P3DObject.name ).castShadow = cast || getMeshByName( P3DObject.name ).castShadow
+			getMeshByName( P3DObject.name ).receiveShadow = receive || getMeshByName( P3DObject.name ).receiveShadow
+		},
+		playAudio ( src, listener, P3DObject ) {
+			var sound = new THREE.PositionalAudio( listener );
+			getMeshByName( P3DObject.name ).add( sound );
+			var audio = new Audio( src );
+			sound.setMediaElementSource( audio );
+			return audio;
+		},
+		applyImpulse( force, offset = new THREE.Vector3( 0, 0, 0 ), P3DObject ) {
+			getMeshByName( P3DObject.name ).applyImpulse( force, offset )
+		},
+		delete( P3DObject ) {
+			if ( P3DObject.children ) {
+
+				P3DObject.children.forEach( function ( child ) {
+					if ( child.parent ) {
+
+						child.parent.remove( child )
+
+					}
+				} )
+
+			}
+			if ( P3DObject.parent ) {
+
+				P3DObject.parent.remove( P3DObject )
+
+			}
+		},
+		setMass( value, P3DObject ) {
+			getMeshByName( P3DObject.name ).mass = value
+		},
+		getMass( P3DObject ) {
+			return getMeshByName( P3DObject.name ).mass
+		},
+		setOnUse( useFunction, P3DObject ){
+			P3DObject.__onUse = useFunction
+		},
+		setOnNear( nearFunction, P3DObject ){
+			P3DObject.__onNear = nearFunction
+		},
+		setPickupDistance( value, P3DObject ){
+			P3DObject.__pickupDistance = value
+		},
+		setPickup( pickupness, returnAfterUse, P3DObject ) {
+			P3DObject.__pickupable = pickupness
+			P3DObject.__returnAfterPickup = returnAfterUse
+		},
+		getOnUse( P3DObject ){
+			return P3DObject.__onUse
+		},
+		getOnNear( P3DObject ){
+			return P3DObject.__onNear
+		},
+		getPickupDistance( P3DObject ){
+
+		},
+		getPickup( P3DObject ) {
+
+		},
+		makeListeningObject( THREEListener = new THREE.AudioListener(), P3DObject ) {
+			getMeshByName( P3DObject.name ).add( THREEListener )
+		},
+		setLinearVelocity( x = 0, y = 0, z = 0, P3DObject ) {
+			if ( !x.x ) {
+
+				x = new THREE.Vector3( x, y, z )
+
+			}
+			getMeshByName( P3DObject.name ).setLinearVelocity( x )
+		},
+		setAngularVelocity( x = 0, y = 0, z = 0, P3DObject ) {
+			if ( !x.x ) {
+
+				x = new THREE.Vector3( x, y, z )
+
+			}
+			getMeshByName( P3DObject.name ).setAngularVelocity( x )
+		},
+		setLinearFactor( x = 0, y = 0, z = 0, P3DObject ) {
+			if ( !x.x ) {
+
+				x = new THREE.Vector3( x, y, z )
+
+			}
+			getMeshByName( P3DObject.name ).setLinearFactor( x )
+		},
+		setAngularFactor( x = 0, y = 0, z = 0, P3DObject ) {
+			if ( !x.x ) {
+
+				x = new THREE.Vector3( x, y, z )
+
+			}
+			getMeshByName( P3DObject.name ).setAngularFactor( x )
+		},
+		addEventListener( name, callback, P3DObject ) {
+			getMeshByName( P3DObject.name ).addEventListener( name, callback )
+		},
+		removeEventListener( name, callback, P3DObject ) {
+			getMeshByName( P3DObject.name ).removeEventListener( name, callback )
+		},
+		setRotation( x, y, z, P3DObject ) {
+			if ( x == undefined ) {
+
+				x = P3DObject.getRotation().x
+
+			}
+			if ( y == undefined ) {
+
+				y = P3DObject.getRotation().y
+
+			}
+			if ( z == undefined ) {
+
+				z = P3DObject.getRotation().z
+
+			}
+			getMeshByName( P3DObject.name ).rotation.set( x, y, z );
+			getMeshByName( P3DObject.name ).__dirtyRotation = true
+		},
+		setPosition( x, y, z, P3DObject ) {
+			if ( typeof x === "object" ) {
+
+				getMeshByName( P3DObject.name ).position.set( x.x, x.y, x.z );
+
+			}
+			if ( x == undefined ) {
+
+				x = P3DObject.getPosition().x
+
+			}
+			if ( y == undefined ) {
+
+				y = P3DObject.getPosition().y
+
+			}
+			if ( z == undefined ) {
+
+				z = P3DObject.getPosition().z
+
+			}
+			getMeshByName( P3DObject.name ).position.set( x, y, z );
+			getMeshByName( P3DObject.name ).__dirtyPosition = true
+		},
+		getRotation( P3DObject ) {
+			return getMeshByName( P3DObject.name ).rotation//.clone()
+		},
+		getPosition( P3DObject ) {
+			return getMeshByName( P3DObject.name ).position//.clone()
+		},
+		applyLocRotChange( P3DObject ){
+			getMeshByName( P3DObject.name ).__dirtyPosition = true
+			getMeshByName( P3DObject.name ).__dirtyRotation = true
+		},
+		getLinearVelocity( P3DObject ) {
+			return getMeshByName( P3DObject.name ).getLinearVelocity()
+		},
+		getAngularVelocity( P3DObject ) {
+			return getMeshByName( P3DObject.name ).getAngularVelocity()
+		},
+		isMesh( object, P3DObject ) {
+			//the object has to be a proton3dobject, as with all of these functions.
+			return object.name == P3DObject.name
+		},
+		getWorldDirection( P3DObject ) {
+			if ( getMeshByName( P3DObject.name ).getWorldDirection ) {
+
+				return getMeshByName( P3DObject.name ).getWorldDirection( new THREE.Vector3() )
+
+			} else {
+
+				var point = new THREE.Mesh(
+						new THREE.BoxBufferGeometry( 0.001, 0.001, 0.001 ),
+						new THREE.MeshBasicMaterial()
+					),
+					mesh = getMeshByName( P3DObject.name );
+				point.position.set( 0, 0.5, 2 )
+				mesh.add( point )
+				var position = ( new THREE.Vector3() ).setFromMatrixPosition( point.matrixWorld );
+				mesh.remove( point )
+				return position.sub( getMeshByName( P3DObject.name ).position)
+
+			}
+		},
+		lookAt( x = 0, y = 0, z = 0, P3DObject ) {
+			if ( getMeshByName( P3DObject.name ).lookAt ) {
+				getMeshByName( P3DObject.name ).lookAt( new THREE.Vector3( x, y, z ) )
+				getMeshByName( P3DObject.name ).__dirtyRotation = true;
+			}
+		},
+		getWorldPosition( P3DObject ) {
+			return ( new THREE.Vector3() ).setFromMatrixPosition( getMeshByName( P3DObject.name ).matrixWorld )
+		},
+		getCollidingObjects( P3DObject ) {
+			return getMeshByName( P3DObject.name )._physijs.touches
+		},
+		add( object, P3DObject ) {
+			getMeshByName( P3DObject.name ).add( getMeshByName( object.name ) );
+			object.parent = P3DObject;
+			P3DObject.children.push( object );
+		},
+		remove( object, P3DObject ) {
+			getMeshByName( P3DObject.name ).remove( getMeshByName( object.name ) );
+			object.parent = null;
+			removeFromArray( P3DObject.children, object );
+		}
+	},
+	importObject: function( extras ){
+		var loader,
+			x = this,
+			objects = [],
+			mesh;
+		//gets the loader and loads the file
+		switch ( extras.fileType.toLowerCase() ) {
+
+			case "obj":
+				loader = new THREE.OBJLoader2( extras.loadManager );
+				loader.setLogging( false, false );
+				if ( typeof extras.mtlPath === "string" ) {
+
+					loader.loadMtl( extras.mtlPath, null, function ( materials ) {
+						loader.setMaterials( materials );
+						loader.load( extras.objPath, function ( object ) {
+							finishLoad( object, object.detail.loaderRootNode )
+						} );
+					} );
+
+				} else {
+
+					loader.load( extras.objPath, function ( object ) {
+						finishLoad( object, object.detail.loaderRootNode )
+					} );
+
+				}
+				break;
+
+			case "gltf":
+
+				loader = new THREE.GLTFLoader( extras.loadManager );
+				loader.load( extras.gltfPath, function ( object ) {
+					finishLoad( object, object.scene )
+				} );
+				break;
+
+		}
+		//finishes the loading stuff
+		function finishLoad( object, threeObject ) {
+			mesh = threeObject;
+			if ( extras.noPhysics != true ) {
+
+				mesh.children.forEach( function ( c, i ) {
+					var m,
+						oldGeometry;
+					//some geometry stuff  {
+					if ( c.isMesh && c.geometry != null && !c._physijs ) {
+
+						c.updateMatrix();
+					//	oldGeometry = c.geometry.clone();
+						c.geometry = new THREE.Geometry().fromBufferGeometry( c.geometry );
+						if ( extras.accountForExtraProperties ) {
+
+							c.geometry.vertices.forEach( function ( vertex ) {
+								vertex.multiply( c.scale );
+							} );
+
+						}
+						if ( extras.starterPos && extras.fileType.toLowerCase() === "gltf" ) {
+
+							c.position.add( extras.starterPos )
+
+						}
+
+					} else if ( !c._physijs ) {
+
+						if ( c.position && extras.starterPos ) {
+
+							c.position.add( extras.starterPos );
+
+						}
+						objects.push( c );
+						return;
+
+					} else if ( c._physijs ) {
+
+						return
+
+					}
+					if ( c.name && c.name.includes( " --noPhysics" ) ) {
+
+						objects.push( c );
+						return;
+
+					}
+					//some material stuff
+					function toMeshPhongMaterial( material ) {
+						var newmaterial = new THREE.MeshPhongMaterial();
+						if ( material.type === "MeshPhongMaterial" ) {
+
+							return Physijs.createMaterial(
+								material,
+								1,
+								0
+							);
+
+						}
+						for ( var i in material ) {
+							if ( typeof material[ i ] === "function" || material[ i ] === material.type || material[ i ] === material.id || material[ i ] === material.uuid ) {
+
+								continue
+
+							}
+							newmaterial[ i ] = material[ i ]
+						}
+						return Physijs.createMaterial(
+							newmaterial,
+							1,
+							0
+						);
+					}
+					if ( c.material[ 0 ] != null ) {
+
+						c.material.forEach( function ( material, i ) {
+							c.material[ i ] = toMeshPhongMaterial( material )
+						} )
+
+					} else {
+
+						c.material = toMeshPhongMaterial( c.material )
+
+					}
+					//}
+					if ( extras.objectType ) {
+
+						switch ( typeof extras.objectType ) {
+
+							case "object":
+
+								extras.objectType[ i ].charAt( 0 ).toUpperCase() + extras.objectType.slice( 1 );
+								break;
+
+							default:
+
+								m = extras.objectType.charAt( 0 ).toUpperCase() + extras.objectType.slice( 1 );
+
+						}
+
+					}
+					if ( c.name && c.name.includes( "--geometry-" ) ) {
+
+						m = c.name.slice( c.name.indexOf( "--geometry-" ) + 11, c.name.length )
+						m = m.charAt( 0 ).toUpperCase() + m.slice( 1 );
+						if ( m.includes( "_" ) ) {
+
+							m = m.slice( 0, m.indexOf( "_" ) );
+
+						}
+
+					}
+					//
+					if ( extras.collisionMaterialTransparent ) {
+
+						extras.collisionMaterial = new THREE.MeshBasicMaterial();
+						extras.collisionMaterial.transparent = true;
+						extras.collisionMaterial.opacity = 0.001;
+						extras.collisionMaterial.depthWrite = false;
+
+					}
+					//
+					var mass = 0;
+					if ( extras.mass ) {
+
+						switch ( typeof extras.mass ) {
+
+							case "object":
+
+								mass = extras.mass[ i ]
+								break;
+
+							default:
+
+								mass = extras.mass
+
+						}
+
+					}
+					if ( c.name && c.name.includes( "--mass" ) ) {
+
+						mass = c.name.slice( c.name.indexOf( "--mass-" ) + 7, c.name.length )
+						if ( mass.includes( "_" ) ) {
+
+							mass = mass.slice( 0, mass.indexOf( "_" ) );
+
+						}
+						mass = parseFloat( mass );
+
+					}
+					//
+					var physicalObject = eval( `new Physijs.` + ( m || "Box" ) + `Mesh(
+						(  extras.collisionGeometry || c.geometry  ),
+						(  extras.collisionMaterial || c.material  ),
+						mass
+					)` );
+					if( c.name && c.name.replace( /_/ig, " " ).indexOf( " --" ) > -1 ) {
+
+						c.name = c.name.replace( /_/ig, " " ).slice( 0, c.name.indexOf( " --" ) );
+
+					} else if( c.name ) {
+
+						c.name = c.name.replace( /_/ig, " " )
+
+					}
+					physicalObject.name = c.name;
+					physicalObject.userData = c.userData;
+					physicalObject.material.transparent = true;
+					if ( extras.starterPos && extras.fileType.toLowerCase() != "gltf" ) {
+
+						physicalObject.position.set(
+							extras.starterPos.x + c.position.x,
+							extras.starterPos.y + c.position.y,
+							extras.starterPos.z + c.position.z,
+						);
+						physicalObject.__dirtyPosition = true;
+						c.position.set( 0, 0, 0 )
+
+					}
+					if ( extras.accountForExtraProperties ) {
+
+						physicalObject.rotation.set(
+							c.rotation.x,
+							c.rotation.y,
+							c.rotation.z
+						)
+						physicalObject.position.set(
+							c.position.x,
+							c.position.y,
+							c.position.z
+						)
+
+					}
+					//
+					if ( extras.useCollisionBox ) {
+
+						extras.collisionBoxPosition = ( extras.collisionBoxPosition || new THREE.Vector3( 0, 0, 0 ) );
+						c.position.set( extras.collisionBoxPosition.x, extras.collisionBoxPosition.y, extras.collisionBoxPosition.z );
+						physicalObject.add( c );
+						mesh.children.push( physicalObject );
+						objects.push( physicalObject );
+						return;
+
+					}
+					if ( extras.accountForExtraProperties ) {
+
+						mesh.children.push( physicalObject );
+						objects.push( physicalObject );
+						return;
+
+					}
+					if ( extras.fileType != "gltf" ) {
+
+						physicalObject.add( c );
+						mesh.children.push( physicalObject );
+						objects.push( physicalObject );
+
+					} else {
+
+						physicalObject.children = c.children
+						for ( var i in physicalObject ) {
+							if ( i != "position" && i != "rotation" && i != "quaternion" && i != "scale" ) {
+
+								c[ i ] = physicalObject[ i ];
+
+							}
+						}
+						objects.push( c );
+
+					}
+					physicalObject.geometry = new THREE.BufferGeometry().fromGeometry( physicalObject.geometry );
+					c.geometry = new THREE.BufferGeometry().fromGeometry( c.geometry );
+					if ( mesh.children.length === 1 ) {
+
+						mesh = mesh.children[ 0 ];
+
+					}
+				} );
+
+			} else {
+
+				if ( extras.starterPos ) {
+
+					mesh.position.add( extras.starterPos )
+
+				}
+				mesh.children.forEach( function ( child ) {
+					if ( extras.starterPos ) {
+
+						child.position.add( extras.starterPos )
+
+					}
+					objects.push( child )
+				} )
+
+
+			}
+			mesh.children.forEach( castShadow );
+
+			function castShadow( c ) {
+				if ( extras.castShadow ) {
+
+					c.castShadow = true
+
+				}
+				if ( extras.receiveShadow ) {
+
+					c.receiveShadow = true
+
+				}
+				c.children.forEach( castShadow );
+			}
+		//	createBaseObj3dListeners( x, extras );
+			//animations
+			if ( extras.fileType.toLowerCase() === "gltf" && object.animations && object.animations.length ) {
+
+				x.animations = [];
+				if ( extras.starterPos ) {
+
+					mesh.position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z );
+					object.scene.position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z );
+
+				}
+				for ( var i in object.animations ) {
+					var mixer = new THREE.AnimationMixer( mesh );
+					var animation = {
+						action: mixer.clipAction( object.animations[i] ),
+						play: function ( animatingObjects = [] ) {
+							if ( !this.action.paused ) {
+
+								return
+
+							}
+							this.action.clampWhenFinished = true;
+							this.action.enable = true;
+							this.action.stop();
+							this.action.reset();
+							this.action.play();
+							var frame = 0,
+								action = this.action,
+								animation = setInterval( function () {
+									if ( action.paused ) {
+
+										action.stop();
+										action.reset();
+										clearInterval(animation);
+										action.paused = true;
+										return;
+
+									}
+									mixer.update( frame += 0.005 );
+									mesh.children.forEach( function ( object ) {
+										if ( animatingObjects.indexOf(object) > -1 ) {
+
+											object.position.add(extras.starterPos);
+
+										}
+										object.__dirtyPosition = true;
+										object.__dirtyRotation = true;
+									} );
+								}, 16 )
+						}
+					}
+					animation.action.paused = true;
+					x.animations[ i ] = animation;
+				}
+			}
+			//
+			x.children = [];
+			objects.forEach( function ( mesh, i ) {
+				var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } )
+				x.children.push( object )
+				if ( extras.objects ) {
+
+					extras.objects.add( object )
+
+				}
+			} )
+			//
+			if ( extras.onload ) {
+
+				extras.onload( threeObject );
+
+			}
+			if ( x.onload ) {
+
+				x.onload( threeObject );
+
+			}
+		}
+	}
 }
+protonjs.importObject = Proton3DInterpreter.importObject
