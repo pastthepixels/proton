@@ -22,22 +22,23 @@
 	[third party software]
 		>> three js ( and extra related software, found under its branches ) @ mrdoob/threejs
 		>> jquery @ jquery.com
-		>> inset.js @ patlillis/inset.js
 	[locations of sections]
 	To get to locations in notepad++, press Control+F
 	and type
 	"loc:[location number]"
 	Locations of sections:
-		add extra scripts | 1
+		adding extra scripts | 1
 		variables | 2
 		constants | 3
-		render extra features | 4
-		draw and render objects | 5
+		rendering extra features | 4
+		drawing and rendering objects | 5
 		extra functions | 6
-		prepare all pausing | 7
-		misc ( includes some content from third parties.
-			  see for details and credit ) | 8
+		pausing stuff | 7
+		misc (which includes some content from some other places on the web) | 8
+
+
 		proton3d | 9 - 10
+
 	[readme]
 	Welcome!
 		proton.js aims to help developers make
@@ -111,17 +112,15 @@
 	websites could have negative effects on your
 	computer.
 */
-//\\//\\//\\//\\//\\//\\// //
-//\\ add extra scripts \// //loc:1
-//\\//\\//\\//\\//\\//\\// //
-//do not forget to use the meta viewport tag
+//\\//\\//\\//\\//\\//\\//\\ //
+//\\ adding extra scripts \\ // //loc:1
+//\\//\\//\\//\\//\\//\\//\\ //
+//do not forget to use the tag below
 document.writeln( '<meta name="viewport" content="width = device-width, initial-scale = 1.0">' );
 //jquery: required
 document.writeln( '<script src="https://code.jquery.com/jquery-3.4.1.js"></script>' );
 document.writeln( '<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>' );
-//inset shadows for canvas2d
-document.writeln( '<script src="https://unpkg.com/inset.js@1.0.2/dist/inset.browser.js"></script>' );
-//roboto. all of it.
+//roboto. all of it (for some reason).
 document.writeln( '<link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono|Roboto+Slab" rel="stylesheet">' );
 //proton3d: threejs
 document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/build/three.js"></script>' );
@@ -200,21 +199,48 @@ const CSS = {
 	"scene::-moz-scrollbar": [
 		"display: none"
 	],
-	"button": [
-		"border: 3px solid black",
-		"padding: 15px",
-		"background: rgba(  255, 255, 255, 0.5  )",
-		"font-family: Roboto Mono",
-		"transition: all 0.3s ease"
+	"button.aperturebutton": [
+	  "box-shadow: 15px 0px 1px -7px #ce4b5a",
+	  "border-color: #f1f1f1",
+	  "background: #f1f1f1",
+	  "color: #f2a519",
+	  "border-top-right-radius: 5px",
+	  "border-bottom-right-radius: 5px"
 	],
-	"button:hover": [
-		"background: black",
-		"color: white"
+	"button.aperturebutton:hover": [
+	  "background: #f1f1f1"
+	],
+	"button": [
+	  "padding: 10px",
+	  "border: 5px solid black",
+	  "outline: none",
+	  "margin: 10px",
+	  "cursor: pointer",
+	  "font-weight: bold",
+	  "font-family: 'Roboto Mono', monospace",
+	  "background: white",
+	  "background-size: 100% 100%",
+	  "transition: all 0.3s ease"
+	],
+	"button:not(.aperturebutton):hover": [
+	  "box-shadow: 5px 0px 1px royalblue"
+	],
+	"button.aperturebutton:focus": [
+	  "color: #5291d8"
+	],
+	"button.aperturebutton:active": [
+	  "box-shadow: 10px 0px 1px -7px #ce4b5a"
+	],
+	"button:active": [
+	  "background: black",
+	  "color: white"
 	]
 }
+//WARNING: Lostsa old 2D stuff in here.
 const protonjs = {
 	version: 1.0,
 	display_version: "beta 1.0",
+	//
 	paused: false,
 	scene: function ( renderer = "proton2d" ) {
 		scenes++;
@@ -487,6 +513,9 @@ const protonjs = {
 	},
 
 	//picklescript
+	//a now deprecated attempt to create a universal programming language for gaming development.
+	//basically, it was supposed to be like proton3d, but with a wider range of interpreters (in different programming languages and in different game engines, like BGE)
+	//it still kinda works, by the way.
 
 	pickleScriptKeywords: {
 		"use": function ( parameter, variables ) {
@@ -697,6 +726,7 @@ const protonjs = {
 		return commands;
 	}
 }
+//Proton2D
 const Proton2DScene = {
 	keys: {},
 	mappedKeys: {
@@ -940,11 +970,6 @@ const Proton2DScene = {
 		//i.shadow example:  {blur: 200, x: 0, y: 0, color: "black"}
 		if ( !extras.noEffects ) {
 
-			if ( i.shadow && i.shadow.inset ) {
-
-				ctx.shadowInset = true;
-
-			}
 			if ( i.shadow ) {
 
 				ctx.shadowBlur = i.shadow.blur;
@@ -1088,6 +1113,7 @@ const Proton2DScene = {
 //\\//\\//\\//\\//\\//\\//\\// //
 //\\ rendering extra features \// //loc:4
 //\\//\\//\\//\\//\\//\\//\\// //
+//Still proton2d
 const renderProtonExtras = function ( i, ctx, scene, obj ) {
 	if ( scene.gravity && i.velocityY != null && i.noGravity != true ) {
 
@@ -1110,8 +1136,7 @@ const renderProtonExtras = function ( i, ctx, scene, obj ) {
 					blur: 200,
 					color: "black",
 					x: 0,
-					y: 0,
-					inset: false
+					y: 0
 				}
 			}
 			ii.shadow.x = ( ( ii.x + ( ii.width / 2 ) ) - ( i.x + ( i.width / 2 ) ) ) / ( ii.recieveShadowSensitivity || 1 );
@@ -1285,7 +1310,7 @@ const renderGlare = function ( i, ctx, scene, obj ) {
 			glareNum = 0;
 
 		}
-		i.glareShadow.style.boxShadow = ( i.radialGradient.stops[0][1] ) + " 0px 0px " + glareNum + "px - 15px inset";
+		i.glareShadow.style.boxShadow = ( i.radialGradient.stops[0][1] ) + " 0px 0px " + glareNum + "px - 15px ";
 
 	}
 	if ( i.noLensFlare != true ) {
@@ -1366,76 +1391,8 @@ const renderGravity = function ( i, ctx, scene, obj ) {
 
 	}
 }
-const experimentalSolid = function ( shapeA, shapeB, scene ) {
-	if ( !( ( shapeB.x + shapeB.width ) > ( shapeA.x - 100 ) &&
-			( shapeB.x + shapeB.width ) < ( shapeA.x + shapeA.width + 100 ) &&
-			( shapeB.y ) > ( shapeA.y - 100 ) &&
-			( shapeB.y + 100 ) < ( shapeA.y + shapeA.height + 100 ) ) ) {
-
-		return;
-
-	}
-	if ( shapeA.offscreen == undefined ) {
-
-		shapeA.offscreen = new OffscreenCanvas( scene.canvas.height, scene.canvas.width );
-		shapeA.offscreenCtx = shapeA.offscreen.getContext( "2d" );
-
-	}
-	if ( shapeB.offscreen == undefined ) {
-
-		shapeB.offscreen = new OffscreenCanvas( scene.canvas.height, scene.canvas.width );
-		shapeB.offscreenCtx = shapeB.offscreen.getContext( "2d" );
-
-	}
-	//creates the variables
-	var xa = shapeA.x + shapeA.width,
-		xb = shapeB.x + shapeB.width,
-		ya = shapeA.y + shapeA.height,
-		yb = shapeB.y + shapeB.height,
-		collisionSquare = {
-			x: Math.max( shapeA.x, shapeB.x ),
-			y: Math.max( shapeA.y, shapeB.y ),
-			width: Math.min( xa, xb ) - Math.max( shapeA.x, shapeB.x ),
-			height: Math.min( ya, yb ) - Math.max( shapeA.y, shapeB.y )
-		};
-	//clear the canvasii
-	shapeA.offscreenCtx.clearRect( 0, 0, scene.canvas.width, scene.canvas.height );
-	shapeB.offscreenCtx.clearRect( 0, 0, scene.canvas.width, scene.canvas.height );
-	//render everything in a seperate canvas
-	scene.renderEach2d( shapeA, shapeA.offscreenCtx, scene.objects, {
-		canvas: shapeA.offscreen
-	}, null, {
-		effectsOff: true
-	} );
-	scene.renderEach2d( shapeB, shapeB.offscreenCtx, scene.objects, {
-		canvas: shapeB.offscreen
-	}, null, {
-		effectsOff: true
-	} );
-	//preform the thing
-	experimentalSolidPartTwo( shapeA, shapeB, collisionSquare )
-}
-const experimentalSolidPartTwo = function ( a, b, collisionSquare ) {
-	try {
-		var imageDataA = a.offscreenCtx.getImageData( collisionSquare.x, collisionSquare.y, collisionSquare.width, collisionSquare.height ).data,
-			imageDataB = b.offscreenCtx.getImageData( collisionSquare.x, collisionSquare.y, collisionSquare.width, collisionSquare.height ).data;
-	} catch {
-		return;
-	}
-	for ( var i = 3; i < imageDataA.length; i += 4 ) {
-		if ( imageDataA[i] > 0 && imageDataB[i] > 0 ) {
-
-			if ( a.oncollision ) {
-				var e = {
-					this: a,
-					collidee: b
-				}
-				a.oncollision( e );
-			}
-
-		}
-	}
-}
+//Got this from a site long ago, but I can't site it cuz' I modified it (but by just a bit) and forgot what that site was.
+//If you see it, let me know!
 const solid = function ( shapeA, shapeB ) {
 	var xa = ( shapeA.x + ( shapeA.width / 2 ) ) - ( shapeB.x + ( shapeB.width / 2 ) ),
 		ya = ( shapeA.y + ( shapeA.height / 2 ) ) - ( shapeB.y + ( shapeB.height / 2 ) ),
@@ -1618,8 +1575,9 @@ const addLensFlareCircle = function ( x, y, ctx, scene, obj, color ) {
 	return obj;
 }
 //\\//\\//\\//\\//\\//\\//\\//\\  //
-//\\ draw and render objects / \\  //loc:5
+//\\ drawing and rendering objects / \\  //loc:5
 //\\//\\//\\//\\//\\//\\//\\//\\  //
+//still proton2d
 const drawObject = function ( i, x, y, ctx, obj, scene, visCtx ) {
 	//filling
 	//i.image = new Image(); i.image.src example: "source / path / to / image. * "
@@ -1796,6 +1754,7 @@ const renderObject = function ( i, x, y, ctx, obj, scene, visCtx ) {
 //\\//\\//\\//\\//\\//\\  //
 //\\ extra functions / \\  //loc:6
 //\\//\\//\\//\\//\\//\\  //
+// STILL PROTON2D
 const createLinearGradient = function ( x, y, length, angle2, scene ) {
 	var x2, y2, angle;
 	angle = +angle2 / 180 * Math.PI;
@@ -1965,9 +1924,10 @@ const oncollision = function ( one, two ) {
 const removeFromArray = function ( array, object ) {
 	return ( array.indexOf( object ) > -1 ) ? [ array.splice( array.indexOf( object ), 1 ), array ] : false
 }
-//\\//\\//\\//\\//\\//\\//\\  //
-//\\ prepare all pausing / \\  //loc:7
-//\\//\\//\\//\\//\\//\\//\\  //
+//\\//\\//\\//\\//\\  //
+//\\ pausing stuff \  // loc:7
+//\\//\\//\\//\\//\\  //
+//not entirely proton2d...
 window.timeoutList = [];
 window.intervalList = [];
 window.intervalInfo = [];
@@ -2060,6 +2020,8 @@ window.setInterval = function ( code, delay ) {
 ////////////// //
 //  misc  // //loc:8
 ////////////// //
+//still proton2d.
+
 //get a radian from an angle
 const radian = function ( angle ) {
 	return THREE.Math.degToRad( angle );
@@ -2158,6 +2120,12 @@ const Canvas = function ( height, width ) {
 	c.width = width;
 	return c;
 }
+//
+//
+// Finally! Here we are!
+// This deserves a cool divider.
+//
+//
 /*
 	~> loc:9
 		~> there are locations 9.1 - 10.0 in this section.
@@ -2441,137 +2409,8 @@ class Proton3DScene {
 
 		}
 	}
-	toggleDoor( door ){
-		var x = this;
-		if ( !door.checkForEnding ) {
-
-			door.isOpen = toggle( door.isOpen );
-			var checkForRotations = this.priorityExtraFunctions.push(function(){
-				if ( Math.abs( parseInt( angle( door.rotation.y - door.initialRotation ) ) -  parseInt( angle( door.oldRotation - door.initialRotation ) ) ) > 5 ) {
-
-					x.priorityExtraFunctions.splice( checkForRotations - 1, 1 );
-					door.checkForEnding = function () {
-						var rotation = door.rotation.clone().y;
-						if ( parseInt( angle( door.rotation.y - door.initialRotation ) ) <= 2 && parseInt( angle( door.rotation.y - door.initialRotation ) ) >= -2 ||
-							door.position.distanceTo( door.initialPosition ) < 0.1 ) {
-							//
-							if( parseInt( angle( door.rotation.y ) ) < 2 && parseInt( angle( door.rotation.y ) ) > -2 ) {
-
-								rotation = radian(0.1);
-
-							}
-							if ( parseInt( angle( door.rotation.y - door.initialRotation ) ) <= 91 && parseInt( angle( door.rotation.y - door.initialRotation ) ) >= 89 ||
-
-								parseInt( angle( door.rotation.y - door.initialRotation)) <= -89 && parseInt( angle( door.rotation.y - door.initialRotation ) ) >= -91 ) {
-
-							}
-							//
-							door.oldRotation = door.rotation.y;
-							x.priorityExtraFunctions.splice( x.priorityExtraFunctions.indexOf( door.checkForEnding ), 1 );
-							door.checkForEnding = null;
-							door.opening = false;
-							//
-							door.setLinearVelocity( 0, 0, 0 );
-							door.setLinearFactor( 0, 0, 0 );
-							door.setAngularVelocity( 0, 0, 0 );
-							door.setAngularFactor( 0, 0, 0 );
-							door.setRotation( undefined, rotation, undefined );
-							return;
-
-						}
-					}
-					x.priorityExtraFunctions.push( door.checkForEnding );
-
-				}
-			});
-
-		}
-		door.setAngularFactor( 1, 1, 1 );
-		door.setLinearFactor( 1, 1, 1 );
-		//
-		door.setLinearVelocity( 0.5, 0.5, 0.5 );
-		door.applyImpulse(
-			door.openingVelocity.clone().multiply( door.open ? new THREE.Vector3( 1, 1, 1 ) :  new THREE.Vector3( -1, -1, -1 ) ),
-			door.position.clone().sub( door.initialPosition )
-		);
-	}
 	makeDoor( door, width = door.width || 2.5, faceInwards = true ) {
-		var x = this;
-		//
-		door.open = true;
-		//
-		door.initialRotation = door.getRotation().y;
-		door.initialPosition = door.getPosition().clone();
-		door.oldRotation = door.getRotation().y;
-		door.setAngularFactor( 0, 0, 0 );
-		door.isOpen = false;
-		door.openable = true;
-		door.pickupDistance = 4;
-		door.setOnUse( function () {
-
-			if( door.openable ) {
-				x.toggleDoor( door )
-			}
-
-		} );
-		door.setPickup( true, true );
-		//gets (and rotates) the door's contraint's position
-		var vector = new THREE.Vector3( ( width / 2 ), -1, 0 );
-		vector = protonjs.rotateVector3(
-			new THREE.Vector3( 0, 1, 0 ),
-			door.getRotation().y,
-			vector,
-			false,
-			true
-		);
-		vector = protonjs.rotateVector3(
-			new THREE.Vector3( 1, 0, 0 ),
-			door.getRotation().x,
-			vector,
-			false,
-			true
-		);
-		vector = protonjs.rotateVector3(
-			new THREE.Vector3( 0, 0, 1 ),
-			door.getRotation().z,
-			vector,
-			false,
-			true
-		).add( door.getPosition() );
-		//gets the "opening velocity" (see line 2722 in toggleDoor for more info)
-		door.getOpeningVelocity = function ( velocity = new THREE.Vector3( 1, 1, 1 ), addExtraStuff = true ) {
-			velocity = protonjs.rotateVector3(
-				new THREE.Vector3( 1, 0, 0 ),
-				door.getRotation().x,
-				velocity,
-				false,
-				true
-			);
-			velocity = protonjs.rotateVector3(
-				new THREE.Vector3( 0, 0, 1 ),
-				door.getRotation().z,
-				velocity,
-				false,
-				true
-			);
-			return addExtraStuff ? velocity.multiply( door.isOpen ? new THREE.Vector3( 1, 1, 1 ) :  new THREE.Vector3( -1, -1, -1 ) ) : velocity
-		}
-		door.openingVelocity = door.getOpeningVelocity( faceInwards? new THREE.Vector3( 1, 1, 1 ) : new THREE.Vector3( -1, -1, -1 ), false )
-		//
-		door.constraint = new Physijs.HingeConstraint(
-			getMeshByName( door.name ),
-			vector,
-			new THREE.Vector3( 0, 1, 0 )
-		);
-		Proton3DInterpreter.objects.addConstraint( door.constraint );
-		door.constraint.setLimits(
-			faceInwards? ( radian( 0 ) + door.getRotation().y ) : ( radian( -90 ) + door.getRotation().y ),
-			faceInwards? ( radian( 90 ) + door.getRotation().y ) : ( radian( 0 ) + door.getRotation().y ),
-			10,
-			0.1
-		);
-		door.constraint.enableAngularMotor( new THREE.Vector3( 0, 1, 0 ), new THREE.Vector3( 0, 0.5, 0 ) );
-		door.constraint.disableMotor();
+		Proton3DInterpreter.makeDoor( door, width, faceInwards, this )
 	}
 	addPortal2ZoomControls() {
 		var x = this.camera,
@@ -2758,6 +2597,7 @@ class Proton3DScene {
 
 				child.mass = child.oldMass;
 				child.setLinearVelocity( 0, 0, 0 );
+				child.setLinearFactor( 1, 1, 1 );
 				child.pickingUp = null;
 
 			}
@@ -2802,6 +2642,7 @@ class Proton3DScene {
 				}
 				child.oldPos = child.position.clone();
 				child.distance = x.crosshair.position.distanceTo( child.position );
+				child.setLinearFactor( 0, 0, 0 );
 				x.crosshair.hide()
 				return
 
@@ -2817,788 +2658,7 @@ class Proton3DScene {
 	}
 }
 /*
-	~> loc:9.1 > creating objects
-	each object (  except for lights,
-	which do not have a geometry or
-	color  ) should look like this:
-	 {
-		width: #,
-		height: #,
-		depth: #,
-		wireframeSegments: #,
-		x: #,
-		y: #,
-		z: #,
-		color: "",
-		smoothShading: true / false,
-		texture: "image file location",
-		threeObject: three js object
-	}
-	this has to be done specially for
-	each function, which means I cannot
-	simplify this.
-	here are all the objects you can create that are handled by proton.js:
-	[cone, sphere, cube, cylinder, sun3d]
-	otherwise, you'll need to make a model.
-*/
-const createBaseObj3dListeners = function ( obj, extras = {} ) {
-	//setting stuff
-	for ( var i in extras ) {
-		if ( obj[ i ] == undefined ) {
-
-			obj[ i ] = extras[ i ]
-
-		}
-	}
-	//setting variables
-	obj.x = ( extras.x || 0 );
-	obj.y = ( extras.y || 0 );
-	obj.z = ( extras.z || 0 );
-	obj.color = ( extras.color || "white" );
-	obj.texture = "";
-	obj.smoothShading = false;
-	obj.castShadow = ( extras.castShadow || true );
-	obj.receiveShadow = ( extras.receiveShadow || false );
-	//i've got to keep the x, y, and z values here because of compatability issues with older proton.js examples.
-	obj.watch( "x", function ( id, oldval, newval ) {
-		obj.setPosition( newval, undefined, undefined )
-	} );
-	obj.watch( "y", function ( id, oldval, newval ) {
-		obj.setPosition( undefined, newval, undefined )
-	} );
-	obj.watch( "z", function ( id, oldval, newval ) {
-		obj.setPosition( undefined, undefined, newval )
-	} );
-	if ( extras.x ) {
-
-		obj.setPosition( extras.x, undefined, undefined )
-
-	}
-	if ( extras.y ) {
-
-		obj.setPosition( undefined, extras.y, undefined )
-
-	}
-	if ( extras.z ) {
-
-		obj.setPosition( undefined, undefined, extras.z )
-
-	}
-	//material
-	obj.watch( "color", function ( id, oldval, newval ) {
-		obj._color = newval;
-		protonjs.__changeMeshMaterial( obj );
-	} );
-	obj.watch( "texture", function ( id, oldval, newval ) {
-		obj._texture = newval;
-		protonjs.__changeMeshMaterial( obj );
-	} );
-	obj.watch( "normalMap", function ( id, oldval, newval ) {
-		obj._texture = newval;
-		protonjs.__changeMeshMaterial( obj );
-	} );
-	obj.watch( "bumpMap", function ( id, oldval, newval ) {
-		obj._bumpMap = val;
-		protonjs.__changeMeshMaterial( obj );
-	} );
-	obj.watch( "wireframe", function ( id, oldval, newval ) {
-		obj._wireframe = newval;
-		protonjs.__changeMeshMaterial( obj );
-	} );
-	//castShadow
-	if ( obj.castShadow ) {
-		obj.castShadow = obj.castShadow
-		if ( obj.children ) {
-
-			obj.children.forEach( function ( c ) {
-				c.castShadow = obj.castShadow
-			} );
-
-		}
-	}
-	//recieveShadow
-	if ( obj.receiveShadow ) {
-
-		obj.receiveShadow = obj.receiveShadow
-		if ( obj.children ) {
-
-			obj.children.forEach( function ( c ) {
-				c.receiveShadow = obj.recieveShadow
-			} );
-
-		}
-
-	}
-}
-protonjs.__changeMeshMaterial = function ( extras = {} ) {
-	extras = extras || {};
-	var materialParameters = {
-		color: new THREE.Color( extras.color || "#fff" ),
-		map: null,
-		wireframe: ( extras.wireframe || false )
-	}
-	if ( extras.bumpMap ) {
-
-		var bump = new THREE.TextureLoader( extras.loadManager ).load( extras.bumpMap );
-		bump.wrapS = THREE.RepeatWrapping;
-		bump.wrapT = THREE.RepeatWrapping;
-		bump.repeat.set( ( extras.bumpMapRepeat || 1 ), ( extras.bumpMapRepeat || 1 ) );
-		if ( extras.pixelatedBumpMap ) {
-
-			bump.magFilter = THREE.NearestFilter;
-			bump.minFilter = THREE.LinearMipMapLinearFilter;
-
-		}
-		materialParameters.bumpMap = bump
-
-	}
-	if ( extras.normalMap ) {
-
-		var normal = new THREE.TextureLoader( extras.loadManager ).load( extras.normalMap );
-		normal.wrapS = THREE.RepeatWrapping;
-		normal.wrapT = THREE.RepeatWrapping;
-		normal.repeat.set( ( extras.normalMapRepeat || 1 ), ( extras.normalMapRepeat || 1 ) );
-		if ( extras.pixelatedNormalMap ) {
-
-			normal.magFilter = THREE.NearestFilter;
-			normal.minFilter = THREE.LinearMipMapLinearFilter;
-
-		}
-		materialParameters.normalMap = normal
-
-	}
-	if ( extras.roughnessMap ) {
-
-		var rough = new THREE.TextureLoader( extras.loadManager ).load( extras.roughnessMap );
-		rough.wrapS = THREE.RepeatWrapping;
-		rough.wrapT = THREE.RepeatWrapping;
-		rough.repeat.set( ( extras.roughMapRepeat || 1 ), ( extras.roughMapRepeat || 1 ) );
-		if ( extras.pixelatedRoughMap ) {
-			rough.magFilter = THREE.NearestFilter;
-			rough.minFilter = THREE.LinearMipMapLinearFilter;
-		}
-		materialParameters.roughnessMap = rough;
-
-	}
-	if ( extras.displacementMap ) {
-
-		var displacement = new THREE.TextureLoader( extras.loadManager ).load( extras.displacementMap );
-		displacement.wrapS = THREE.RepeatWrapping;
-		displacement.wrapT = THREE.RepeatWrapping;
-		displacement.repeat.set( ( extras.displacementMapRepeat || 1 ), ( extras.displacementMapRepeat || 1 ) );
-		if ( extras.pixelatedDisplacementMap ) {
-
-			displacement.magFilter = THREE.NearestFilter;
-			displacement.minFilter = THREE.LinearMipMapLinearFilter;
-
-		}
-		materialParameters.displacementMap = displacement;
-
-	}
-	if ( extras.texture ) {
-
-		var texture = new THREE.TextureLoader( extras.loadManager ).load( extras.texture );
-		texture.wrapS = THREE.RepeatWrapping;
-		texture.wrapT = THREE.RepeatWrapping;
-		texture.repeat.set( ( extras.textureRepeat || 1 ), ( extras.textureRepeat || 1 ) );
-		if ( extras.pixelatedTexture ) {
-
-			texture.magFilter = THREE.NearestFilter;
-			texture.minFilter = THREE.LinearMipMapLinearFilter;
-
-		}
-		materialParameters.map = texture;
-
-	}
-	//finish the function (  important  )
-	var material;
-	switch ( extras.materialType ) {
-
-		case "standard":
-
-			material = Physijs.createMaterial(
-				new THREE.MeshStandardMaterial( materialParameters )
-			);
-			return finish( extras );
-			break;
-
-		case "toon":
-
-			material = Physijs.createMaterial(
-				new THREE.MeshToonMaterial( materialParameters )
-			);
-			return finish( extras );
-			break;
-
-		case "physical":
-
-			material = Physijs.createMaterial(
-				new THREE.MeshPhysicalMaterial( materialParameters )
-			);
-			return finish( extras );
-			break;
-
-		case "phong":
-
-			material = Physijs.createMaterial(
-				new THREE.MeshPhongMaterial( materialParameters )
-			);
-			return finish( extras );
-			break;
-
-		case "normal":
-
-			material = Physijs.createMaterial(
-				new THREE.MeshNormalMaterial( materialParameters )
-			);
-			return finish( extras );
-			break;
-
-		case "matcap":
-
-			material = Physijs.createMaterial(
-				new THREE.MeshMatcapMaterial( materialParameters )
-			);
-			return finish( extras );
-			break;
-
-		case "lambert":
-
-			material = Physijs.createMaterial(
-				new THREE.MeshLambertMaterial( materialParameters )
-			);
-			return finish( extras );
-			break;
-
-		case "distance":
-
-			material = Physijs.createMaterial(
-				new THREE.MeshDistanceMaterial( materialParameters )
-			);
-			return finish( extras );
-			break;
-
-		case "depth":
-
-			material = Physijs.createMaterial(
-				new THREE.MeshDepthMaterial( materialParameters )
-			);
-			return finish( extras );
-			break;
-
-		case "basic":
-
-			material = Physijs.createMaterial(
-				new THREE.MeshBasicMaterial( materialParameters )
-			);
-			return finish( extras );
-			break;
-
-		default:
-			Physijs.createMaterial(
-				new THREE.MeshLambertMaterial( materialParameters )
-			)
-			return finish( extras );
-
-	}
-
-	function finish( extras = {} ) {
-		if ( extras.mesh ) {
-
-			extras.mesh.material = material;
-			if ( extras.onmaterialupdate ) {
-
-				extras.onmaterialupdate();
-
-			}
-
-		}
-		return {
-			material: material,
-			parameters: materialParameters
-		}
-	}
-}
-/*
-	loc:9.2
-	models
-	this supports obj files and gltf, which can be exported through blender.
-	gltf file extensions require an extension to export: https://github.com/KhronosGroup/glTF-Blender-IO
-*/
-protonjs.importObject = function ( extras = {} ) {
-	var loader,
-		x = this;
-	//gets the loader and loads the file
-	switch ( extras.fileType.toLowerCase() ) {
-
-		case "obj":
-			loader = new THREE.OBJLoader2( extras.loadManager );
-			loader.setLogging( false, false );
-			if ( typeof extras.mtlPath === "string" ) {
-
-				loader.loadMtl( extras.mtlPath, null, function ( materials ) {
-					loader.setMaterials( materials );
-					loader.load( extras.objPath, function ( object ) {
-						finishLoad( object, object.detail.loaderRootNode );
-					} );
-				} );
-
-			} else {
-
-				loader.load( extras.objPath, function ( object ) {
-					finishLoad( object, object.detail.loaderRootNode );
-				} );
-
-			}
-			break;
-
-		case "gltf":
-
-			loader = new THREE.GLTFLoader( extras.loadManager );
-			loader.load( extras.gltfPath, function ( object ) {
-				x.gltf = object;
-				finishLoad( object, object.scene );
-			} );
-			break;
-
-	}
-	//finishes the loading stuff
-	function finishLoad( object, threeObject ) {
-		getMeshByName( x.name ) = threeObject;
-		x.children = getMeshByName( x.name ).children;
-		if ( extras.useAsGroup ) {
-
-			getMeshByName( x.name ) = new THREE.Group();
-			getMeshByName( x.name ).add( threeObject );
-
-		}
-		if ( extras.noPhysics != true ) {
-
-			x.physicalChildren = [];
-			getMeshByName( x.name ).children.forEach( function ( c, i ) {
-				var m,
-					oldGeometry;
-				//some geometry stuff  {
-				if ( c.isMesh && c.geometry != null && !c._physijs ) {
-
-					c.updateMatrix();
-					oldGeometry = c.geometry.clone();
-					c.geometry = new THREE.Geometry().fromBufferGeometry( c.geometry );
-					if ( extras.accountForExtraProperties ) {
-
-						c.geometry.vertices.forEach( function ( vertex ) {
-							vertex.multiply( c.scale );
-						} );
-
-					}
-					if ( extras.starterPos && extras.fileType.toLowerCase() === "gltf" ) {
-
-						c.position.add( extras.starterPos )
-
-					}
-
-				} else if ( !c._physijs ) {
-
-					if ( c.position && extras.starterPos ) {
-
-						c.position.add( extras.starterPos );
-
-					}
-					extras.objects.add( c );
-					return;
-
-				} else if ( c._physijs ) {
-
-					return
-
-				}
-				if ( extras.name && extras.name.includes( " --noPhysics" ) ) {
-
-					extras.objects.add( c );
-					return;
-
-				}
-				//some material stuff
-				function toMeshPhongMaterial( material ) {
-					var newmaterial = new THREE.MeshPhongMaterial();
-					if ( material.type === "MeshPhongMaterial" ) {
-
-						return Physijs.createMaterial(
-							material,
-							1,
-							0
-						);
-
-					}
-					for ( var i in material ) {
-						if ( typeof material[i] === "function" || material[i] === material.type || material[i] === material.id || material[i] === material.uuid ) {
-
-							continue;
-
-						}
-						newmaterial[i] = material[i]
-					}
-					return Physijs.createMaterial(
-						newmaterial,
-						1,
-						0
-					);
-				}
-				if ( c.material[0] != null ) {
-
-					c.material.forEach( function ( material, i ) {
-						c.material[i] = toMeshPhongMaterial( material )
-					} )
-
-				} else {
-
-					c.material = toMeshPhongMaterial( c.material )
-
-				}
-				//}
-				if ( extras.objectType ) {
-
-					switch ( typeof extras.objectType ) {
-
-						case "object":
-
-							extras.objectType[i].charAt( 0 ).toUpperCase() + extras.objectType.slice( 1 );
-							break;
-
-						default:
-
-							m = extras.objectType.charAt( 0 ).toUpperCase() + extras.objectType.slice( 1 );
-
-					}
-
-				}
-				if ( c.name && c.name.includes( "--geometry-" ) ) {
-
-					m = c.name.slice( c.name.indexOf( "--geometry-" ) + 11, c.name.length )
-					m = m.charAt( 0 ).toUpperCase() + m.slice( 1 );
-					if ( m.includes( "_" ) ) {
-						m = m.slice( 0, m.indexOf( "_" ) );
-					}
-
-				}
-				//
-				if ( extras.collisionMaterialTransparent ) {
-
-					extras.collisionMaterial = new THREE.MeshBasicMaterial();
-					extras.collisionMaterial.transparent = true;
-					extras.collisionMaterial.opacity = 0.001;
-					extras.collisionMaterial.depthWrite = false;
-
-				}
-				//
-				var mass = 0;
-				if ( extras.mass ) {
-
-					switch ( typeof extras.mass ) {
-
-						case "object":
-
-							mass = extras.mass[i]
-							break;
-
-						default:
-
-							mass = extras.mass
-
-					}
-
-				}
-				if ( c.name && c.name.includes( "--mass" ) ) {
-
-					mass = c.name.slice( c.name.indexOf( "--mass-" ) + 7, c.name.length )
-					if ( mass.includes( "_" ) ) {
-						mass = mass.slice( 0, mass.indexOf( "_" ) );
-					}
-					mass = parseFloat( mass );
-
-				}
-				//
-				var physicalObject = eval( `new Physijs.` + ( m || "Box" ) + `Mesh(
-					(  extras.collisionGeometry || c.geometry  ),
-					(  extras.collisionMaterial || c.material  ),
-					mass
-				)` );
-				if(c.name && c.name.replace(/_/ig, " ").indexOf(" --") > -1){
-					c.name = c.name.replace(/_/ig, " ").slice(0, c.name.indexOf(" --"));
-				} else if(c.name){
-					c.name = c.name.replace(/_/ig, " ")
-				}
-				physicalObject.name = c.name;
-				physicalObject.userData = c.userData;
-				x.physicalChildren.push( physicalObject );
-				physicalObject.material.transparent = true;
-				if ( extras.starterPos && extras.fileType.toLowerCase() != "gltf" ) {
-
-					physicalObject.position.set(
-						extras.starterPos.x + c.position.x,
-						extras.starterPos.y + c.position.y,
-						extras.starterPos.z + c.position.z,
-					);
-					physicalObject.__dirtyPosition = true;
-					c.position.set(0, 0, 0)
-
-				}
-				if ( extras.accountForExtraProperties ) {
-					physicalObject.rotation.set(
-						c.rotation.x,
-						c.rotation.y,
-						c.rotation.z
-					)
-					physicalObject.position.set(
-						c.position.x,
-						c.position.y,
-						c.position.z
-					)
-				}
-				//
-				if ( extras.useCollisionBox ) {
-
-					extras.collisionBoxPosition = ( extras.collisionBoxPosition || new THREE.Vector3( 0, 0, 0 ) );
-					c.position.set( extras.collisionBoxPosition.x, extras.collisionBoxPosition.y, extras.collisionBoxPosition.z );
-					physicalObject.add( c );
-					getMeshByName( x.name ).children.push( physicalObject );
-					extras.objects.add( physicalObject );
-					return;
-
-				}
-				if ( extras.accountForExtraProperties ) {
-
-					getMeshByName( x.name ).children.push( physicalObject );
-					extras.objects.add( physicalObject );
-					return;
-
-				}
-				if ( extras.fileType != "gltf" ) {
-
-					physicalObject.add( c );
-					getMeshByName( x.name ).children.push( physicalObject );
-					extras.objects.add( physicalObject );
-
-				} else {
-
-					physicalObject.children = c.children
-					for ( var i in physicalObject ) {
-						if ( i != "position" && i != "rotation" && i != "quaternion" && i != "scale" ) {
-							c[i] = physicalObject[i];
-						}
-					}
-					extras.objects.add( c );
-
-				}
-				physicalObject.geometry = new THREE.BufferGeometry().fromGeometry( physicalObject.geometry );
-				c.geometry = new THREE.BufferGeometry().fromGeometry( c.geometry );
-				if ( getMeshByName( x.name ).children.length === 1 ) {
-					getMeshByName( x.name ) = getMeshByName( x.name ).children[0];
-				}
-			} );
-
-		} else if ( extras.objects ) {
-
-			if ( extras.starterPos ) {
-
-				getMeshByName( x.name ).position.add( extras.starterPos )
-
-			}
-			extras.objects.add( getMeshByName( x.name ) )
-
-		}
-		getMeshByName( x.name ).children.forEach( castShadow );
-
-		function castShadow( c ) {
-			if ( extras.castShadow ) {
-
-				c.castShadow = true
-
-			}
-			if ( extras.receiveShadow ) {
-
-				c.receiveShadow = true
-
-			}
-			c.children.forEach( castShadow );
-		}
-		createBaseObj3dListeners( x, extras );
-		if ( extras.onload ) {
-
-			extras.onload( threeObject );
-
-		}
-		if ( x.onload ) {
-
-			x.onload( threeObject );
-
-		}
-		if ( getMeshByName( x.name ).children.length === 1 && extras.noPhysics ) {
-
-			getMeshByName( x.name ) = getMeshByName( x.name ).children[0];
-
-		}
-		//animations
-		if ( extras.fileType.toLowerCase() === "gltf" && object.animations && object.animations.length ) {
-
-			x.animations = [];
-			if ( extras.starterPos ) {
-
-				getMeshByName( x.name ).position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z);
-				object.scene.position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z);
-
-			}
-			for ( var i in object.animations ) {
-				var mixer = new THREE.AnimationMixer( getMeshByName( x.name ) );
-				var animation = {
-					action: mixer.clipAction( object.animations[i] ),
-					play: function ( animatingObjects = [] ) {
-						if ( !this.action.paused ) {
-
-							return
-
-						}
-						animatingObjects.forEach( function ( obj, i ) {
-							animatingObjects[ i ] = getMeshByName( obj.name )
-						} )
-						this.action.clampWhenFinished = true;
-						this.action.enable = true;
-						this.action.stop();
-						this.action.reset();
-						this.action.play();
-						var frame = 0,
-							action = this.action,
-							animation = setInterval( function () {
-								if ( action.paused ) {
-
-									action.stop();
-									action.reset();
-									clearInterval(animation);
-									action.paused = true;
-									return;
-
-								}
-								mixer.update( frame += 0.005 );
-								getMeshByName( x.name ).children.forEach( function ( object ) {
-									if ( animatingObjects.indexOf(object) > -1 ) {
-
-										object.position.add(extras.starterPos);
-
-									}
-									object.__dirtyPosition = true;
-									object.__dirtyRotation = true;
-								} );
-							}, 16 )
-					}
-				}
-				animation.action.paused = true;
-				x.animations[i] = animation;
-			}
-
-		}
-	}
-	//creates the object
-	this.x = ( extras.x || 0 );
-	this.y = ( extras.y || 0 );
-	this.z = ( extras.z || 0 );
-	this.smoothShading = false;
-	this.castShadow = ( extras.castShadow || true );
-	this.receiveShadow = ( extras.receiveShadow || false );
-}
-//compatability
-protonjs.importObj = function ( objects, objPath, mtlPath, extras = {} ) {
-	var b = {
-		fileType: "obj",
-		objects: objects,
-		objPath: objPath,
-		mtlPath: mtlPath
-	};
-	for ( var i in extras ) {
-		b[i] = extras[i];
-	}
-	return new protonjs.importObject( b );
-}
-/*
-	loc:9.5
-*/
-protonjs.sky = function ( extras = {} ) {
-	extras = extras || {};
-	var x = this;
-	this.mesh = new THREE.Sky();
-	this.mesh.skipMaterialReplacement = true;
-	this.mesh.scale.setScalar( 450000 );
-	this.mesh.material.uniforms = {
-		"luminance": {
-			value: 1
-		},
-		"turbidity": {
-			value: 10
-		},
-		"rayleigh": {
-			value: 2
-		},
-		"mieCoefficient": {
-			value: 0.005
-		},
-		"mieDirectionalG": {
-			value: 0.8
-		},
-		"sunPosition": {
-			value: new THREE.Vector3( 10, 10, 10 )
-		}
-	}
-	for ( var i in this.mesh.material.uniforms ) {
-		this[i] = this.mesh.material.uniforms[i].value
-		//set the listeners
-		if ( i != "sunPosition" ) {
-
-			this.watch( i, function ( id, oldval, newval ) {
-				this.mesh.material.uniforms[id].value = newval;
-			} );
-
-		}
-	}
-	for ( var i in extras ) {
-		//set the value
-		if ( this.mesh.material.uniforms[i] ) {
-
-			this[i] = extras[i];
-			this.mesh.material.uniforms[i] = extras[i];
-
-		}
-	}
-	if ( extras.sun ) {
-
-		//
-		this.sun = extras.sun;
-		this.sun.mesh.position.set(
-			this.sunPosition.x,
-			this.sunPosition.y,
-			this.sunPosition.z
-		);
-		this.sun.x = this.sun.mesh.position.x
-		this.sun.y = this.sun.mesh.position.y
-		this.sun.z = this.sun.mesh.position.z
-		this.sun.mesh.__dirtyPosition = true;
-		//
-		this.watch( "sunPosition", function ( id, oldval, newval ) {
-			this.mesh.material.uniforms[id].value = newval;
-			//
-			this.sun.mesh.position.set(
-				newval.x,
-				newval.y,
-				newval.z
-			);
-			this.sun.x = newval.x;
-			this.sun.y = newval.y;
-			this.sun.z = newval.z;
-			this.sun.mesh.__dirtyPosition = true;
-		} );
-
-	}
-}
-/*
-	loc:9.6
+	loc:9.1
 	tools
 */
 protonjs.crosshair = function ( crosshair ) {
@@ -3640,227 +2700,9 @@ protonjs.rotateVector3 = function ( axis, angle, vector, normalize, cancelAutoAn
 	return vector;
 }
 /*
-	loc:9.7
-	changing geometries of meshes
+	loc:9.2
+	Proton3DObject
 */
-protonjs.__changeMeshGeometry = function( obj, extras = {} ) {
-	switch( extras.type.toLowerCase() ) {
-		case "sphere":
-			var geoParameters = ( obj || {
-				radius: ( extras.radius || 1 ),
-				widthSegments: ( extras.sphereSegments || 100 ),
-				heightSegments: ( extras.sphereSegments || 100 ),
-				depthSegments: ( extras.sphereSegments || 100 )
-			} );
-			if ( extras.sphereSegments ) {
-
-				geoParameters.widthSegments = extras.sphereSegments;
-				geoParameters.heightSegments = extras.sphereSegments;
-				geoParameters.depthSegments = extras.sphereSegments;
-
-			}
-			if ( obj && obj.sphereSegments ) {
-
-				geoParameters.widthSegments = obj.sphereSegments;
-				geoParameters.heightSegments = obj.sphereSegments;
-				geoParameters.depthSegments = obj.sphereSegments;
-
-			}
-			//finish the function (  important  )
-			var geometry = new THREE.SphereGeometry( geoParameters.radius, geoParameters.widthSegments, geoParameters.heightSegments, geoParameters.depthSegments );
-			if ( extras.useBufferGeometry ) {
-
-				geometry = new THREE.SphereBufferGeometry( geoParameters.radius, geoParameters.widthSegments, geoParameters.heightSegments, geoParameters.depthSegments );
-
-			}
-			//
-			return {
-				geometry: geometry,
-				parameters: geoParameters
-			}
-
-		case "cylinder":
-			var geoParameters = ( obj || {
-				radiusTop: ( extras.radiusTop || 1 ),
-				radiusBottom: ( extras.radiusBottom || 1 ),
-				radialSegments: ( extras.cylinderSegments || 100 ),
-				heightSegments: ( extras.cylinderSegments || 100 ),
-				height: ( extras.height || 1 )
-			} );
-			for ( var i in extras ) {
-				if ( geoParameters[i] ) {
-
-					geoParameters[i] = extras[i]
-
-				}
-			}
-			if ( extras.cylinderSegments ) {
-
-				geoParameters.radialSegments = extras.cylinderSegments;
-				geoParameters.heightSegments = extras.cylinderSegments;
-
-			}
-			if ( obj && obj.cylinderSegments ) {
-
-				geoParameters.radialSegments = obj.cylinderSegments;
-				geoParameters.heightSegments = obj.cylinderSegments;
-
-			}
-			//finish the function (  important  )
-			var geometry = new THREE.CylinderGeometry( geoParameters.radiusTop, geoParameters.radiusBottom, geoParameters.height, geoParameters.radialSegments, geoParameters.heightSegments );
-			if ( !extras.useBufferGeometry ) {
-
-				geometry = new THREE.CylinderBufferGeometry( geoParameters.radiusTop, geoParameters.radiusBottom, geoParameters.height, geoParameters.radialSegments, geoParameters.heightSegments );
-
-			}
-			//
-			return {
-				geometry: geometry,
-				parameters: geoParameters
-			}
-
-		case "cube":
-			var geoParameters = ( obj || {
-				width: ( extras.width || 1 ),
-				height: ( extras.height || 1 ),
-				depth: ( extras.depth || 1 ),
-				widthSegments: extras.wireframeSegments,
-				heightSegments: extras.wireframeSegments,
-				depthSegments: extras.wireframeSegments
-			} );
-			if ( extras.wireframeSegments ) {
-
-				geoParameters.widthSegments = extras.wireframeSegments;
-				geoParameters.heightSegments = extras.wireframeSegments;
-				geoParameters.depthSegments = extras.wireframeSegments;
-
-			}
-			if ( obj && obj.wireframeSegments ) {
-
-				geoParameters.widthSegments = obj.wireframeSegments;
-				geoParameters.heightSegments = obj.wireframeSegments;
-				geoParameters.depthSegments = obj.wireframeSegments;
-
-			}
-			//finish the function (  important  )
-			var geometry = new THREE.BoxGeometry( geoParameters.width, geoParameters.height, geoParameters.depth, geoParameters.widthSegments, geoParameters.heightSegments, geoParameters.depthSegments );
-			if ( extras.useBufferGeometry ) {
-
-				geometry = new THREE.BoxBufferGeometry( geoParameters.width, geoParameters.height, geoParameters.depth, geoParameters.widthSegments, geoParameters.heightSegments, geoParameters.depthSegments );
-
-			}
-			//
-			return {
-				geometry: geometry,
-				parameters: geoParameters
-			}
-	}
-}
-
-
-var proton3d;
-
-function runWorkerFunction(fn, scene){
-	var msgArray = {
-			type: "function",
-			paused: protonjs.paused
-		}
-	for ( var i in scene ) {
-		if ( typeof scene[ i ] != "object" && typeof scene[ i ] != "function" ) {
-
-			msgArray[ i ] = scene[ i ]
-
-		}
-	}
-	switch ( fn ) {
-
-		case "createCube":
-			msgArray.function = "createCube";
-			msgArray.params = [
-				"name",
-				"width",
-				"height",
-				"depth",
-				"segments",
-				"mass"
-			]
-			break;
-
-		case "createSphere":
-			msgArray.function = "createSphere";
-			msgArray.params = [
-				"name",
-				"radius",
-				"segments",
-				"mass"
-			]
-			break;
-
-		case "createCylinder":
-			msgArray.function = "createCylinder";
-			msgArray.params = [
-				"name",
-				"radiusTop",
-				"radiusBottom",
-				"height",
-				"segments",
-				"mass"
-			]
-			break;
-
-		case "createLight":
-			msgArray.function = "createLight";
-			msgArray.params = [
-				"name",
-				"intensity",
-				"type",
-				"color"
-			]
-			break;
-
-	}
-	console.log( "before", msgArray );
-	proton3d.postMessage( msgArray );
-	function messageListener ( msg ) {
-		if ( msg.data.type === "return" ) {
-
-			if ( msg.data.paused != protonjs.paused ) {
-
-				if ( protonjs.paused ) {
-
-					protonjs.resume()
-
-				} else {
-
-					protonjs.pause()
-
-				}
-
-			}
-
-			for ( var i in msg.data ) {
-				if ( scene[ i ] != null ) {
-
-					scene[ i ] = msg.data[ i ]
-
-				}
-			}
-
-			console.log(msg.data);
-			proton3d.removeEventListener( "message", messageListener );
-			return msg.data.return;
-
-		}
-	}
-	return proton3d.addEventListener( "message", messageListener )
-}
-protonjs.init3d = function ( worker, domBridge ) {
-	document.writeln( '<script src=' + domBridge + '></script>' );
-	proton3d = new Worker( worker );
-}
-
-
-
 var genericMeshNameInstances = 0
 var genericMaterialNameInstances = 0
 class Proton3DObject {
@@ -4122,6 +2964,10 @@ class Proton3DObject {
 		return Proton3DInterpreter.Proton3DObject.remove( object, this )
 	}
 }
+/*
+	loc:9.3
+	Proton3DMaterial
+*/
 class Proton3DMaterial {
 	constructor( parentObject, extras ) {
 		//names the material
@@ -4142,32 +2988,8 @@ class Proton3DMaterial {
 			this.name = extras.name
 
 		}
-		//creates a material
-		if ( !extras.material ) {
-
-			var material = new THREE.MeshStandardMaterial()
-			material.name = this.name;
-			material.transparent = true;
-			materials.push( material )
-		//	parentObject.material = material;
-
-		} else {
-
-			extras.material.name = this.name;
-			extras.material.transparent = true;
-			materials.push( extras.material )
-			if ( extras.materialLocation != undefined || extras.materialLocation != null ) {
-
-				parentObject.material[ extras.materialLocation ] = extras.material
-				console.log("test", parentObject.material[ extras.materialLocation ] === extras.material)
-
-			} else {
-
-				parentObject.material = extras.material;
-
-			}
-
-		}
+		//creates the material
+		Proton3DInterpreter.create3DMaterial( extras, this, parentObject )
 		//accessors
 		Object.defineProperty( this, "color", {
 			get: function() {
@@ -4228,61 +3050,55 @@ class Proton3DMaterial {
 		//done!
 	}
 	setEmmisiveColor( color ) {
-		getMaterialByName( this.name ).emmisive = new THREE.Color( color )
+		return Proton3DInterpreter.Proton3DMaterial.setEmmisiveColor( color, this )
 	}
 	getEmmisiveColor() {
-		return getMaterialByName( this.name ).emmisive.getStyle()
+		return Proton3DInterpreter.Proton3DMaterial.getEmmisiveColor( this )
 	}
 	setWireframe( value ) {
-		getMaterialByName( this.name ).wireframeIntensity = value
+		return Proton3DInterpreter.Proton3DMaterial.setWireframe( value, this )
 	}
 	getWireframe() {
-		return getMaterialByName( this.name ).wireframeIntensity
+		return Proton3DInterpreter.Proton3DMaterial.getWireframe( this )
 	}
 	setEmmisive( value ) {
-		getMaterialByName( this.name ).emmisiveIntensity = value
+		return Proton3DInterpreter.Proton3DMaterial.setEmmisive( value, this )
 	}
 	getEmmisive() {
-		return getMaterialByName( this.name ).emmisiveIntensity
+		return Proton3DInterpreter.Proton3DMaterial.getEmmisive( this )
 	}
 	setColor( hexString ) {
-		getMaterialByName( this.name ).color = new THREE.Color( hexString )
+		return Proton3DInterpreter.Proton3DMaterial.setColor( hexString, this )
 	}
 	getColor() {
-		return getMaterialByName( this.name ).color.getStyle()
+		return Proton3DInterpreter.Proton3DMaterial.getColor( this )
 	}
 	setRoughness( value ) {
-		getMaterialByName( this.name ).roughness = value
+		return Proton3DInterpreter.Proton3DMaterial.setRoughness( value, this )
 	}
 	setMetalness( value ) {
-		getMaterialByName( this.name ).metalness = value
+		return Proton3DInterpreter.Proton3DMaterial.setMetalness( value, this )
 	}
 	getRoughness( value ) {
-		return getMaterialByName( this.name ).roughness
+		return Proton3DInterpreter.Proton3DMaterial.getRoughness( value, this )
 	}
 	getMetalness( value ) {
-		return getMaterialByName( this.name ).metalness
+		return Proton3DInterpreter.Proton3DMaterial.getMetalness( value, this )
 	}
 	setOpacity( value ) {
-		getMaterialByName( this.name ).opacity = value
+		return Proton3DInterpreter.Proton3DMaterial.setOpacity( value, this )
 	}
 	getOpacity() {
-		return getMaterialByName( this.name ).opacity
+		return Proton3DInterpreter.Proton3DMaterial.getOpacity( this )
 	}
 	makeTransparent( value ) {
-		/*
-		materials.splice( materials.indexOf( getMaterialByName( this.name ) ), 1 )
-		var material = new THREE.MeshStandardMaterial()
-		material.name = this.name;
-		material.transparent = true;
-		materials.push( material );
-		*/
-		//
-		this.setOpacity( 0.001 );
-		getMaterialByName( this.name ).depthWrite = false
+		return Proton3DInterpreter.Proton3DMaterial.makeTransparent( value, this )
 	}
 }
-
+/*
+	loc:9.4
+	Proton3DInterpreter
+*/
 var meshes = []
 var materials = []
 function getMeshByName ( name ) {
@@ -4295,43 +3111,6 @@ function getMaterialByName ( name ) {
 		return x.name === name
 	} )
 }
-/*
-function createMesh( mesh, name ){
-	mesh.name = name;
-	meshes.push( mesh )
-	return mesh;
-}
-function createCube( name, width, height, depth, segments, mass ) {
-	var material = new THREE.MeshStandardMaterial(),
-		geometry = new THREE.BoxGeometry( width, height, depth, segments, segments, segments ),
-		cube = new Physijs.BoxMesh(
-			geometry,
-			material,
-			mass
-		);
-	return createMesh( cube, name );
-}
-function createSphere( name, radius, segments, mass ) {
-	var material = new THREE.MeshStandardMaterial(),
-		geometry = new THREE.SphereGeometry( radius, segments, segments ),
-		sphere = new Physijs.SphereMesh(
-			geometry,
-			material,
-			mass
-		);
-	return createMesh( sphere, name );
-}
-function createCylinder( name, radiusTop, radiusBottom, height, segments, mass ) {
-	var material = new THREE.MeshStandardMaterial(),
-		geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, segments, segments  ),
-		sphere = new Physijs.CylinderMesh(
-			geometry,
-			material,
-			mass
-		);
-	return createMesh( sphere, name );
-}
-*/
 //\\//\\//\\//\\//\\//\\//\\//\\//\\// //
 //\\ Proton3DInterpreter						 / //
 //\\ (the star of the Proton3D show) / // loc:10 - 10.9
@@ -4804,42 +3583,41 @@ const Proton3DInterpreter = {
 				if ( extras.noPhysics ) {
 
 					cube = new THREE.Mesh(
-						protonjs.__changeMeshGeometry( null, extras ).geometry,
-						protonjs.__changeMeshMaterial( extras ).material
+						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
+						Proton3DInterpreter.createMeshMaterial( extras ).material
 					)
 
 				} else {
 
 					cube = new Physijs.BoxMesh(
-						protonjs.__changeMeshGeometry( null, extras ).geometry,
-						protonjs.__changeMeshMaterial( extras ).material,
+						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
+						Proton3DInterpreter.createMeshMaterial( extras ).material,
 						( extras.mass || 0 )
 					)
 
 				}
 				cube.name = object.name;
 				meshes.push( cube );
-				//creates an array
+				//cube stuff
 				console.log(object)
 				object.width = extras.width || 1;
 				object.height = extras.height || 1;
 				object.depth = extras.depth || 1;
 				console.log(object.width);
-				//creates listeners for each array
-				createBaseObj3dListeners( object, extras );
+				//c u b e s t u f f
 				var obj = object;
 				//geometry
 				object.watch( "width", function ( id, oldval, newval ) {
 					obj._width = newval;
-					protonjs.__changeMeshGeometry( obj, obj, object.name );
+					Proton3DInterpreter.createMeshGeometry( obj, obj, object.name );
 				} );
 				object.watch( "height", function ( id, oldval, newval ) {
 					obj._height = newval;
-					protonjs.__changeMeshGeometry( obj, obj, object.name );
+					Proton3DInterpreter.createMeshGeometry( obj, obj, object.name );
 				} );
 				object.watch( "depth", function ( id, oldval, newval ) {
 					obj._depth = newval;
-					protonjs.__changeMeshGeometry( obj, obj, object.name );
+					Proton3DInterpreter.createMeshGeometry( obj, obj, object.name );
 				} );
 				//
 				for ( var i in extras ) {
@@ -4859,15 +3637,15 @@ const Proton3DInterpreter = {
 				if ( extras.noPhysics ) {
 
 					sphere = new THREE.Mesh(
-						protonjs.__changeMeshGeometry( null, extras ).geometry,
-						protonjs.__changeMeshMaterial( extras ).material
+						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
+						Proton3DInterpreter.createMeshMaterial( extras ).material
 					)
 
 				} else {
 
 					sphere = new Physijs.SphereMesh(
-						protonjs.__changeMeshGeometry( null, extras ).geometry,
-						protonjs.__changeMeshMaterial( extras ).material,
+						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
+						Proton3DInterpreter.createMeshMaterial( extras ).material,
 						( extras.mass || 0 )
 					)
 
@@ -4878,7 +3656,6 @@ const Proton3DInterpreter = {
 				object.radius = 1;
 				//adds listeners for each property
 				var obj = object;
-				createBaseObj3dListeners( object, extras );
 				//geometry
 				object.watch( "radius", function ( id, oldval, newval ) {
 					obj._radius = newval;
@@ -4902,15 +3679,15 @@ const Proton3DInterpreter = {
 				if ( extras.noPhysics ) {
 
 					cylinder = new THREE.Mesh(
-						protonjs.__changeMeshGeometry( null, extras ).geometry,
-						protonjs.__changeMeshMaterial( extras ).material
+						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
+						Proton3DInterpreter.createMeshMaterial( extras ).material
 					)
 
 				} else {
 
 					new Physijs.CylinderMesh(
-						protonjs.__changeMeshGeometry( null, extras ).geometry,
-						protonjs.__changeMeshMaterial( extras ).material,
+						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
+						Proton3DInterpreter.createMeshMaterial( extras ).material,
 						( extras.mass || 0 )
 					);
 
@@ -4923,19 +3700,18 @@ const Proton3DInterpreter = {
 				object.height = 1;
 				//creates listeners for each value
 				var obj = object;
-				createBaseObj3dListeners( object, extras );
 				//
 				object.watch( "radiusTop", function ( id, oldval, newval ) {
 					obj._radiusTop = newval;
-					protonjs.__changeMeshGeometry( obj );
+					Proton3DInterpreter.createMeshGeometry( obj );
 				} );
 				object.watch( "radiusBottom", function ( id, oldval, newval ) {
 					obj._radiusTop = newval;
-					protonjs.__changeMeshGeometry( obj );
+					Proton3DInterpreter.createMeshGeometry( obj );
 				} );
 				object.watch( "height", function ( id, oldval, newval ) {
 					obj._height = newval;
-					protonjs.__changeMeshGeometry( obj );
+					Proton3DInterpreter.createMeshGeometry( obj );
 				} );
 				//
 				for ( var i in extras ) {
@@ -5536,7 +4312,6 @@ const Proton3DInterpreter = {
 				}
 				c.children.forEach( castShadow );
 			}
-		//	createBaseObj3dListeners( x, extras );
 			//animations
 			if ( extras.fileType.toLowerCase() === "gltf" && object.animations && object.animations.length ) {
 
@@ -5612,6 +4387,528 @@ const Proton3DInterpreter = {
 
 				x.onload( threeObject );
 
+			}
+		}
+	},
+
+	//creating and modifing Proton3DMaterials -- loc:10.3
+	create3DMaterial( extras, P3DMaterial, parentObject ){
+		if ( !extras.material ) {
+
+			var material = new THREE.MeshStandardMaterial()
+			material.name = P3DMaterial.name;
+			material.transparent = true;
+			materials.push( material )
+		//	parentObject.material = material;
+
+		} else {
+
+			extras.material.name = P3DMaterial.name;
+			extras.material.transparent = true;
+			materials.push( extras.material )
+			if ( extras.materialLocation != undefined || extras.materialLocation != null ) {
+
+				parentObject.material[ extras.materialLocation ] = extras.material
+				console.log("test", parentObject.material[ extras.materialLocation ] === extras.material)
+
+			} else {
+
+				parentObject.material = extras.material;
+
+			}
+
+		}
+	},
+	Proton3DMaterial: {
+		setEmmisiveColor( color, P3DMaterial ) {
+			getMaterialByName( P3DMaterial.name ).emmisive = new THREE.Color( color )
+		},
+		getEmmisiveColor( P3DMaterial ) {
+			return getMaterialByName( P3DMaterial.name ).emmisive.getStyle()
+		},
+		setWireframe( value, P3DMaterial ) {
+			getMaterialByName( P3DMaterial.name ).wireframeIntensity = value
+		},
+		getWireframe( P3DMaterial ) {
+			return getMaterialByName( P3DMaterialname ).wireframeIntensity
+		},
+		setEmmisive( value, P3DMaterial ) {
+			getMaterialByName( P3DMaterial.name ).emmisiveIntensity = value
+		},
+		getEmmisive( P3DMaterial ) {
+			return getMaterialByName( P3DMaterial.name ).emmisiveIntensity
+		},
+		setColor( hexString, P3DMaterial ) {
+			getMaterialByName( P3DMaterial.name ).color = new THREE.Color( hexString )
+		},
+		getColor( P3DMaterial ) {
+			return getMaterialByName( P3DMaterial.name ).color.getStyle()
+		},
+		setRoughness( value, P3DMaterial ) {
+			getMaterialByName( P3DMaterial.name ).roughness = value
+		},
+		setMetalness( value, P3DMaterial ) {
+			getMaterialByName( P3DMaterial.name ).metalness = value
+		},
+		getRoughness( value, P3DMaterial ) {
+			return getMaterialByName( P3DMaterial.name ).roughness
+		},
+		getMetalness( value, P3DMaterial ) {
+			return getMaterialByName( P3DMaterial.name ).metalness
+		},
+		setOpacity( value, P3DMaterial ) {
+			getMaterialByName( P3DMaterial.name ).opacity = value
+		},
+		getOpacity( P3DMaterial ) {
+			return getMaterialByName( P3DMaterial.name ).opacity
+		},
+		makeTransparent( value, P3DMaterial ) {
+			/*
+			materials.splice( materials.indexOf( getMaterialByName( this.name ) ), 1 )
+			var material = new THREE.MeshStandardMaterial()
+			material.name = this.name;
+			material.transparent = true;
+			materials.push( material );
+			*/
+			//
+			getMaterialByName( P3DMaterial.name ).opacity = 0.001;
+			getMaterialByName( P3DMaterial.name ).depthWrite = false
+		}
+	},
+
+	//some proton.js functions -- loc:10.4
+	toggleDoor( door, P3DScene ){
+		if ( !door.checkForEnding ) {
+
+			door.isOpen = toggle( door.isOpen );
+			var checkForRotations = P3DScene.priorityExtraFunctions.push(function(){
+				if ( Math.abs( parseInt( angle( door.rotation.y - door.initialRotation ) ) -  parseInt( angle( door.oldRotation - door.initialRotation ) ) ) > 5 ) {
+
+					P3DScene.priorityExtraFunctions.splice( checkForRotations - 1, 1 );
+					door.checkForEnding = function () {
+						var rotation = door.rotation.clone().y;
+						if ( parseInt( angle( door.rotation.y - door.initialRotation ) ) <= 2 && parseInt( angle( door.rotation.y - door.initialRotation ) ) >= -2 ||
+							door.position.distanceTo( door.initialPosition ) < 0.1 ) {
+							//
+							if( parseInt( angle( door.rotation.y ) ) < 2 && parseInt( angle( door.rotation.y ) ) > -2 ) {
+
+								rotation = radian(0.1);
+
+							}
+							if ( parseInt( angle( door.rotation.y - door.initialRotation ) ) <= 91 && parseInt( angle( door.rotation.y - door.initialRotation ) ) >= 89 ||
+
+								parseInt( angle( door.rotation.y - door.initialRotation)) <= -89 && parseInt( angle( door.rotation.y - door.initialRotation ) ) >= -91 ) {
+
+							}
+							//
+							door.oldRotation = door.rotation.y;
+							P3DScene.priorityExtraFunctions.splice( x.priorityExtraFunctions.indexOf( door.checkForEnding ), 1 );
+							door.checkForEnding = null;
+							door.opening = false;
+							//
+							door.setLinearVelocity( 0, 0, 0 );
+							door.setLinearFactor( 0, 0, 0 );
+							door.setAngularVelocity( 0, 0, 0 );
+							door.setAngularFactor( 0, 0, 0 );
+							door.setRotation( undefined, rotation, undefined );
+							return;
+
+						}
+					}
+					P3DScene.priorityExtraFunctions.push( door.checkForEnding );
+
+				}
+			});
+
+		}
+		door.setAngularFactor( 1, 1, 1 );
+		door.setLinearFactor( 1, 1, 1 );
+		//
+		door.setLinearVelocity( 0.5, 0.5, 0.5 );
+		door.applyImpulse(
+			door.openingVelocity.clone().multiply( door.open ? new THREE.Vector3( 1, 1, 1 ) :  new THREE.Vector3( -1, -1, -1 ) ),
+			door.position.clone().sub( door.initialPosition )
+		);
+	},
+	makeDoor( door, width = door.width || 2.5, faceInwards = true, P3DScene ) {
+		//
+		door.open = true;
+		//
+		door.initialRotation = door.getRotation().y;
+		door.initialPosition = door.getPosition().clone();
+		door.oldRotation = door.getRotation().y;
+		door.setAngularFactor( 0, 0, 0 );
+		door.isOpen = false;
+		door.openable = true;
+		door.pickupDistance = 4;
+		door.setOnUse( function () {
+
+			if( door.openable ) {
+				Proton3DInterpreter.toggleDoor( door, P3DScene )
+			}
+
+		} );
+		door.setPickup( true, true );
+		//gets (and rotates) the door's contraint's position
+		var vector = new THREE.Vector3( ( width / 2 ), -1, 0 );
+		vector = protonjs.rotateVector3(
+			new THREE.Vector3( 0, 1, 0 ),
+			door.getRotation().y,
+			vector,
+			false,
+			true
+		);
+		vector = protonjs.rotateVector3(
+			new THREE.Vector3( 1, 0, 0 ),
+			door.getRotation().x,
+			vector,
+			false,
+			true
+		);
+		vector = protonjs.rotateVector3(
+			new THREE.Vector3( 0, 0, 1 ),
+			door.getRotation().z,
+			vector,
+			false,
+			true
+		).add( door.getPosition() );
+		//gets the "opening velocity" (see line 2722 in toggleDoor for more info)
+		door.getOpeningVelocity = function ( velocity = new THREE.Vector3( 1, 1, 1 ), addExtraStuff = true ) {
+			velocity = protonjs.rotateVector3(
+				new THREE.Vector3( 1, 0, 0 ),
+				door.getRotation().x,
+				velocity,
+				false,
+				true
+			);
+			velocity = protonjs.rotateVector3(
+				new THREE.Vector3( 0, 0, 1 ),
+				door.getRotation().z,
+				velocity,
+				false,
+				true
+			);
+			return addExtraStuff ? velocity.multiply( door.isOpen ? new THREE.Vector3( 1, 1, 1 ) :  new THREE.Vector3( -1, -1, -1 ) ) : velocity
+		}
+		door.openingVelocity = door.getOpeningVelocity( faceInwards? new THREE.Vector3( 1, 1, 1 ) : new THREE.Vector3( -1, -1, -1 ), false )
+		//
+		door.constraint = new Physijs.HingeConstraint(
+			getMeshByName( door.name ),
+			vector,
+			new THREE.Vector3( 0, 1, 0 )
+		);
+		Proton3DInterpreter.objects.addConstraint( door.constraint );
+		door.constraint.setLimits(
+			faceInwards? ( radian( 0 ) + door.getRotation().y ) : ( radian( -90 ) + door.getRotation().y ),
+			faceInwards? ( radian( 90 ) + door.getRotation().y ) : ( radian( 0 ) + door.getRotation().y ),
+			10,
+			0.1
+		);
+		door.constraint.enableAngularMotor( new THREE.Vector3( 0, 1, 0 ), new THREE.Vector3( 0, 0.5, 0 ) );
+		door.constraint.disableMotor();
+	},
+
+
+	//changing mesh geometry n' materials loc:10.4
+	createMeshGeometry( obj, extras = {} ) {
+		switch( extras.type.toLowerCase() ) {
+			case "sphere":
+				var geoParameters = ( obj || {
+					radius: ( extras.radius || 1 ),
+					widthSegments: ( extras.sphereSegments || 100 ),
+					heightSegments: ( extras.sphereSegments || 100 ),
+					depthSegments: ( extras.sphereSegments || 100 )
+				} );
+				if ( extras.sphereSegments ) {
+
+					geoParameters.widthSegments = extras.sphereSegments;
+					geoParameters.heightSegments = extras.sphereSegments;
+					geoParameters.depthSegments = extras.sphereSegments;
+
+				}
+				if ( obj && obj.sphereSegments ) {
+
+					geoParameters.widthSegments = obj.sphereSegments;
+					geoParameters.heightSegments = obj.sphereSegments;
+					geoParameters.depthSegments = obj.sphereSegments;
+
+				}
+				//finish the function (  important  )
+				var geometry = new THREE.SphereGeometry( geoParameters.radius, geoParameters.widthSegments, geoParameters.heightSegments, geoParameters.depthSegments );
+				if ( extras.useBufferGeometry ) {
+
+					geometry = new THREE.SphereBufferGeometry( geoParameters.radius, geoParameters.widthSegments, geoParameters.heightSegments, geoParameters.depthSegments );
+
+				}
+				//
+				return {
+					geometry: geometry,
+					parameters: geoParameters
+				}
+
+			case "cylinder":
+				var geoParameters = ( obj || {
+					radiusTop: ( extras.radiusTop || 1 ),
+					radiusBottom: ( extras.radiusBottom || 1 ),
+					radialSegments: ( extras.cylinderSegments || 100 ),
+					heightSegments: ( extras.cylinderSegments || 100 ),
+					height: ( extras.height || 1 )
+				} );
+				for ( var i in extras ) {
+					if ( geoParameters[i] ) {
+
+						geoParameters[i] = extras[i]
+
+					}
+				}
+				if ( extras.cylinderSegments ) {
+
+					geoParameters.radialSegments = extras.cylinderSegments;
+					geoParameters.heightSegments = extras.cylinderSegments;
+
+				}
+				if ( obj && obj.cylinderSegments ) {
+
+					geoParameters.radialSegments = obj.cylinderSegments;
+					geoParameters.heightSegments = obj.cylinderSegments;
+
+				}
+				//finish the function (  important  )
+				var geometry = new THREE.CylinderGeometry( geoParameters.radiusTop, geoParameters.radiusBottom, geoParameters.height, geoParameters.radialSegments, geoParameters.heightSegments );
+				if ( !extras.useBufferGeometry ) {
+
+					geometry = new THREE.CylinderBufferGeometry( geoParameters.radiusTop, geoParameters.radiusBottom, geoParameters.height, geoParameters.radialSegments, geoParameters.heightSegments );
+
+				}
+				//
+				return {
+					geometry: geometry,
+					parameters: geoParameters
+				}
+
+			case "cube":
+				var geoParameters = ( obj || {
+					width: ( extras.width || 1 ),
+					height: ( extras.height || 1 ),
+					depth: ( extras.depth || 1 ),
+					widthSegments: extras.wireframeSegments,
+					heightSegments: extras.wireframeSegments,
+					depthSegments: extras.wireframeSegments
+				} );
+				if ( extras.wireframeSegments ) {
+
+					geoParameters.widthSegments = extras.wireframeSegments;
+					geoParameters.heightSegments = extras.wireframeSegments;
+					geoParameters.depthSegments = extras.wireframeSegments;
+
+				}
+				if ( obj && obj.wireframeSegments ) {
+
+					geoParameters.widthSegments = obj.wireframeSegments;
+					geoParameters.heightSegments = obj.wireframeSegments;
+					geoParameters.depthSegments = obj.wireframeSegments;
+
+				}
+				//finish the function (  important  )
+				var geometry = new THREE.BoxGeometry( geoParameters.width, geoParameters.height, geoParameters.depth, geoParameters.widthSegments, geoParameters.heightSegments, geoParameters.depthSegments );
+				if ( extras.useBufferGeometry ) {
+
+					geometry = new THREE.BoxBufferGeometry( geoParameters.width, geoParameters.height, geoParameters.depth, geoParameters.widthSegments, geoParameters.heightSegments, geoParameters.depthSegments );
+
+				}
+				//
+				return {
+					geometry: geometry,
+					parameters: geoParameters
+				}
+		}
+	},
+	createMeshMaterial( extras = {} ) {
+		extras = extras || {};
+		var materialParameters = {
+			color: new THREE.Color( extras.color || "#fff" ),
+			map: null,
+			wireframe: ( extras.wireframe || false )
+		}
+		if ( extras.bumpMap ) {
+
+			var bump = new THREE.TextureLoader( extras.loadManager ).load( extras.bumpMap );
+			bump.wrapS = THREE.RepeatWrapping;
+			bump.wrapT = THREE.RepeatWrapping;
+			bump.repeat.set( ( extras.bumpMapRepeat || 1 ), ( extras.bumpMapRepeat || 1 ) );
+			if ( extras.pixelatedBumpMap ) {
+
+				bump.magFilter = THREE.NearestFilter;
+				bump.minFilter = THREE.LinearMipMapLinearFilter;
+
+			}
+			materialParameters.bumpMap = bump
+
+		}
+		if ( extras.normalMap ) {
+
+			var normal = new THREE.TextureLoader( extras.loadManager ).load( extras.normalMap );
+			normal.wrapS = THREE.RepeatWrapping;
+			normal.wrapT = THREE.RepeatWrapping;
+			normal.repeat.set( ( extras.normalMapRepeat || 1 ), ( extras.normalMapRepeat || 1 ) );
+			if ( extras.pixelatedNormalMap ) {
+
+				normal.magFilter = THREE.NearestFilter;
+				normal.minFilter = THREE.LinearMipMapLinearFilter;
+
+			}
+			materialParameters.normalMap = normal
+
+		}
+		if ( extras.roughnessMap ) {
+
+			var rough = new THREE.TextureLoader( extras.loadManager ).load( extras.roughnessMap );
+			rough.wrapS = THREE.RepeatWrapping;
+			rough.wrapT = THREE.RepeatWrapping;
+			rough.repeat.set( ( extras.roughMapRepeat || 1 ), ( extras.roughMapRepeat || 1 ) );
+			if ( extras.pixelatedRoughMap ) {
+				rough.magFilter = THREE.NearestFilter;
+				rough.minFilter = THREE.LinearMipMapLinearFilter;
+			}
+			materialParameters.roughnessMap = rough;
+
+		}
+		if ( extras.displacementMap ) {
+
+			var displacement = new THREE.TextureLoader( extras.loadManager ).load( extras.displacementMap );
+			displacement.wrapS = THREE.RepeatWrapping;
+			displacement.wrapT = THREE.RepeatWrapping;
+			displacement.repeat.set( ( extras.displacementMapRepeat || 1 ), ( extras.displacementMapRepeat || 1 ) );
+			if ( extras.pixelatedDisplacementMap ) {
+
+				displacement.magFilter = THREE.NearestFilter;
+				displacement.minFilter = THREE.LinearMipMapLinearFilter;
+
+			}
+			materialParameters.displacementMap = displacement;
+
+		}
+		if ( extras.texture ) {
+
+			var texture = new THREE.TextureLoader( extras.loadManager ).load( extras.texture );
+			texture.wrapS = THREE.RepeatWrapping;
+			texture.wrapT = THREE.RepeatWrapping;
+			texture.repeat.set( ( extras.textureRepeat || 1 ), ( extras.textureRepeat || 1 ) );
+			if ( extras.pixelatedTexture ) {
+
+				texture.magFilter = THREE.NearestFilter;
+				texture.minFilter = THREE.LinearMipMapLinearFilter;
+
+			}
+			materialParameters.map = texture;
+
+		}
+		//finish the function (  important  )
+		var material;
+		switch ( extras.materialType ) {
+
+			case "standard":
+
+				material = Physijs.createMaterial(
+					new THREE.MeshStandardMaterial( materialParameters )
+				);
+				return finish( extras );
+				break;
+
+			case "toon":
+
+				material = Physijs.createMaterial(
+					new THREE.MeshToonMaterial( materialParameters )
+				);
+				return finish( extras );
+				break;
+
+			case "physical":
+
+				material = Physijs.createMaterial(
+					new THREE.MeshPhysicalMaterial( materialParameters )
+				);
+				return finish( extras );
+				break;
+
+			case "phong":
+
+				material = Physijs.createMaterial(
+					new THREE.MeshPhongMaterial( materialParameters )
+				);
+				return finish( extras );
+				break;
+
+			case "normal":
+
+				material = Physijs.createMaterial(
+					new THREE.MeshNormalMaterial( materialParameters )
+				);
+				return finish( extras );
+				break;
+
+			case "matcap":
+
+				material = Physijs.createMaterial(
+					new THREE.MeshMatcapMaterial( materialParameters )
+				);
+				return finish( extras );
+				break;
+
+			case "lambert":
+
+				material = Physijs.createMaterial(
+					new THREE.MeshLambertMaterial( materialParameters )
+				);
+				return finish( extras );
+				break;
+
+			case "distance":
+
+				material = Physijs.createMaterial(
+					new THREE.MeshDistanceMaterial( materialParameters )
+				);
+				return finish( extras );
+				break;
+
+			case "depth":
+
+				material = Physijs.createMaterial(
+					new THREE.MeshDepthMaterial( materialParameters )
+				);
+				return finish( extras );
+				break;
+
+			case "basic":
+
+				material = Physijs.createMaterial(
+					new THREE.MeshBasicMaterial( materialParameters )
+				);
+				return finish( extras );
+				break;
+
+			default:
+				Physijs.createMaterial(
+					new THREE.MeshLambertMaterial( materialParameters )
+				)
+				return finish( extras );
+
+		}
+
+		function finish( extras = {} ) {
+			if ( extras.mesh ) {
+
+				extras.mesh.material = material;
+				if ( extras.onmaterialupdate ) {
+
+					extras.onmaterialupdate();
+
+				}
+
+			}
+			return {
+				material: material,
+				parameters: materialParameters
 			}
 		}
 	}
