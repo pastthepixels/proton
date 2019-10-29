@@ -214,7 +214,7 @@ const CSS = {
 	"button.aperturebutton:active": [
 	  "box-shadow: 10px 0px 1px -7px #ce4b5a"
 	],
-	"button:active": [
+	"button:not(.aperturebutton):active": [
 	  "background: black",
 	  "color: white"
 	]
