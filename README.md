@@ -16,7 +16,7 @@ Make sure no other windows of the browser are open!
 Well, you're in luck because I don't really know what to put here.
 Everything is (at leased supposed to be) written in [Mr.doob's Code Style](https://github.com/mrdoob/three.js/wiki/Mr.doob's-Code-Style%E2%84%A2) (with an exclaimer in proton.js for the constant `proton`), and make sure to make your own branch(es) before changing this git.
 
-## What are the goals/disclaimers for the proton engine?
+## What are the goals/disclaimers for the Proton engine?
 - I just started moving to GitHub, so I have no idea how this thing works.
 - The Proton engine is designed to be cross-platform (or more specifically, cross-programming-language) so that developers can use the same code across different platforms and "base-engines".
 - I initially planned for this engine to use all lowercase text, but things might be looking different.
