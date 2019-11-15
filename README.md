@@ -8,8 +8,9 @@ The Proton engine is a game engine that is designed to focus on 3 things:
 proton.js -- the only version of this -- has been tested to work on Google Chrome.
 If you're using Proton3D locally on Google Chrome, you must enable the flag `--disable-web-security` with `--user-data-dir` to bypass some CORS issue that I forgot about a long time ago. On Windows 10, it would look like this:
 ```
-chrome.exe --disable-web-security --user-data-dir=./temp/
+C:\Program Files (x86)\Google\Chrome\Application\chrome.exe --disable-web-security --user-data-dir=./temp
 ```
+(where ./temp is the directory where Chrome's files will be stored)\
 Make sure no other windows of the browser are open!
 
 ## Alright! How do I contribute?
