@@ -10,7 +10,7 @@ If you're using Proton3D locally on Google Chrome, you must enable the flag `--d
 ```
 C:\Program Files (x86)\Google\Chrome\Application\chrome.exe --disable-web-security --user-data-dir=./temp
 ```
-(where ./temp is the directory where Chrome's files will be stored)\
+(where `./temp` is the directory where Chrome's files will be stored)\
 Make sure no other windows of the browser are open!
 
 ## Alright! How do I contribute?
