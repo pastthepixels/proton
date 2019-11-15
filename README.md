@@ -19,4 +19,5 @@ Everything is (at leased supposed to be) written in [Mr.doob's Code Style](https
 ## What are the goals/disclaimers for the Proton engine?
 - I just started moving to GitHub, so I have no idea how this thing works.
 - The Proton engine is designed to be cross-platform (or more specifically, cross-programming-language) so that developers can use the same code across different platforms and "base-engines".
-- I initially planned for this engine to use all lowercase text, but things might be looking different.
+- I initially planned for this engine to use all lowercase text (like three.js), but things might be looking different.
+- As of the moment, the Proton engine does not have a logo.
