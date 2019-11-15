@@ -2,7 +2,7 @@
 The Proton engine is a game engine that is designed to focus on 3 things:
 - Performance
 - Ease of use
-- Uniformity across platforms  
+- Uniformity across platforms\
 ...and is right now only developed for the web.
 # How can I just use the thing?
 proton.js -- the only version of this -- has been tested to work on Google Chrome.
