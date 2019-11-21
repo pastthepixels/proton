@@ -1,5 +1,22 @@
 "use strict";
 /*
+                                                                                                                                                    ///
+////////////////        ///////////                //////////        ////                    //////////       ////   ////////                      ///        /////////////
+   ///       ////         //////    ///////        //       //        ///                    //       //       ///////      ////                            //
+   ///        ////        ///           //       ///         ///      ///                  ///         ///       ///             ///              /////     ///
+   ///         ////       ///            /       ///         ///      ///                  ///         ///       ///             ///               ////    ///
+   ///        ////        ///                    ///         ///      ////////             ///         ///       ///             ///                ///      ///
+   /////////////          ///                    ///         ///      ///                  ///         ///       ///             ///                ///      ///////////
+   ///                    ///                    ///         ///      ///                  ///         ///       ///             ///                ///                ////
+   ///                    ///                    ///         ///      ///         //       ///         ///       ///             ///                ///                   //
+  ////                   ////                    //         //        ////      ////         //       //        ////             ///     ////       ///                 ///
+ /////                  /////                      //////////           ///////////          //////////        //////           ////     ////       ///      /////////////
+                                                                                                                                                    ///
+                                                                                                                                                    ///
+                                                                                                                                                    ///
+                                                                                                                                                    //
+                                                                                                                                        ////      ///
+																																	        ////////
 	[proton.js beta 1.0]
 	[DISCLAIMER -- I'M STILL LOOKING FOR BUGS. IF YOU SEE ONE, JUST TELL ME. I CURRENTLY HAVE NO OPEN DOCUMENT TO STORE THEM ON.]
 	[third party software]
@@ -69,7 +86,7 @@
 	way to do so is by typing this:
 	"new protonjs.square( [extras] )". Of course, there
 	are other functions like it, that also have different
-	parameters. Objects also have parameters. For examplem
+	parameters. Objects also have parameters. For example,
 	here are some:
 	{
 		x: 20 [the x of the object],
@@ -2003,15 +2020,16 @@ window.setInterval = function ( code, delay ) {
 ////////////// //
 //  misc  // //loc:8
 ////////////// //
-//still proton2d.
+//still proton2d (but some proton3d!)
 
-//get a radian from an angle
+//get a radian from an angle in degrees
 const radian = function ( angle ) {
 	return THREE.Math.degToRad( angle );
 }
-//get an angle from a radian
-const angle = function ( radians ) {
-	return THREE.Math.radToDeg( radians )
+//get an angle from a radian (or the other way around)
+const angle = function ( converto, degOrRad ) {
+	//This assumes that the variable converto is in the opposite measurement that you want to convert it to.
+	return degOrRad == "rad"? THREE.Math.degToRad( converto ) : THREE.Math.radToDeg( converto )
 }
 //create a round rectangle, courtesy of
 //https://stackoverflow.com/questions/1255512/how-to-draw-a-rounded-rectangle-on-html-canvas
@@ -2219,28 +2237,7 @@ class Proton3DScene {
 		return Proton3DInterpreter.removeFromScene( object, this )
 	}
 	dynamicResize() {
-		var x = this;
-		window.addEventListener( "resize", function () {
-			x.camera.changeAspectRatio( window.innerWidth / window.innerHeight );
-			x.renderer.setSize( window.innerWidth, window.innerHeight );
-			if ( x.composer ) {
-
-				x.composer.setSize( window.innerWidth, window.innerHeight );
-
-			}
-		} );
-	}
-	setLoadEvent( extras = {} ) {
-		this.loadManager = new THREE.LoadingManager();
-		this.loadManager.onStart = function () {
-			console.log( true );
-		}
-		this.loadManager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
-			extras.element.value = ( itemsLoaded / itemsTotal ) * 100;
-			console.log( true );
-		}
-		this.loadManager.onLoad = extras.loadCallback;
-		//
+		Proton3DInterpreter.dynamicResize( this )
 	}
 	setKeyControls( obj, speed = 2.5, jumpHeight = 4 ) {
 		var x = this;
@@ -2566,12 +2563,12 @@ class Proton3DScene {
 			}
 			if ( child.pickingUp ) {
 
-				var pos = x.crosshair.position.clone().sub( x.camera.parent.position.clone() ).clone()
+				var pos = x.crosshair.__localPosition.clone().multiply( new THREE.Vector3( 2.5, 1.5, 2.5 ) ).add( x.camera.parent.getPosition() );
 				child.mass = 0;
 				child.setPosition(
-					x.crosshair.position.x + ( pos.x * 1.5 ),
-					x.crosshair.position.y + ( pos.y * 1.5 ),
-					x.crosshair.position.z + ( pos.z * 1.5 )
+					pos.x,
+					pos.y,
+					pos.z
 				);
 				child.setRotation(0, 0, 0);
 
@@ -2599,12 +2596,27 @@ class Proton3DScene {
 				} );
 
 			}
-			if ( child.__pickupable != true ) {
+			if ( child.__pickupable != true || window.keyErrorCheck ) {
 
 				return
 
 			}
+			if ( x.keys[x.mappedKeys.use] && child.pickingUp === true ) {
+
+				child.pickingUp = false;
+				x.crosshair.show()
+				child.pickingUp = "wrapping";
+				//
+				window.keyErrorCheck = true
+				setInterval( function () { window.keyErrorCheck = false }, 500 )
+				return
+
+			}
 			if ( x.keys[x.mappedKeys.use] && x.crosshair.position.distanceTo( child.position ) <= ( child.__pickupDistance || 2 ) && child.pickingUp == null && window.pickingUpChild == undefined ) {
+
+				window.keyErrorCheck = true
+				setInterval( function () { window.keyErrorCheck = false }, 500 )
+				//
 
 				if ( child.onUse ) {
 
@@ -2627,14 +2639,6 @@ class Proton3DScene {
 				child.distance = x.crosshair.position.distanceTo( child.position );
 				child.setLinearFactor( 0, 0, 0 );
 				x.crosshair.hide()
-				return
-
-			}
-			if ( x.keys[x.mappedKeys.use] && child.pickingUp === true ) {
-
-				child.pickingUp = false;
-				x.crosshair.show()
-				child.pickingUp = "wrapping";
 
 			}
 		}
@@ -2735,39 +2739,14 @@ class Proton3DObject {
 		this.setPosition( extras.x, extras.y, extras.z )
 		this.setRotation( extras.rotationX, extras.rotationY, extras.rotationZ )
 		//if you're not going to use physics, you can get scaling!
-		if ( extras.noPhysics ) {
-
-			this.getScale = function () {
-				return getMeshByName( this.name ).scale
-			}
-			this.setScale = function ( x, y, z ) {
-				if ( x == undefined ) {
-
-					x = this.getScale().x
-
-				}
-				if ( y == undefined ) {
-
-					y = this.getScale().y
-
-				}
-				if ( z == undefined ) {
-
-					z = this.getScale().z
-
-				}
-				getMeshByName( this.name ).scale.set( x, y, z )
-			}
-			Object.defineProperty( this, "scale", {
+		Object.defineProperty( this, "scale", {
 				get: function() {
 					return this.getScale()
 				},
 				set: function( vector ) {
 					return this.setScale( vector.x, vector.y, vector.z )
 				}
-			} )
-
-		}
+		} )
 		//
 		this.position = null
 		this.rotation = null
@@ -3150,6 +3129,17 @@ const Proton3DInterpreter = {
 		//
 		return this.canvas
 	},
+	dynamicResize( scene ) {
+		window.addEventListener( "resize", function () {
+			scene.camera.changeAspectRatio( window.innerWidth / window.innerHeight );
+			Proton3DInterpreter.renderer.setSize( window.innerWidth, window.innerHeight );
+			if ( Proton3DInterpreter.composer ) {
+
+				Proton3DInterpreter.composer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+		} );
+	},
 	addToScene( object, scene ) {
 		this.objects.add( object.name? getMeshByName( object.name ) : object );
 		scene.objectList.push( object )
@@ -3473,7 +3463,7 @@ const Proton3DInterpreter = {
 				break;
 
 			case "directionallight":
-				var directionallight = new THREE.DirectionalLight( new THREE.Color( color ), intensity )
+				var directionallight = new THREE.DirectionalLight( new THREE.Color( extras.color || "#fff" ), extras.intensity || 15 )
 				directionallight.shadow.camera = new THREE.OrthographicCamera( -100, 100, 100, -100, 0.25, 1000 );
 				directionallight.shadow.radius = 1.5;
 				directionallight.shadow.bias = -0.00005;
@@ -3582,11 +3572,9 @@ const Proton3DInterpreter = {
 				cube.name = object.name;
 				meshes.push( cube );
 				//cube stuff
-				console.log(object)
 				object.width = extras.width || 1;
 				object.height = extras.height || 1;
 				object.depth = extras.depth || 1;
-				console.log(object.width);
 				//c u b e s t u f f
 				var obj = object;
 				//geometry
@@ -3753,7 +3741,30 @@ const Proton3DInterpreter = {
 
 				}
 				meshes.push( mesh );
+				if ( extras.noPhysics ) {
 
+					object.getScale = function () {
+						return getMeshByName( object.name ).scale
+					}
+					object.setScale = function ( x, y, z ) {
+						if ( x == undefined ) {
+
+							x = object.getScale().x
+
+						}
+						if ( y == undefined ) {
+
+							y = object.getScale().y
+
+						}
+						if ( z == undefined ) {
+
+							z = object.getScale().z
+
+						}
+						getMeshByName( object.name ).scale.set( x, y, z )
+					}
+				}
 		}
 		//creates the mesh's material -- must be at the very end to ensure that the material is initialized with an object
 		if ( getMeshByName( object.name ).material && extras.type != "sky" && !extras.mesh ) {
@@ -4025,6 +4036,14 @@ const Proton3DInterpreter = {
 		//finishes the loading stuff
 		function finishLoad( object, threeObject ) {
 			mesh = threeObject;
+			mesh.children.forEach( function ( child ) {
+				if ( child.isGroup ) {
+					child.children.forEach( function ( child_child ) {
+						mesh.add( child_child )
+					} )
+					mesh.remove( child )
+				}
+			} )
 			if ( extras.noPhysics != true ) {
 
 				mesh.children.forEach( function ( c, i ) {
@@ -4392,7 +4411,6 @@ const Proton3DInterpreter = {
 			if ( extras.materialLocation != undefined || extras.materialLocation != null ) {
 
 				parentObject.material[ extras.materialLocation ] = extras.material
-				console.log("test", parentObject.material[ extras.materialLocation ] === extras.material)
 
 			} else {
 
@@ -4592,7 +4610,7 @@ const Proton3DInterpreter = {
 	},
 
 
-	//changing mesh geometry n' materials loc:10.4
+	//changing mesh geometry n' materials loc:10.5
 	createMeshGeometry( obj, extras = {} ) {
 		switch( extras.type.toLowerCase() ) {
 			case "sphere":
