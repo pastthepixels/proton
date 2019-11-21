@@ -22,3 +22,4 @@ Everything is (at leased supposed to be) written in [Mr.doob's Code Style](https
 - The Proton engine is designed to be cross-platform (or more specifically, cross-programming-language) so that developers can use the same code across different platforms and "base-engines".
 - I initially planned for this engine to use all lowercase text (like three.js), but things might be looking different.
 - As of the moment, the Proton engine does not have a logo.
+- All versions except betas of the engine are guaranteed to not be changed in such a way as to break code designed for older versions, with one exception to Proton2D in proton.js.
