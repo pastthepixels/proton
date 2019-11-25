@@ -1,22 +1,5 @@
 "use strict";
 /*
-                                                                                                                                                    ///
-////////////////        ///////////                //////////        ////                    //////////       ////   ////////                      ///        /////////////
-   ///       ////         //////    ///////        //       //        ///                    //       //       ///////      ////                            //
-   ///        ////        ///           //       ///         ///      ///                  ///         ///       ///             ///              /////     ///
-   ///         ////       ///            /       ///         ///      ///                  ///         ///       ///             ///               ////    ///
-   ///        ////        ///                    ///         ///      ////////             ///         ///       ///             ///                ///      ///
-   /////////////          ///                    ///         ///      ///                  ///         ///       ///             ///                ///      ///////////
-   ///                    ///                    ///         ///      ///                  ///         ///       ///             ///                ///                ////
-   ///                    ///                    ///         ///      ///         //       ///         ///       ///             ///                ///                   //
-  ////                   ////                    //         //        ////      ////         //       //        ////             ///     ////       ///                 ///
- /////                  /////                      //////////           ///////////          //////////        //////           ////     ////       ///      /////////////
-                                                                                                                                                    ///
-                                                                                                                                                    ///
-                                                                                                                                                    ///
-                                                                                                                                                    //
-                                                                                                                                        ////      ///
-																																	        ////////
 	[proton.js beta 1.0]
 	[DISCLAIMER -- I'M STILL LOOKING FOR BUGS. IF YOU SEE ONE, JUST TELL ME. I CURRENTLY HAVE NO OPEN DOCUMENT TO STORE THEM ON.]
 	[third party software]
@@ -38,79 +21,6 @@
 
 
 		proton3d | 9 - 10
-
-	[readme]
-	Welcome!
-		proton.js aims to help developers make
-	games with great graphics and preformance, in
-	a smaller amount of time than it usually takes
-	to make them. As an added bonus, it also is
-	also designed to be easy to use. Because of
-	that, your code can be neatly ordered and easy
-	to read, even without comments.
-		Different canvases are organised as scenes.
-	In order to create a scene, call the function
-	"new protonjs.scene()". To initialise it, call
-	the function ( from the scene )
-	"[scene].init( [width], [height], [parent ( HTMLElement )] )".
-	Different scenes are actually HTML elements.
-	To view them from JavaScript, type
-	"[scene].element". Scenes can also have cameras.
-	To create a new camera, type
-	"new protonjs.camera". And to append one to any
-	scene, type "[scene].camera = [camera]". Every
-	object in proton.js, is, well, an object. A
-	camera looks like this:
-	{
-		x: 0,
-		y: 0,
-		z: 1
-	}
-    You can change the x, y, or z to be whatever
-	you'd like. However, in order for the x and y
-	of the camera to work, you need to have a canvas
-	bigger than the scene. The camera's height and
-	width are actually the scene's height and width.
-	You can change those by changing the style of the
-	scene element.
-		Things in the scene are called objects.
-	A scene's object list looks like this:
-	[
-		{x: 0, y: 0, height: 20, width: 20},
-		{x: 0, y: 0, height: 40, width: 40}
-	]
-	and you can get to it by typing this:
-	"[scene].objects". Each object's z-index is
-	determined by it's place in the array. There
-	are many ways to create an object. The recommended
-	way to do so is by typing this:
-	"new protonjs.square( [extras] )". Of course, there
-	are other functions like it, that also have different
-	parameters. Objects also have parameters. For example,
-	here are some:
-	{
-		x: 20 [the x of the object],
-		y: 20 [the y of the object],
-		height: 20 [the height of the object],
-		width: 20 [the width of the object],
-		color: "black" [the color of the object, if it is being filled. Can either be rgb, hex, or a value name.]
-		alpha: 0.6 [the transparency of the object, out of 1.0]
-	}
-	To push an object, just type
-	"[scene].objects.push( [object] )".
-	...and that's the basics. Good luck using proton.js to make great games!
-	//Note, as of August 7, 2019:
-	proton3d is similar to protonjs using canvas2d,
-	except it's structured a little differently and
-	it uses three.js. Please refer to the proton3d
-	examples, as there's no documentation ( yet ).
-	In order for proton3d to work, please launch
-	chromium with the flag --disable-web-security.
-	You can launch the dedicated batch file on
-	Windows. Make sure not to use any other
-	site on this edition of Chromium, as other
-	websites could have negative effects on your
-	computer.
 */
 //\\//\\//\\//\\//\\//\\//\\ //
 //\\ adding extra scripts \\ // //loc:1
