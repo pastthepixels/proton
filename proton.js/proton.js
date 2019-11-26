@@ -25,6 +25,7 @@
 //\\//\\//\\//\\//\\//\\//\\ //
 //\\ adding extra scripts \\ // //loc:1
 //\\//\\//\\//\\//\\//\\//\\ //
+var three_revision = { veryMin: "0.99.0", min: "0.105.0", max: "0.106.0" }
 //do not forget to use the tag below
 document.writeln( '<meta name="viewport" content="width = device-width, initial-scale = 1.0">' );
 //jquery: required
@@ -33,24 +34,24 @@ document.writeln( '<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js">
 //roboto. all of it (for some reason).
 document.writeln( '<link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono|Roboto+Slab" rel="stylesheet">' );
 //proton3d: threejs
-document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/build/three.js"></script>' );
+document.writeln( '<script src="https://threejs.org/build/three.js"></script>' );
 //proton3d models: threejs
-document.writeln( '<script src="https://unpkg.com/three@0.99.0/examples/js/loaders/MTLLoader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.99.0/examples/js/loaders/LoaderSupport.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.105.0/examples/js/loaders/OBJLoader2.js"></script>' );
-document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/js/loaders/GLTFLoader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.105.0/examples/js/utils/BufferGeometryUtils.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/MTLLoader.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/loaders/LoaderSupport.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/OBJLoader2.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/GLTFLoader.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/utils/BufferGeometryUtils.js"></script>' );
 //threejs effects
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/postprocessing/EffectComposer.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/postprocessing/ShaderPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/postprocessing/RenderPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/postprocessing/MaskPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/math/SimplexNoise.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/shaders/CopyShader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/postprocessing/SSAOPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/shaders/SSAOShader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.99.0/examples/js/shaders/FXAAShader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.99.0/examples/js/modifiers/SubdivisionModifier.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/EffectComposer.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/ShaderPass.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/RenderPass.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/MaskPass.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/math/SimplexNoise.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/shaders/CopyShader.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/SSAOPass.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/shaders/SSAOShader.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/shaders/FXAAShader.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/modifiers/SubdivisionModifier.js"></script>' );
 //proton3d physics: physijs | ammo.js
 document.writeln( '<script src="https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js"></script>' );
 document.writeln( '<script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js"></script>' );
