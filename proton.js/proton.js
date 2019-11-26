@@ -33,8 +33,7 @@ document.writeln( '<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js">
 //roboto. all of it (for some reason).
 document.writeln( '<link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono|Roboto+Slab" rel="stylesheet">' );
 //proton3d: threejs
-//document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/build/three.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/build/three.js"></script>' );
+document.writeln( '<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/106/three.js"></script>' );
 //proton3d models: threejs
 document.writeln( '<script src="https://unpkg.com/three@0.99.0/examples/js/loaders/MTLLoader.js"></script>' );
 document.writeln( '<script src="https://unpkg.com/three@0.99.0/examples/js/loaders/LoaderSupport.js"></script>' );
