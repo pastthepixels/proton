@@ -2986,7 +2986,7 @@ function getMaterialByName ( name ) {
 }
 //\\//\\//\\//\\//\\//\\//\\//\\//\\// //
 //\\ Proton3DInterpreter						 / //
-//\\ (the star of the Proton3D show) / // loc:10 - 10.9
+//\\ (the star of the Proton3D show) / // loc:10 - 10.11
 //\\//\\//\\//\\//\\//\\//\\//\\//\\// //
 //	README
 //		[!] All functions shown below that have parameters and that
