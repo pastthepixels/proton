@@ -966,6 +966,9 @@ const Proton2DScene = {
 		obj.y += objCenter[ 1 ] < targetCenter[ 1 ]? 1 : -1
 		
 	},
+	distanceTo: function ( obj, target ) {
+		Math.hypot( obj.x - target.x, obj.y - target.y )
+	},
 	animatePNG: function ( target, image, size, maxFrames, repeatThings, hangOn, callback ) {
 		if ( target.beginImageClip == undefined ) {
 
