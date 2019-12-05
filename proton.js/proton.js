@@ -962,8 +962,27 @@ const Proton2DScene = {
 	moveTowardTarget: function( obj, target, speed = 1 ) {
 		var targetCenter = [ target.x + ( ( target.width || target.radius ) / 2 ), target.y + ( ( target.height || target.radius ) / 2 ) ],
 			objCenter = [ obj.x + ( ( obj.width || obj.radius ) / 2 ), obj.y + ( ( obj.height || obj.radius ) / 2 ) ];
-		obj.x += objCenter[ 0 ] < targetCenter[ 0 ]? speed : -speed
-		obj.y += objCenter[ 1 ] < targetCenter[ 1 ]? speed : -speed
+		if ( objCenter[ 0 ] < targetCenter[ 0 ] ) {
+			
+			obj.x ++
+			
+		}
+		if ( objCenter[ 0 ] > targetCenter[ 0 ] ) {
+			
+			obj.x --
+			
+		}
+		//
+		if ( objCenter[ 1 ] < targetCenter[ 1 ] ) {
+			
+			obj.y ++
+			
+		}
+		if ( objCenter[ 1 ] > targetCenter[ 1 ] ) {
+			
+			obj.y --
+			
+		}
 	},
 	distanceTo: function ( obj, target ) {
 		return Math.abs( Math.hypot( obj.x - target.x, obj.y - target.y ) )
@@ -1040,6 +1059,11 @@ const renderProtonExtras = function ( i, ctx, scene, obj ) {
 		renderGravity( i, ctx, scene, obj );
 
 	}
+	//the "collided" variable
+	obj.forEach( function ( ii ) {
+		collided( i, ii )
+	} );
+	//everything else
 	if ( i.castShadow ) {
 
 		obj.forEach( function ( ii ) {
@@ -1081,6 +1105,7 @@ const renderProtonExtras = function ( i, ctx, scene, obj ) {
 	if ( i.oncollision ) {
 
 		if ( i.oncollision_target == undefined && i.oncollision_targets == undefined ) {
+			
 			obj.forEach( function ( ii ) {
 				if ( ii === i ) {
 					return
@@ -1091,6 +1116,7 @@ const renderProtonExtras = function ( i, ctx, scene, obj ) {
 				}
 				oncollision( i, ii, scene );
 			} );
+			
 		}
 
 		//
@@ -1311,6 +1337,24 @@ const renderGravity = function ( i, ctx, scene, obj ) {
 
 	}
 }
+//collsionness
+const collided = function ( shapeA, shapeB ) {
+	//the "collided" variable
+	if ( shapeA.x <= shapeB.x + shapeB.width &&
+		shapeA.x + shapeA.width >= shapeB.x &&
+		shapeA.y <= shapeB.y + shapeB.height &&
+		shapeA.height + shapeA.y >= shapeB.y ) {
+
+		shapeA.colliding = true;
+		shapeB.colliding = true;
+
+	} else {
+
+		shapeA.colliding = false;
+		shapeB.colliding = false;
+
+	}
+}
 //Got this from a site long ago, but I can't site it cuz' I modified it (but by just a bit) and forgot what that site was.
 //If you see it, let me know!
 const solid = function ( shapeA, shapeB ) {
@@ -1318,6 +1362,7 @@ const solid = function ( shapeA, shapeB ) {
 		ya = ( shapeA.y + ( shapeA.height / 2 ) ) - ( shapeB.y + ( shapeB.height / 2 ) ),
 		ha = ( shapeA.height / 2 ) + ( shapeB.height / 2 ),
 		wa = ( shapeA.width / 2 ) + ( shapeB.width / 2 );
+	//collision detection
 	if ( Math.abs( xa ) < wa && Math.abs( ya ) < ha ) {
 
 		var oX = wa - Math.abs( xa ),
@@ -1361,14 +1406,10 @@ const solid = function ( shapeA, shapeB ) {
 			}
 
 		}
-		shapeA.colliding = true;
-		shapeB.colliding = true;
 		
 	} else {
 
 		shapeA.onTop = false;
-		shapeA.collding = false;
-		shapeB.collding = false;
 
 	}
 }
