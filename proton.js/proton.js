@@ -959,6 +959,13 @@ const Proton2DScene = {
 			}
 		} )
 	},
+	moveTowardsTarget: function( obj, target ) {
+		var targetCenter = [ target.x + ( ( target.width || target.radius ) / 2 ), target.y + ( ( target.height || target.radius ) / 2 ) ],
+			objCenter = [ obj.x + ( ( obj.width || obj.radius ) / 2 ), obj.y + ( ( obj.height || obj.radius ) / 2 ) ];
+		obj.x += objCenter[ 0 ] < targetCenter[ 0 ]? 1 : -1
+		obj.y += objCenter[ 1 ] < targetCenter[ 1 ]? 1 : -1
+		
+	},
 	animatePNG: function ( target, image, size, maxFrames, repeatThings, hangOn, callback ) {
 		if ( target.beginImageClip == undefined ) {
 
