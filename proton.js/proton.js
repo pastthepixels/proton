@@ -959,15 +959,15 @@ const Proton2DScene = {
 			}
 		} )
 	},
-	moveTowardsTarget: function( obj, target ) {
+	moveTowardTarget: function( obj, target, speed = 1 ) {
 		var targetCenter = [ target.x + ( ( target.width || target.radius ) / 2 ), target.y + ( ( target.height || target.radius ) / 2 ) ],
 			objCenter = [ obj.x + ( ( obj.width || obj.radius ) / 2 ), obj.y + ( ( obj.height || obj.radius ) / 2 ) ];
-		obj.x += objCenter[ 0 ] < targetCenter[ 0 ]? 1 : -1
-		obj.y += objCenter[ 1 ] < targetCenter[ 1 ]? 1 : -1
+		obj.x += objCenter[ 0 ] < targetCenter[ 0 ]? speed : -speed
+		obj.y += objCenter[ 1 ] < targetCenter[ 1 ]? speed : -speed
 		
 	},
 	distanceTo: function ( obj, target ) {
-		Math.hypot( obj.x - target.x, obj.y - target.y )
+		return Math.hypot( obj.x - target.x, obj.y - target.y )
 	},
 	animatePNG: function ( target, image, size, maxFrames, repeatThings, hangOn, callback ) {
 		if ( target.beginImageClip == undefined ) {
