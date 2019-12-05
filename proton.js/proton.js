@@ -964,7 +964,6 @@ const Proton2DScene = {
 			objCenter = [ obj.x + ( ( obj.width || obj.radius ) / 2 ), obj.y + ( ( obj.height || obj.radius ) / 2 ) ];
 		obj.x += objCenter[ 0 ] < targetCenter[ 0 ]? speed : -speed
 		obj.y += objCenter[ 1 ] < targetCenter[ 1 ]? speed : -speed
-		
 	},
 	distanceTo: function ( obj, target ) {
 		return Math.abs( Math.hypot( obj.x - target.x, obj.y - target.y ) )
@@ -1362,9 +1361,14 @@ const solid = function ( shapeA, shapeB ) {
 			}
 
 		}
+		shapeA.colliding = true;
+		shapeB.colliding = true;
+		
 	} else {
 
 		shapeA.onTop = false;
+		shapeA.collding = false;
+		shapeB.collding = false;
 
 	}
 }
