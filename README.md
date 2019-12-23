@@ -25,5 +25,5 @@ Everything is (at leased supposed to be) written in [Mr.doob's Code Style](https
 - All versions except betas of the engine are guaranteed to not be changed in such a way as to break code designed for older versions, with one exception to Proton2D in proton.js.
 
 ## What's your current roadmap for the Proton engine?
-1) Polishing proton.js so that it can be run on low performance devices. * It's not in the `master` branch, but things like this have already have been done. Active changes are in the `beta` branch.
+1) Polishing proton.js so that it can be run on low performance devices. UPDATE: It's not in the `master` branch, but things like this have already have been done. Active changes are in the `beta` branch.
 2) Making PickleScript a reality: it's a concept that I have for a Ruby-like scripting language that can be interpreted across programming languages, and that is designed for game development.
