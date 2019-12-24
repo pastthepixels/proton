@@ -797,7 +797,7 @@ const Proton3DInterpreter_proto = {
 				)
 
 			}
-			getMeshByName( P3DObject.name ).body.angularDamping = x.x / x.y / x.z
+			getMeshByName( P3DObject.name ).body.angularDamping = 1 - ( x.x * x.y * x.z )
 		},
 		setLinearFactor( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( !x.x ) {
@@ -805,7 +805,7 @@ const Proton3DInterpreter_proto = {
 				x = new THREE.Vector3( x, y, z )
 
 			}
-			getMeshByName( P3DObject.name ).body.linearDamping = x.x / x.y / x.z
+			getMeshByName( P3DObject.name ).body.linearDamping = 1 - ( x.x * x.y * x.z )
 		},
 		setAngularFactor( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( !x.x ) {
@@ -1134,13 +1134,17 @@ const Proton3DInterpreter_proto = {
 
 					}
 					//
+					var vector = new THREE.Vector3();
+					vector.setFromMatrixPosition( c.matrixWorld );
+					//
 					c.boundingBox = new THREE.Box3().setFromObject( c );
 					c.geometry.computeBoundingSphere();
 					c.boundingSphere = c.geometry.boundingSphere;
+					//
 					c.shape = new CANNON.Box( new CANNON.Vec3( ( c.boundingBox.max.x - c.boundingBox.min.x ), ( c.boundingBox.max.y - c.boundingBox.min.y ), ( c.boundingBox.max.z - c.boundingBox.min.z ) ) );
 					c.body = new CANNON.Body( { mass: mass * 50 } );
 					c.body.addShape( c.shape );
-					c.body.position.set( c.position.x, c.position.y, c.position.z );
+					c.body.position.set( vector.x, vector.y, vector.z );
 					c.body.quaternion = new CANNON.Quaternion( c.quaternion.clone().x, c.quaternion.clone().y, c.quaternion.clone().z, c.quaternion.clone().w )
 					
 					mesh.children.push( c );
