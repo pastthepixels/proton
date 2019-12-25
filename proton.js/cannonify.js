@@ -1001,6 +1001,7 @@ const Proton3DInterpreter_proto = {
 							c.geometry.vertices.forEach( function ( vertex ) {
 								vertex.multiply( c.scale );
 							} );
+							c.scale.set( 1, 1, 1 );
 
 						}
 						if ( extras.starterPos && extras.fileType.toLowerCase() === "gltf" ) {
@@ -1134,108 +1135,48 @@ const Proton3DInterpreter_proto = {
 
 					}
 					//
-					var vector = new THREE.Vector3();
-					vector.setFromMatrixPosition( c.matrixWorld );
+					extras.physicsMeshScaling = extras.physicsMeshScaling || new THREE.Vector3( 1, 1, 1 );
+					var vector = extras.starterPos? extras.starterPos.clone().add( c.position ) : c.position;
 					//
-					c.boundingBox = new THREE.Box3().setFromObject( c );
+					c.geometry.computeBoundingBox();
+					c.boundingBox = c.geometry.boundingBox;
 					c.geometry.computeBoundingSphere();
 					c.boundingSphere = c.geometry.boundingSphere;
 					//
-					c.shape = new CANNON.Box( new CANNON.Vec3( ( c.boundingBox.max.x - c.boundingBox.min.x ), ( c.boundingBox.max.y - c.boundingBox.min.y ), ( c.boundingBox.max.z - c.boundingBox.min.z ) ) );
-					c.body = new CANNON.Body( { mass: mass * 50 } );
-					c.body.addShape( c.shape );
-					c.body.position.set( vector.x, vector.y, vector.z );
-					c.body.quaternion = new CANNON.Quaternion( c.quaternion.clone().x, c.quaternion.clone().y, c.quaternion.clone().z, c.quaternion.clone().w )
+					c.shape = new CANNON.Box(
+						new CANNON.Vec3(
+							( ( c.boundingBox.max.x - c.boundingBox.min.x ) * extras.physicsMeshScaling.x ),
+							( ( c.boundingBox.max.y - c.boundingBox.min.y ) * extras.physicsMeshScaling.y ),
+							( ( c.boundingBox.max.z - c.boundingBox.min.z ) * extras.physicsMeshScaling.z )
+						)
+					);
+					var body = new CANNON.Body( { mass: mass * 50 } );
+					body.addShape( c.shape );
+					body.position.set( vector.x, vector.y, vector.z );
+					body.quaternion = new CANNON.Quaternion( c.quaternion.clone().x, c.quaternion.clone().y, c.quaternion.clone().z, c.quaternion.clone().w )
+					c.body = body;
+					
+					/*
+					var helper = new THREE.Mesh(
+						new THREE.BoxGeometry(
+							( ( c.boundingBox.max.x - c.boundingBox.min.x ) * extras.physicsMeshScaling.x ),
+							( ( c.boundingBox.max.y - c.boundingBox.min.y ) * extras.physicsMeshScaling.y ),
+							( ( c.boundingBox.max.z - c.boundingBox.min.z ) * extras.physicsMeshScaling.z )
+						),
+						new THREE.MeshBasicMaterial()
+					);
+					helper.position.set( vector.x, vector.y, vector.z );
+					extras.objects.add( helper );
+					*/
 					
 					mesh.children.push( c );
 					objects.push( c );
-					/*
-					var physicalObject = eval( `new Physijs.` + ( m || "Box" ) + `Mesh(
-						(  extras.collisionGeometry || c.geometry  ),
-						(  extras.collisionMaterial || c.material  ),
-						mass
-					)` );
-					if( c.name && c.name.replace( /_/ig, " " ).indexOf( " --" ) > -1 ) {
-
-						c.name = c.name.replace( /_/ig, " " ).slice( 0, c.name.indexOf( " --" ) );
-
-					} else if( c.name ) {
-
-						c.name = c.name.replace( /_/ig, " " )
-
-					}
-					physicalObject.name = c.name;
-					physicalObject.userData = c.userData;
-					physicalObject.material.transparent = true;
-					if ( extras.starterPos && extras.fileType.toLowerCase() != "gltf" ) {
-
-						physicalObject.position.set(
-							extras.starterPos.x + c.position.x,
-							extras.starterPos.y + c.position.y,
-							extras.starterPos.z + c.position.z,
-						);
-						physicalObject.__dirtyPosition = true;
-						c.position.set( 0, 0, 0 )
-
-					}
-					if ( extras.accountForExtraProperties ) {
-
-						physicalObject.rotation.set(
-							c.rotation.x,
-							c.rotation.y,
-							c.rotation.z
-						)
-						physicalObject.position.set(
-							c.position.x,
-							c.position.y,
-							c.position.z
-						)
-
-					}
-					//
-					if ( extras.useCollisionBox ) {
-
-						extras.collisionBoxPosition = ( extras.collisionBoxPosition || new THREE.Vector3( 0, 0, 0 ) );
-						c.position.set( extras.collisionBoxPosition.x, extras.collisionBoxPosition.y, extras.collisionBoxPosition.z );
-						physicalObject.add( c );
-						mesh.children.push( physicalObject );
-						objects.push( physicalObject );
-						return;
-
-					}
-					if ( extras.accountForExtraProperties ) {
-
-						mesh.children.push( physicalObject );
-						objects.push( physicalObject );
-						return;
-
-					}
-					if ( extras.fileType != "gltf" ) {
-
-						physicalObject.add( c );
-						mesh.children.push( physicalObject );
-						objects.push( physicalObject );
-
-					} else {
-
-						physicalObject.children = c.children
-						for ( var i in physicalObject ) {
-							if ( i != "position" && i != "rotation" && i != "quaternion" && i != "scale" ) {
-
-								c[ i ] = physicalObject[ i ];
-
-							}
-						}
-						objects.push( c );
-
-					}
-					physicalObject.geometry = new THREE.BufferGeometry().fromGeometry( physicalObject.geometry );
 					c.geometry = new THREE.BufferGeometry().fromGeometry( c.geometry );
 					if ( mesh.children.length === 1 ) {
 
 						mesh = mesh.children[ 0 ];
 
-					}*/
+					}
 				} );
 
 			} else {
