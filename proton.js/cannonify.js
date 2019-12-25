@@ -14,7 +14,7 @@ const Proton3DInterpreter_proto = {
 			antialias: extras.antialias,
 			canvas: this.canvas,
 			context: this.context,
-			powerPreference: "high-performance"
+			precision: "lowp"
 		} );
 		this.renderer.setSize( extras.width, extras.height );
 		this.renderer.shadowMap.enabled = true;
@@ -533,7 +533,7 @@ const Proton3DInterpreter_proto = {
 					}
 				}
 				//physics
-				cube.shape = new CANNON.Box( new CANNON.Vec3( object.width, object.height, object.depth ) );
+				cube.shape = new CANNON.Box( new CANNON.Vec3( object.width / 2, object.height / 2, object.depth / 2 ) );
 				cube.body = new CANNON.Body( { mass: ( extras.mass != null? extras.mass : 1 ) * 50 } )
 				cube.body.addShape( cube.shape )
 				cube.body.position.set( cube.position.x, cube.position.y, cube.position.z );
@@ -567,7 +567,7 @@ const Proton3DInterpreter_proto = {
 				}
 				//physics
 				sphere.body = new CANNON.Body( { mass: ( extras.mass != null? extras.mass : 1 ) * 50 } );
-				sphere.shape = new CANNON.Sphere( object.radius );
+				sphere.shape = new CANNON.Sphere( object.radius / 2 );
 				sphere.body.addShape( sphere.shape )
 				sphere.body.position.set( sphere.position.x, sphere.position.y, sphere.position.z )
 				break
@@ -610,7 +610,7 @@ const Proton3DInterpreter_proto = {
 				}
 				//physics
 				cylinder.body = new CANNON.Body( { mass: ( extras.mass != null? extras.mass : 1 ) * 50 } );
-				cylinder.shape = new CANNON.Cylinder( object.radiusTop, object.radiusBottom, 1, 10 );
+				cylinder.shape = new CANNON.Cylinder( object.radiusTop / 2, object.radiusBottom / 2, 1, 10 );
 				cylinder.quat = new CANNON.Quaternion( 0.5, 0, 0, 0.5 );
 				cylinder.quat.normalize();
 				cylinder.body.addShape( cylinder.shape, new CANNON.Vec3(), cylinder.quat );
@@ -992,18 +992,13 @@ const Proton3DInterpreter_proto = {
 						oldGeometry;
 					//some geometry stuff  {
 					if ( c.isMesh && c.geometry != null && !c._physijs ) {
-
+						
 						c.updateMatrix();
-					//	oldGeometry = c.geometry.clone();
 						c.geometry = new THREE.Geometry().fromBufferGeometry( c.geometry );
-						if ( extras.accountForExtraProperties ) {
-
-							c.geometry.vertices.forEach( function ( vertex ) {
-								vertex.multiply( c.scale );
-							} );
-							c.scale.set( 1, 1, 1 );
-
-						}
+						c.geometry.vertices.forEach( function ( vertex ) {
+							vertex.multiply( c.scale );
+						} );
+						c.scale.set( 1, 1, 1 );
 						if ( extras.starterPos && extras.fileType.toLowerCase() === "gltf" ) {
 
 							c.position.add( extras.starterPos )
@@ -1145,9 +1140,9 @@ const Proton3DInterpreter_proto = {
 					//
 					c.shape = new CANNON.Box(
 						new CANNON.Vec3(
-							( ( c.boundingBox.max.x - c.boundingBox.min.x ) * extras.physicsMeshScaling.x ),
-							( ( c.boundingBox.max.y - c.boundingBox.min.y ) * extras.physicsMeshScaling.y ),
-							( ( c.boundingBox.max.z - c.boundingBox.min.z ) * extras.physicsMeshScaling.z )
+							( ( c.boundingBox.max.x - c.boundingBox.min.x ) * extras.physicsMeshScaling.x ) * 0.48,
+							( ( c.boundingBox.max.y - c.boundingBox.min.y ) * extras.physicsMeshScaling.y ) * 0.48,
+							( ( c.boundingBox.max.z - c.boundingBox.min.z ) * extras.physicsMeshScaling.z ) * 0.48
 						)
 					);
 					var body = new CANNON.Body( { mass: mass * 50 } );
@@ -1159,9 +1154,9 @@ const Proton3DInterpreter_proto = {
 					/*
 					var helper = new THREE.Mesh(
 						new THREE.BoxGeometry(
-							( ( c.boundingBox.max.x - c.boundingBox.min.x ) * extras.physicsMeshScaling.x ),
-							( ( c.boundingBox.max.y - c.boundingBox.min.y ) * extras.physicsMeshScaling.y ),
-							( ( c.boundingBox.max.z - c.boundingBox.min.z ) * extras.physicsMeshScaling.z )
+							( ( c.boundingBox.max.x - c.boundingBox.min.x ) * extras.physicsMeshScaling.x ) * 0.48,
+							( ( c.boundingBox.max.y - c.boundingBox.min.y ) * extras.physicsMeshScaling.y ) * 0.48,
+							( ( c.boundingBox.max.z - c.boundingBox.min.z ) * extras.physicsMeshScaling.z ) * 0.48
 						),
 						new THREE.MeshBasicMaterial()
 					);

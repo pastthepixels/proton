@@ -2398,7 +2398,12 @@ class Proton3DScene {
 
 		function init(){
 			var localPosClone = x.crosshair.localPosition.clone();
-
+			
+			//physics
+			extras.cameraParent.setAngularFactor( 0, 0, 0 );
+			extras.cameraParent.setLinearFactor( 1.2, 1.2, 1.2 );
+			
+			//everything else
 			extras.cameraParent.add( x.camera );
 			extras.cameraParent.cameraRotation = new THREE.Vector3();
 
@@ -3069,18 +3074,20 @@ const Proton3DInterpreter = {
 		//variables
 		this.canvas = document.createElement( "canvas" );
 		this.context = this.canvas.getContext( "webgl2" );
-		this.objects = new Physijs.Scene();
-		this.objects.setGravity( new THREE.Vector3( 0, ( extras.gravity || -9.81 ), 0 ) );
 		this.renderer = new THREE.WebGLRenderer( {
-			alpha: true,
+			alpha: false,
 			antialias: extras.antialias,
 			canvas: this.canvas,
 			context: this.context,
-			powerPreference: "high-performance"
+			precision: "lowp"
 		} );
+		this.frame = 0;
 		this.renderer.setSize( extras.width, extras.height );
 		this.renderer.shadowMap.enabled = true;
 		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+		//physics
+		this.objects = new Physijs.Scene();
+		this.objects.setGravity( new THREE.Vector3( 0, ( extras.gravity || -9.81 ), 0 ) );
 		//some element - y stuff
 		extras.element.appendChild( this.canvas );
 		//updating a scene
@@ -3306,9 +3313,7 @@ const Proton3DInterpreter = {
 		this.objects.remove( getMeshByName( object.name ) || object )
 	},
 	render( scene ) {
-		//physics
-		this.objects.simulate()
-		//rendering using renderer.render
+		//rendering using three.js
 		if ( this.composer ) {
 
 			this.composer.render();
@@ -3318,6 +3323,8 @@ const Proton3DInterpreter = {
 			this.renderer.render( this.objects, getMeshByName( scene.camera.name ) );
 
 		}
+		//physics
+		this.objects.simulate()
 	},
 
 
