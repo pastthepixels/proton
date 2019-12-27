@@ -940,6 +940,7 @@ const Proton3DInterpreter_proto = {
 		var loader,
 			x = this,
 			objects = [],
+			P3DObjects = [],
 			mesh;
 		//gets the loader and loads the file
 		switch ( extras.fileType.toLowerCase() ) {
@@ -1147,8 +1148,8 @@ const Proton3DInterpreter_proto = {
 					);
 					var body = new CANNON.Body( { mass: mass * 50 } );
 					body.addShape( c.shape );
-					body.position.set( vector.x, vector.y, vector.z );
 					body.quaternion = new CANNON.Quaternion( c.quaternion.clone().x, c.quaternion.clone().y, c.quaternion.clone().z, c.quaternion.clone().w )
+					body.position.set( vector.x, vector.y, vector.z );
 					c.body = body;
 					
 					/*
@@ -1265,6 +1266,12 @@ const Proton3DInterpreter_proto = {
 			objects.forEach( function ( mesh, i ) {
 				var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } )
 				x.children.push( object )
+				P3DObjects.push( object )
+				if ( extras.fileType.toLowerCase() == "obj" && extras.starterPos ) {
+					
+					object.setPosition( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z );
+					
+				}
 				if ( extras.objects ) {
 
 					extras.objects.add( object )
