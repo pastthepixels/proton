@@ -86,11 +86,6 @@ const CSS = {
 		"margin: 0",
 		"padding: 0"
 	],
-	" * ": [
-		"image-rendering: -moz-crisp-edges",
-		"image-rendering: -webkit-crisp-edges",
-		"image-rendering: pixelated"
-	],
 	"watermark": [
 		"position: fixed",
 		"bottom: 5px",
@@ -152,6 +147,12 @@ const protonjs = {
 	version: 1.0,
 	display_version: "beta 1.0",
 	//
+	cache: {
+		vector3: function ( x, y, z ) {
+			protonjs.threevector = protonjs.threevector || new THREE.Vector3( 0, 0, 0 );
+			return protonjs.threevector.set( x, y, z )
+		}
+	},
 	paused: false,
 	scene: function ( renderer = "proton2d" ) {
 		scenes++;
@@ -2628,6 +2629,7 @@ protonjs.crosshair = function ( crosshair ) {
 		transform: translate(  -50%, -50%  );
 		height: 21px;
 		width: 21px;
+		image-rendering: auto !important;
 		background: url(  "data:image / png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAKXnpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjarZhpliMrDoX / s4peArNgOYzn9A56 + f0JIp1DDa + yuu2qjDAmQOheSVc26z//3uZfvILzxcQkJdecLa9YY / WNm2Lv616djefv / ZCe79zncfP6wjMUuIb7Ma9nfmM8vT8g8Rnvn8eNjGed8izkXgufV9Cd9X4 + Rj4LBX / H3fPZ1OeBlj8c5 / nvx7Pss / jXz1FwxkysF7zxK7hg79 + 7U8CKUEPjms9f8Xe0hXT + hpB + 9J95ue4nDnzdffGffbMsvLvjLvR2rPzFT / mF1Ofx8NrGf7LI + dfO / hPU23b78fXBf3vPsve6p2sxG9yVn0O9HeXcMZFFYjiPZd7C / 8S9nHflXWyzA9QmR + 2GPYerzuPr7aKbrrnt1rkONzAx + uVxt / d ++HDGCu6vfhxQor7d9mLAZ4YCKgPkAsP + ZYs7 + 1bdj80KO0 / HTO9YzPHEp7f5OvC3708L7a00d86Wl6 + wyytlMUOR07 / MigeI69N0 / OvMvdivLwU2gGA6bi4csNl + l + jJvXMrHJyDTYap0d54cTKfBXAReyeMcQEEbHYhueyseC / O4ccCPg3LfYi + g4BLJvmJlT6GkAGneN2bZ8SduT75O0x6AYhE0AjQEECAFWOKmXgrUKiZFFJMKeUkqaSaWg455pRzlqx5qkmQKEmyiBSp0koosaSSi5RSamnV10AaS6bmKrXUWltj0xYbazXmNwa676HHnnru0kuvvQ3oM + JIIw8ZZdTRpp9hkgLMzFNmmXW25RZUWnGllZessupqG67tsONOO2 / ZZdfdXqg9qH5G7Styv0fNPaj5A5TOk3fUGBZ5W8JpOkmKGYj56EBcFAEI7RUzW1yMXpFTzGz1wZClPFYmBWc6RQwE43I + bffC7h25X + Jm8O53cfM / Q84odP8P5IxC9wG5H3H7CWqznXQbDkAahfiUDBkIPyas0nxpWpe + ee2rj12Mr5uFfCw9Br3rQgYlanzCbkmrz2XrLivxZcFLkQORybZWOJE1Zee0Q9hG9s4T + yWv6rBr7ZoBa87CGq3YwNQVkuwBxlPCXrMwUli7rxjbTnO7tocRf1fHcT4Ip4d1PvSd4 + 4JkHY / duZda5c8Ci4SGd3VsebA4p0WHKCKkJ59ybu3XHuHXdlXCb3jaL4d4OZ2L7J6HJg9GQ1Sc3BlbMFBNfW13G4pmdxqHDzIl1OKPjDr2iyCcZKcVho74bw + 5StHhioiXVlfA9NqZFJSNfLc / C / X5P02c1KZnFNblpJ4TpKhKg + BZ03mctBqdzDlK8ySGbN6TfpGeOjDFg6XhhqBzappxsbqHpMvu4 / Ausds6Oo6vgEB5vRfm2W + eY4Fo + 0gdJWL4rKNoKPrGzbe76YnbtuDYrE + tMNfa3G / 8me2qggkz6KEvcJgly24ZBvic6p67EP6BNYVp0968nTM + OOr + fUEUrElHFpO5J + rDWdxS0UHZGhx4ra5wlxFwTJLtcMcdaeWSF8SojKRIkUlurGp34WodYkzXnL10tT4 / Fp7ZgM80PEHfn1wM2u6f84C5qdfVNInt1HvNuS + wwJHyPDiDu / ZqGrmqnd70ohaplhabsiLScUNsfvYR7YKk1R6n / Z1qp2KfrpO6LUl21I3DORK + dJgCqOHNSOhuvDmN3Jbjc5gt + Ih1MKYJ2acWNHStigcVJ96uJf1uz7VopkP7V1QXpLuDwbB9HmcGrqA6Hg4pPaeaScN6BnafNAsGZoCIVxc2g34RTaHjIbPM + Cd + h0OvsjBmg60YYYZCm0Q1 / jPyljRjiV3VEd8nEQryctTfiU1XXAqCrkwLdsFBLuagwbiDvs1ZpyrLR + mASd7wrpaS6AeMeeMS / ZbofVs1yljuQU1xqDC9tC8N3uUU3URt7VRC9zxqRImkZg1Bw1osKm2eh + pF5sSSOLe241m9i0t1EPbtt2CiN7d6n / M0LTvqId9TbcoPrvFGuRUnbznzqEMzKeO9oisWRycCrCWZrPv + VxLRE2bAjdos3ZJ9BRLxccIdfqe0kzohk2 + WmNjSa0UkJZznLOjLRKCvVPxivaTTcv0WNXkvkrfhapj0QaOHD1xQ2pttd4SwHC8TKoqgSzgNX3HMXYXidQ42mG6i21jWQbLQmUvcAMlJxX1KzR6SvdciybySwNClqJ1JgZSIFWsaZPkWLdiFqpWp / JNEe7KODFWSb / wvJ402 + Qjx1EDGBn2cAFct6N + ZyDNZjNn5747bqgUeMCI1a0558rM6GXAhknFgTzSlhZ0UkuhGm0YoAe / HDB6Cw3w22XKmi + m0HjBlJoOUzpKyW6VTCFvoCnjRZNkd89GZpWHJSvHgp3rYUk6QkFZwnkQW78vV7 + oa3Ajc4ilcCo1 + HepQRpQrbk7SX + 4Qw1aGMIKizo1DO07Gl2K0IzgZ5jRyEMK5DjUAEqlBjUeTKAGmjVlSJ9Lv571ZnlWB6De80Baolmipl0L7ZUY2vMwsDRmmytlKvkLQQm2iSaEzeqRAGjIre2p8FHrjEr3gBrv8OnJl8Qb4c + 5oMCTHcGNiM9J5zvd0UYTBtyGEFYuIeDxzhzmKraHEXDO5zX7w4im2nAoI + ZhhKJNXbukOHDLJ7grPu + qF2gutjZBQXNqxJfaEZzcQJ + NxiS9RdMG7QSmU3bn96q9TbE0qk1pyi4W0qquIeQ7Ny3e8TEs4QIKNxXTnUTX67g1zuaqQPXij9djBwsjDaWpWrG5RLsvaEoZU6U + gs3XVOhRIyFzpOkVOZ5exo5eKVWnlkXOWQz7 + u1FS5YktF7VZxzZbiJO26kWS0OXaH4rBl5LGWDtkCWMGbpmce1pbUljadLWVM6G / k1efedq3m7Sk4OQLeQNdDRF8MiWQ79zj + hxjyDolN / ocZaWm1O4zQXhKbBRG7SqBVS5iaRiIh7 / E4Fpfq88pTwSeHlu4xUKiA + HD45mmFWrFvQ05BcNFtimSJJlZVIwkx5Ig0BDykXXbub9Ex996yraUmsCRuOrBIhefXTsKZrFtd / Q39OSxrAmb3K5b9rJC5inWpg59EHyHyoSBXPDWw9nItFij1PnUh2tima2ez6VUtR79J4qGaWT / uYCIED5jtcVXOavus + XUjtuA / hG0FI3K6RZ800lxkJ8Hf3ZyKlr0Q + jYtCd4vXnTe2BfNfmh6gvJKmVEW9iVGQrXFWtR8nQ2MDxGxBhPMJTlANFW4aL4k + Sgfl2r / C6to6CJWuSzPGaNjWTHkYlYjtB + jCyHV5p66haBRD0UZ1wFNpdarcciKjDUmP / JkJ / cmUhlWOWbG7nh347k5Fp0X1Mb / 02Qo9yhsq43TaZTTpp73TbNGFG2 + 2g2k6GpuHKo6T + jb9Pd6 + pBxIKJQLp0PdyWi4Laq3rvlodEfmjL4PIQqqNRFeBcvCnjd3BruA61TSoLY7SkSkZS39JODWD5Hh / S5hHRkQB / rS99sJhUG / UThS5BoBmOhikQXVaYQVef1dCEECYhoJVpiUfSA / ZtxgQ7PX0N9PfTBTakfNTmxOCA0HV5vwaD3rFllkRWP8FPvsaKYhf9VwAAAGFaUNDUElDQyBQUk9GSUxFAAB4nH2RPUjDQBzFX1O1RSoOdlBxyFCdLIqKOEoVi2ChtBVadTC59ENo0pCkuDgKrgUHPxarDi7Oujq4CoLgB4iLq5Oii5T4v6TQIsaD4368u / e4ewcI9TJTzY5xQNUsIxWPidncihh4RReCEDCGAYmZeiK9kIHn + LqHj693UZ7lfe7P0aPkTQb4ROJZphsW8Trx9Kalc94nDrOSpBCfE48adEHiR67LLr9xLjos8MywkUnNEYeJxWIby23MSoZKPEUcUVSN8oWsywrnLc5qucqa9 + QvDOW15TTXaQ4hjkUkkIQIGVVsoAwLUVo1UkykaD / m4R90 / ElyyeTaACPHPCpQITl + 8D / 43a1ZmJxwk0IxoPPFtj + GgcAu0KjZ9vexbTdOAP8zcKW1 / JU6MPNJeq2lRY6A3m3g4rqlyXvA5Q7Q / 6RLhuRIfppCoQC8n9E35YC + W6B71e2tuY / TByBDXS3dAAeHwEiRstc83h1s7 + 3fM83 + fgBjZ3KhWgKGVwAAAAZiS0dEADcASwDADel / eAAAAAlwSFlzAAAuIwAALiMBeKU / dgAAAAd0SU1FB + MGCAIyI1pj764AAAAqSURBVDjL7dUxEQAADMJA / EuGgUpoh455D7lIR0kqAIu2 / SzKNuUBr48az6wTuvSPBCoAAAAASUVORK5CYII="  )
 	`;
 	crosshair.hide = function () {
@@ -3071,17 +3073,20 @@ const Proton3DInterpreter = {
 	create3DScene( extras ) {
 		extras.refreshRate = extras.refreshRate || this.refreshRate || 10
 		extras.antialias = extras.antialias || false;
+		extras.shaderQuality = extras.shaderQuality || "low";
 		//variables
+		extras.scene.usePBR = extras.pbr;
 		this.canvas = document.createElement( "canvas" );
 		this.context = this.canvas.getContext( "webgl2" );
 		this.renderer = new THREE.WebGLRenderer( {
-			alpha: false,
 			antialias: extras.antialias,
 			canvas: this.canvas,
 			context: this.context,
-			precision: "lowp"
+			precision: extras.shaderQuality + "p",
+		//	logarithmicDepthBuffer: true
 		} );
 		this.frame = 0;
+		this.fpsMeasurements = [] 
 		this.renderer.setSize( extras.width, extras.height );
 		this.renderer.shadowMap.enabled = true;
 		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -3090,15 +3095,26 @@ const Proton3DInterpreter = {
 		this.objects.setGravity( new THREE.Vector3( 0, ( extras.gravity || -9.81 ), 0 ) );
 		//some element - y stuff
 		extras.element.appendChild( this.canvas );
+		extras.scene.element.style.imageRendering = extras.pixelatedScene? "pixelated": "";
 		//updating a scene
 		Proton3DInterpreter.render( extras.scene )
 		//PBR
-		this.PBRCamera = new THREE.CubeCamera( 1, 10, 32, {
-			type: THREE.FloatType
-		} );
-		this.objects.add( this.PBRCamera );
-		this.PBRCamera.renderTarget.texture.format = THREE.RGBAFormat;
-		this.PBRCamera.renderTarget.texture.generateMipmaps = true;
+		if ( extras.pbr != false ) {
+			this.PBRCamera = new THREE.CubeCamera( 1, 10, 32, {
+				type: THREE.FloatType
+			} );
+			this.objects.add( this.PBRCamera );
+			this.PBRCamera.renderTarget.texture.format = THREE.RGBAFormat;
+			this.PBRCamera.renderTarget.texture.generateMipmaps = true;
+		}
+		//dynamic resolution
+		if ( extras.dynamicResolution ) {
+
+			setInterval( function() {
+				Proton3DInterpreter.renderer.setPixelRatio( ( Proton3DInterpreter.fps / 60 ) / 4 ) 
+			}, 500 )
+
+		}
 		//
 		return this.canvas
 	},
@@ -3314,17 +3330,18 @@ const Proton3DInterpreter = {
 	},
 	render( scene ) {
 		//rendering using three.js
-		if ( this.composer ) {
-
-			this.composer.render();
-
-		} else {
-
-			this.renderer.render( this.objects, getMeshByName( scene.camera.name ) );
-
-		}
+		( this.composer || this.renderer ).render( this.objects, getMeshByName( scene.camera.name ) );
 		//physics
 		this.objects.simulate()
+		//getting the fps, slightly modified from https://www.growingwiththeweb.com/2017/12/fast-simple-js-fps-counter.html
+		const now = performance.now();
+		while ( this.fpsMeasurements.length > 0 && this.fpsMeasurements[0] <= now - 1000 ) {
+			
+			this.fpsMeasurements.shift();
+
+		}
+		this.fpsMeasurements.push( now );
+		this.fps = this.fpsMeasurements.length;
 	},
 
 
@@ -3521,152 +3538,6 @@ const Proton3DInterpreter = {
 				meshes.push( sky )
 				break
 
-			case "cube":
-
-				extras.type = "cube";
-				//create the cube
-				var cube;
-				if ( extras.noPhysics ) {
-
-					cube = new THREE.Mesh(
-						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
-						Proton3DInterpreter.createMeshMaterial( extras ).material
-					)
-
-				} else {
-
-					cube = new Physijs.BoxMesh(
-						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
-						Proton3DInterpreter.createMeshMaterial( extras ).material,
-						( extras.mass || 0 )
-					)
-
-				}
-				cube.name = object.name;
-				meshes.push( cube );
-				//cube stuff
-				object.width = extras.width || 1;
-				object.height = extras.height || 1;
-				object.depth = extras.depth || 1;
-				//c u b e s t u f f
-				var obj = object;
-				//geometry
-				object.watch( "width", function ( id, oldval, newval ) {
-					obj._width = newval;
-					Proton3DInterpreter.createMeshGeometry( obj, obj, object.name );
-				} );
-				object.watch( "height", function ( id, oldval, newval ) {
-					obj._height = newval;
-					Proton3DInterpreter.createMeshGeometry( obj, obj, object.name );
-				} );
-				object.watch( "depth", function ( id, oldval, newval ) {
-					obj._depth = newval;
-					Proton3DInterpreter.createMeshGeometry( obj, obj, object.name );
-				} );
-				//
-				for ( var i in extras ) {
-					if ( extras[i] && object[i] == undefined ) {
-
-						object[i] = extras[i];
-
-					}
-				}
-				break
-
-			case "sphere":
-				extras.type = "sphere";
-				//creates the base variables
-				var sphere;
-				//create the sphere!
-				if ( extras.noPhysics ) {
-
-					sphere = new THREE.Mesh(
-						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
-						Proton3DInterpreter.createMeshMaterial( extras ).material
-					)
-
-				} else {
-
-					sphere = new Physijs.SphereMesh(
-						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
-						Proton3DInterpreter.createMeshMaterial( extras ).material,
-						( extras.mass || 0 )
-					)
-
-				}
-				sphere.name = object.name;
-				meshes.push( sphere );
-				//creates some properties
-				object.radius = 1;
-				//adds listeners for each property
-				var obj = object;
-				//geometry
-				object.watch( "radius", function ( id, oldval, newval ) {
-					obj._radius = newval;
-					changeGeometryParameters( obj );
-				} );
-				//
-				for ( var i in extras ) {
-					if ( extras[i] && object[i] == undefined ) {
-
-						object[i] = extras[i];
-
-					}
-				}
-				break
-
-			case "cylinder":
-				extras.type = "cylinder"
-				//create the base variables
-				var cylinder;
-				//create the cylinder
-				if ( extras.noPhysics ) {
-
-					cylinder = new THREE.Mesh(
-						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
-						Proton3DInterpreter.createMeshMaterial( extras ).material
-					)
-
-				} else {
-
-					new Physijs.CylinderMesh(
-						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
-						Proton3DInterpreter.createMeshMaterial( extras ).material,
-						( extras.mass || 0 )
-					);
-
-				}
-				cylinder.name = object.name;
-				meshes.push( cylinder );
-				//creates extra values
-				object.radiusTop = 1;
-				object.radiusBottom = 1;
-				object.height = 1;
-				//creates listeners for each value
-				var obj = object;
-				//
-				object.watch( "radiusTop", function ( id, oldval, newval ) {
-					obj._radiusTop = newval;
-					Proton3DInterpreter.createMeshGeometry( obj );
-				} );
-				object.watch( "radiusBottom", function ( id, oldval, newval ) {
-					obj._radiusTop = newval;
-					Proton3DInterpreter.createMeshGeometry( obj );
-				} );
-				object.watch( "height", function ( id, oldval, newval ) {
-					obj._height = newval;
-					Proton3DInterpreter.createMeshGeometry( obj );
-				} );
-				//
-				for ( var i in extras ) {
-					if ( extras[i] && object[i] == undefined ) {
-
-						object[i] = extras[i];
-
-					}
-				}
-				break
-
 			default:
 
 				var mesh = extras.mesh;
@@ -3769,7 +3640,7 @@ const Proton3DInterpreter = {
 			sound.setMediaElementSource( audio );
 			return audio;
 		},
-		applyImpulse( force, offset = new THREE.Vector3( 0, 0, 0 ), P3DObject ) {
+		applyImpulse( force, offset = protonjs.cache.vector3( 0, 0, 0 ), P3DObject ) {
 			getMeshByName( P3DObject.name ).applyImpulse( force, offset )
 		},
 		delete( P3DObject ) {
@@ -3827,7 +3698,7 @@ const Proton3DInterpreter = {
 		setLinearVelocity( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( !x.x ) {
 
-				x = new THREE.Vector3( x, y, z )
+				x = protonjs.cache.vector3( x, y, z )
 
 			}
 			getMeshByName( P3DObject.name ).setLinearVelocity( x )
@@ -3835,7 +3706,7 @@ const Proton3DInterpreter = {
 		setAngularVelocity( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( !x.x ) {
 
-				x = new THREE.Vector3( x, y, z )
+				x = protonjs.cache.vector3( x, y, z )
 
 			}
 			getMeshByName( P3DObject.name ).setAngularVelocity( x )
@@ -3843,7 +3714,7 @@ const Proton3DInterpreter = {
 		setLinearFactor( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( !x.x ) {
 
-				x = new THREE.Vector3( x, y, z )
+				x = protonjs.cache.vector3( x, y, z )
 
 			}
 			getMeshByName( P3DObject.name ).setLinearFactor( x )
@@ -3851,7 +3722,7 @@ const Proton3DInterpreter = {
 		setAngularFactor( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( !x.x ) {
 
-				x = new THREE.Vector3( x, y, z )
+				x = protonjs.cache.vector3( x, y, z )
 
 			}
 			getMeshByName( P3DObject.name ).setAngularFactor( x )
@@ -3947,7 +3818,7 @@ const Proton3DInterpreter = {
 		},
 		lookAt( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( getMeshByName( P3DObject.name ).lookAt ) {
-				getMeshByName( P3DObject.name ).lookAt( new THREE.Vector3( x, y, z ) )
+				getMeshByName( P3DObject.name ).lookAt( protonjs.cache.vector3( x, y, z ) )
 				getMeshByName( P3DObject.name ).__dirtyRotation = true;
 			}
 		},
