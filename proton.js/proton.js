@@ -379,6 +379,10 @@ const protonjs = {
 	},
 	resume: function () {
 		this.paused = false;
+		this.justResumed = true;
+		setTimeout( function() {
+			this.justResumed = false;
+		} );
 		if ( window.onresume ) {
 
 			window.onresume();
@@ -3111,7 +3115,7 @@ const Proton3DInterpreter = {
 		if ( extras.dynamicResolution ) {
 
 			setInterval( function() {
-				Proton3DInterpreter.renderer.setPixelRatio( ( Proton3DInterpreter.fps / 60 ) / 4 ) 
+				Proton3DInterpreter.renderer.setPixelRatio( ( Proton3DInterpreter.fps / 60 ) / ( extras.dynamicResolutionFactor || 4 ) ) 
 			}, 500 )
 
 		}
@@ -3332,7 +3336,15 @@ const Proton3DInterpreter = {
 		//rendering using three.js
 		( this.composer || this.renderer ).render( this.objects, getMeshByName( scene.camera.name ) );
 		//physics
-		this.objects.simulate()
+			//resumption
+			if( protonjs.justResumed ) {
+				
+				this.objects.onSimulationResume();
+				protonjs.justResumed = false;
+
+			}
+			//doing the stuff
+			this.objects.simulate()
 		//getting the fps, slightly modified from https://www.growingwiththeweb.com/2017/12/fast-simple-js-fps-counter.html
 		const now = performance.now();
 		while ( this.fpsMeasurements.length > 0 && this.fpsMeasurements[0] <= now - 1000 ) {
@@ -3426,17 +3438,17 @@ const Proton3DInterpreter = {
 
 			case "spotlight":
 				var spotlight = new THREE.SpotLight( new THREE.Color( extras.color || "#fff" ), extras.intensity || 15 )
-				spotlight.shadow.camera = new THREE.OrthographicCamera( -( 100 ), 100, 100, -( 100 ), 0.25, 1000 );
+			//	spotlight.shadow.camera = new THREE.OrthographicCamera( -( 100 ), 100, 100, -( 100 ), 0.25, 1000 );
 				spotlight.castShadow = true;
 				//very low quality: 1024
 				//low quality: 2048
 				//medium quality: 8192
 				//high quality: 16384
-				spotlight.shadow.mapSize.width = 8192;
-				spotlight.shadow.mapSize.height = 8192;
+			//	spotlight.shadow.mapSize.width = 8192;
+			//	spotlight.shadow.mapSize.height = 8192;
 				spotlight.penumbra = 1;
 				spotlight.shadow.radius = 1.5;
-				spotlight.shadow.bias = -0.00005;
+				spotlight.shadow.bias = -0.0008;
 				spotlight.name = object.name;
 				meshes.push( spotlight );
 				//
@@ -3453,10 +3465,10 @@ const Proton3DInterpreter = {
 				break;
 
 			case "directionallight":
-				var directionallight = new THREE.DirectionalLight( new THREE.Color( extras.color || "#fff" ), extras.intensity || 15 )
+				var directionallight = new THREE.DirectionalLight( new THREE.Color( extras.color || "#fff" ), extras.intensity == null? 15 : extras.intensity )
 				directionallight.shadow.camera = new THREE.OrthographicCamera( -100, 100, 100, -100, 0.25, 1000 );
 				directionallight.shadow.radius = 1.5;
-				directionallight.shadow.bias = -0.00005;
+				directionallight.shadow.bias = -0.0008;
 				directionallight.name = object.name;
 				meshes.push( directionallight );
 				//
@@ -3465,6 +3477,10 @@ const Proton3DInterpreter = {
 				}
 				object.changeIntensity = function ( value ) {
 					directionallight.intensity = value
+				}
+				object.setTargetPosition = function ( x, y, z ) {
+					directionallight.target.position.set( x, y, z )
+					directionallight.target.updateMatrixWorld();
 				}
 				//
 				break;
