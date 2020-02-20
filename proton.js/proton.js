@@ -2464,11 +2464,26 @@ class Proton3DScene {
 					);
 
 					//
-
-					if ( ( (x.cameraType === "thirdperson" || extras.type === "thirdperson" ) &&
-						( ( ( x.camera.getPosition().y - e.movementY / extras.ySensivity ) > -9 ||
-						( x.camera.getPosition().y - e.movementY / extras.ySensivity ) < 9 ) ) ) ||
-						x.cameraType != "thirdperson" ) {
+					var crosshairPos = ( e.movementY / ( extras.ySensivity * 40 ) ) * ( x.crosshair.__localPosition.distanceTo( x.camera.getPosition() ) );
+					if ( 
+						//If it's third person and [???]
+						(
+							(x.cameraType === "thirdperson" || extras.type === "thirdperson" ) &&
+							(
+								( x.camera.getPosition().y - e.movementY / extras.ySensivity ) > -9 ||
+								( x.camera.getPosition().y - e.movementY / extras.ySensivity ) < 9
+							) 
+						) ||
+						
+						// If it's first person and the camera's within a certain range
+						(
+							x.cameraType != "thirdperson" &&
+							(
+								( x.crosshair.__localPosition.y - crosshairPos ) > -4.5 &&
+								( x.crosshair.__localPosition.y - crosshairPos ) < 4.5
+							) 
+						)
+						) {
 
 						x.crosshair.__localPosition.y -= ( e.movementY / ( extras.ySensivity * 40 ) ) * ( x.crosshair.__localPosition.distanceTo( x.camera.getPosition() ) )
 
