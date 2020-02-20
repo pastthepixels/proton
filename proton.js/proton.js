@@ -2444,6 +2444,12 @@ class Proton3DScene {
 						x.camera.setPosition( extras.distance.x, extras.distance.y, extras.distance.z);
 
 					}
+					if ( extras.gun ) {
+
+						x.camera.add( extras.gun )
+						extras.gun.setPosition( 0.9, -0.8, -1.4 )
+		
+					}
 
 			}
 			window.addEventListener( "mousemove", function ( e ) {
