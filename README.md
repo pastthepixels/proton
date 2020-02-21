@@ -1,4 +1,4 @@
-[logo](./images/logo/logo.png/)
+![logo](./images/logo/logo.png/)
 The Proton engine is a game engine that is designed to focus on 3 things:
 - Performance
 - Ease of use
