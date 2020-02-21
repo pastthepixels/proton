@@ -2560,14 +2560,15 @@ class Proton3DScene {
 			}
 			if ( child.pickingUp ) {
 
-				var pos = x.crosshair.__localPosition.clone().multiply( new THREE.Vector3( 2.5, 1.5, 2.5 ) ).add( x.camera.parent.getPosition() );
-				child.mass = 0;
+				var pos = x.crosshair.__localPosition.clone()
+				pos.y = pos.y > 2? 2 : pos.y;
+				pos.y = pos.y < -2? -2 : pos.y;
+				pos.multiply( new THREE.Vector3( 2.5, 1.5, 2.5 ) ).add( x.camera.parent.getPosition() );
 				child.setPosition(
 					pos.x,
 					pos.y,
 					pos.z
 				);
-				child.setRotation(0, 0, 0);
 
 			}
 			if ( child.pickingUp === "wrapping" ) {
@@ -2575,6 +2576,8 @@ class Proton3DScene {
 				child.mass = child.oldMass;
 				child.setLinearVelocity( 0, 0, 0 );
 				child.setLinearFactor( 1, 1, 1 );
+				child.setAngularVelocity( 0, 0, 0 );
+				child.setAngularFactor( 1, 1, 1 );
 				child.pickingUp = null;
 
 			}
@@ -2600,19 +2603,14 @@ class Proton3DScene {
 			}
 			if ( x.keys[x.mappedKeys.use] && child.pickingUp === true ) {
 
-				child.pickingUp = false;
-				x.crosshair.show()
-				child.pickingUp = "wrapping";
-				//
-				window.keyErrorCheck = true
-				setInterval( function () { window.keyErrorCheck = false }, 500 )
+				resetPickingUp( child )
 				return
 
 			}
 			if ( x.keys[x.mappedKeys.use] && x.crosshair.position.distanceTo( child.position ) <= ( child.__pickupDistance || 2 ) && child.pickingUp == null && window.pickingUpChild == undefined ) {
 
 				window.keyErrorCheck = true
-				setInterval( function () { window.keyErrorCheck = false }, 500 )
+				setInterval( function () { window.keyErrorCheck = false }, 250 )
 				//
 
 				if ( child.onUse ) {
@@ -2625,19 +2623,32 @@ class Proton3DScene {
 					}
 
 				}
-
+				
 				child.pickingUp = true;
 				if ( child.oldMass != 0 ) {
 
 					child.oldMass = child.mass;
 
 				}
+				child.addEventListener( "collision", function() {
+					child.pickingUp === true? resetPickingUp( child ) : undefined;
+				} )
 				child.oldPos = child.position.clone();
 				child.distance = x.crosshair.position.distanceTo( child.position );
 				child.setLinearFactor( 0, 0, 0 );
-				x.crosshair.hide()
+				child.setAngularFactor( 0, 0, 0 );
+				x.crosshair.hide();
 
 			}
+		}
+
+		function resetPickingUp ( child ) {
+			child.pickingUp = false;
+			child.pickingUp = "wrapping";
+			x.crosshair.show()
+			//
+			window.keyErrorCheck = true;
+			setInterval( function () { window.keyErrorCheck = false }, 500 )
 		}
 	}
 }
