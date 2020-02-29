@@ -2448,7 +2448,12 @@ class Proton3DScene {
 
 						x.camera.add( extras.gun )
 						extras.gun.setPosition( 0.9, -0.8, -1.4 )
-		
+						if ( extras.gunPosition ) {
+
+							extras.gun.setPosition( extras.gunPosition.x, extras.gunPosition.y, extras.gunPosition.z )
+
+						}
+
 					}
 
 			}
@@ -2630,12 +2635,18 @@ class Proton3DScene {
 					child.oldMass = child.mass;
 
 				}
-				child.addEventListener( "collision", function() {
-					child.pickingUp === true? resetPickingUp( child ) : undefined;
+				child.addEventListener( "collision", function( otherobj ) {
+					if ( child.pickingUp && otherobj.p3dParent != x.camera.parent ) {
+
+						resetPickingUp( child )
+
+					}
 				} )
 				child.oldPos = child.position.clone();
 				child.distance = x.crosshair.position.distanceTo( child.position );
+				child.setLinearVelocity( 0, 0, 0 );
 				child.setLinearFactor( 0, 0, 0 );
+				child.setAngularVelocity( 0, 0, 0 );
 				child.setAngularFactor( 0, 0, 0 );
 				x.crosshair.hide();
 
