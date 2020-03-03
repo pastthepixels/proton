@@ -3124,7 +3124,7 @@ const Proton3DInterpreter = {
 		//variables
 		extras.scene.usePBR = extras.pbr;
 		this.canvas = document.createElement( "canvas" );
-		this.context = this.canvas.getContext( "webgl2" );
+		this.context = this.canvas.getContext( "webgl2", { alpha: false } );
 		this.renderer = new THREE.WebGLRenderer( {
 			antialias: extras.antialias,
 			canvas: this.canvas,
@@ -3992,44 +3992,6 @@ const Proton3DInterpreter = {
 						return;
 
 					}
-					//some material stuff
-					function toMeshPhongMaterial( material ) {
-						var newmaterial = new THREE.MeshPhongMaterial();
-						if ( material.type === "MeshPhongMaterial" ) {
-
-							return Physijs.createMaterial(
-								material,
-								1,
-								0
-							);
-
-						}
-						for ( var i in material ) {
-							if ( typeof material[ i ] === "function" || material[ i ] === material.type || material[ i ] === material.id || material[ i ] === material.uuid ) {
-
-								continue
-
-							}
-							newmaterial[ i ] = material[ i ]
-						}
-						return Physijs.createMaterial(
-							newmaterial,
-							1,
-							0
-						);
-					}
-					if ( c.material[ 0 ] != null ) {
-
-						c.material.forEach( function ( material, i ) {
-							c.material[ i ] = toMeshPhongMaterial( material )
-						} )
-
-					} else {
-
-						c.material = toMeshPhongMaterial( c.material )
-
-					}
-					//}
 					if ( extras.objectType ) {
 
 						switch ( typeof extras.objectType ) {
