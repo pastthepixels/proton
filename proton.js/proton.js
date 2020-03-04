@@ -3619,6 +3619,152 @@ const Proton3DInterpreter = {
 				meshes.push( sky )
 				break
 
+			case "cube":
+
+				extras.type = "cube";
+				//create the cube
+				var cube;
+				if ( extras.noPhysics ) {
+
+					cube = new THREE.Mesh(
+						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
+						Proton3DInterpreter.createMeshMaterial( extras ).material
+					)
+
+				} else {
+
+					cube = new Physijs.BoxMesh(
+						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
+						Proton3DInterpreter.createMeshMaterial( extras ).material,
+						( extras.mass || 0 )
+					)
+
+				}
+				cube.name = object.name;
+				meshes.push( cube );
+				//cube stuff
+				object.width = extras.width || 1;
+				object.height = extras.height || 1;
+				object.depth = extras.depth || 1;
+				//c u b e s t u f f
+				var obj = object;
+				//geometry
+				object.watch( "width", function ( id, oldval, newval ) {
+					obj._width = newval;
+					Proton3DInterpreter.createMeshGeometry( obj, obj, object.name );
+				} );
+				object.watch( "height", function ( id, oldval, newval ) {
+					obj._height = newval;
+					Proton3DInterpreter.createMeshGeometry( obj, obj, object.name );
+				} );
+				object.watch( "depth", function ( id, oldval, newval ) {
+					obj._depth = newval;
+					Proton3DInterpreter.createMeshGeometry( obj, obj, object.name );
+				} );
+				//
+				for ( var i in extras ) {
+					if ( extras[i] && object[i] == undefined ) {
+
+						object[i] = extras[i];
+
+					}
+				}
+				break
+
+			case "sphere":
+				extras.type = "sphere";
+				//creates the base variables
+				var sphere;
+				//create the sphere!
+				if ( extras.noPhysics ) {
+
+					sphere = new THREE.Mesh(
+						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
+						Proton3DInterpreter.createMeshMaterial( extras ).material
+					)
+
+				} else {
+
+					sphere = new Physijs.SphereMesh(
+						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
+						Proton3DInterpreter.createMeshMaterial( extras ).material,
+						( extras.mass || 0 )
+					)
+
+				}
+				sphere.name = object.name;
+				meshes.push( sphere );
+				//creates some properties
+				object.radius = 1;
+				//adds listeners for each property
+				var obj = object;
+				//geometry
+				object.watch( "radius", function ( id, oldval, newval ) {
+					obj._radius = newval;
+					changeGeometryParameters( obj );
+				} );
+				//
+				for ( var i in extras ) {
+					if ( extras[i] && object[i] == undefined ) {
+
+						object[i] = extras[i];
+
+					}
+				}
+				break
+
+			case "cylinder":
+				extras.type = "cylinder"
+				//create the base variables
+				var cylinder;
+				//create the cylinder
+				if ( extras.noPhysics ) {
+
+					cylinder = new THREE.Mesh(
+						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
+						Proton3DInterpreter.createMeshMaterial( extras ).material
+					)
+
+				} else {
+
+					new Physijs.CylinderMesh(
+						Proton3DInterpreter.createMeshGeometry( null, extras ).geometry,
+						Proton3DInterpreter.createMeshMaterial( extras ).material,
+						( extras.mass || 0 )
+					);
+
+				}
+				cylinder.name = object.name;
+				meshes.push( cylinder );
+				//creates extra values
+				object.radiusTop = 1;
+				object.radiusBottom = 1;
+				object.height = 1;
+				//creates listeners for each value
+				var obj = object;
+				//
+				object.watch( "radiusTop", function ( id, oldval, newval ) {
+					obj._radiusTop = newval;
+					Proton3DInterpreter.createMeshGeometry( obj );
+				} );
+				object.watch( "radiusBottom", function ( id, oldval, newval ) {
+					obj._radiusTop = newval;
+					Proton3DInterpreter.createMeshGeometry( obj );
+				} );
+				object.watch( "height", function ( id, oldval, newval ) {
+					obj._height = newval;
+					Proton3DInterpreter.createMeshGeometry( obj );
+				} );
+				//
+				for ( var i in extras ) {
+					if ( extras[i] && object[i] == undefined ) {
+
+						object[i] = extras[i];
+
+					}
+				}
+				break
+			
 			default:
 
 				var mesh = extras.mesh;
