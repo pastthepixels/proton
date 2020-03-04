@@ -3156,10 +3156,15 @@ const Proton3DInterpreter = {
 		}
 		if ( extras.livePBR ) {
 		
+			var livePBRIndex = 0;
 			extras.scene.extraFunctions.push( function () {
-				extras.scene.getObjectList != undefined? ( extras.scene.getObjectList() || [] ).forEach( function ( object ) {
+				if ( extras.scene.getObjectList != undefined && extras.scene.getObjectList() != undefined ) {
+
+					var object = extras.scene.getObjectList()[ livePBRIndex ]
 					getMeshByName( object.name ).pbr? getMeshByName( object.name ).pbr() : undefined;
-				} ) : undefined;
+					livePBRIndex ++;
+
+				}
 			} )
 
 		}
@@ -3191,23 +3196,31 @@ const Proton3DInterpreter = {
 		//physically based rendering
 		var skipPBRReplacement = object.skipPBRReplacement,
 			skipPBRReplacement_light = object.skipPBRReplacement_light,
-			object = getMeshByName( object.name ) || object,
+			object = object.name? getMeshByName( object.name ) : object,
 			oldMaterial = object.material;
 		if ( scene.usePBR != false && !skipPBRReplacement && !skipPBRReplacement_light && object.material ) {
 
-			object.pbr = function (scene = Proton3DInterpreter, PBRCamera = scene.PBRCamera) {
-				PBRCamera.position.copy( object.position );
-				PBRCamera.rotation.copy( object.rotation );
+			object.pbr = function ( scene = Proton3DInterpreter, PBRCamera = null ) {
+				if ( !object.pbrCam ) {
+
+					object.pbrCam = scene.PBRCamera.clone();
+					object.add( object.pbrCam );
+
+				}
+				PBRCamera = object.pbrCam;
+				//
+				object.visible = false
 				PBRCamera.update( scene.renderer, scene.objects );
+				object.visible = true;
 				if ( object.material[0] != null ) {
 
 					object.material.forEach( function ( material ) {
-						material.envMap = PBRCamera.renderTarget.texture
+						( material.proto? material.proto : material ).envMap = PBRCamera.renderTarget.texture
 					} )
 
 				} else {
 
-					object.material.envMap = PBRCamera.renderTarget.texture
+					( object.material.proto? object.material.proto : object.material ).envMap = PBRCamera.renderTarget.texture
 
 				}
 			}
