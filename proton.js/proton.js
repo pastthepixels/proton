@@ -3154,6 +3154,15 @@ const Proton3DInterpreter = {
 			this.PBRCamera.renderTarget.texture.format = THREE.RGBAFormat;
 			this.PBRCamera.renderTarget.texture.generateMipmaps = true;
 		}
+		if ( extras.livePBR ) {
+		
+			extras.scene.extraFunctions.push( function () {
+				extras.scene.getObjectList != undefined? ( extras.scene.getObjectList() || [] ).forEach( function ( object ) {
+					getMeshByName( object.name ).pbr? getMeshByName( object.name ).pbr() : undefined;
+				} ) : undefined;
+			} )
+
+		}
 		//dynamic resolution
 		if ( extras.dynamicResolution ) {
 
