@@ -3358,9 +3358,7 @@ const Proton3DInterpreter = {
 			if ( materialLocation != null ) {
 
 				var m = hasProto? new Physijs.createMaterial(
-					newMaterial,
-					0.999,
-					0.111
+					newMaterial
 				) : newMaterial;
 				m.transparent = true;
 				object.material[materialLocation] = m;
@@ -3375,9 +3373,7 @@ const Proton3DInterpreter = {
 			} else {
 
 				var m = hasProto? new Physijs.createMaterial(
-					newMaterial,
-					0.999,
-					0.111
+					newMaterial
 				) : newMaterial;
 				m.transparent = true;
 				object.material = m;
@@ -3842,7 +3838,8 @@ const Proton3DInterpreter = {
 
 			object.material = extras.material || new Proton3DMaterial( getMeshByName( object.name ), {
 				name: extras.materialName,
-				material: getMeshByName( object.name ).material
+				material: getMeshByName( object.name ).material,
+				materialType: extras.materialType
 			} )
 
 		}
@@ -4124,7 +4121,6 @@ const Proton3DInterpreter = {
 					if ( c.isMesh && c.geometry != null && !c._physijs ) {
 
 						c.updateMatrix();
-					//	oldGeometry = c.geometry.clone();
 						c.geometry = new THREE.Geometry().fromBufferGeometry( c.geometry );
 						if ( extras.accountForExtraProperties ) {
 
@@ -4430,7 +4426,7 @@ const Proton3DInterpreter = {
 	create3DMaterial( extras, P3DMaterial, parentObject ){
 		if ( !extras.material ) {
 
-			var material = new THREE.MeshStandardMaterial()
+			var material = eval( "new THREE.Mesh" + ( extras.materialType? ( extras.materialType.charAt( 0 ).toUpperCase() + extras.materialType.slice( 1 ) ) : "Standard") + "Material()" )
 			material.name = P3DMaterial.name;
 			material.transparent = true;
 			materials.push( material )
@@ -4464,7 +4460,7 @@ const Proton3DInterpreter = {
 			getMaterialByName( P3DMaterial.name ).wireframeIntensity = value
 		},
 		getWireframe( P3DMaterial ) {
-			return getMaterialByName( P3DMaterialname ).wireframeIntensity
+			return getMaterialByName( P3DMaterial.name ).wireframeIntensity
 		},
 		setEmmisive( value, P3DMaterial ) {
 			getMaterialByName( P3DMaterial.name ).emmisiveIntensity = value
