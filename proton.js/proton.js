@@ -3146,26 +3146,35 @@ const Proton3DInterpreter = {
 		//updating a scene
 		Proton3DInterpreter.render( extras.scene )
 		//PBR
-		if ( extras.pbr != false ) {
-			this.PBRCamera = new THREE.CubeCamera( 1, 10, 32, {
-				type: THREE.FloatType
-			} );
-			this.objects.add( this.PBRCamera );
-			this.PBRCamera.renderTarget.texture.format = THREE.RGBAFormat;
-			this.PBRCamera.renderTarget.texture.generateMipmaps = true;
+		if ( extras.pbr ) {
+
+			this.PBRCamera = new THREE.CubeCamera( 1, 100, 16, { encoding: THREE.sRGBEncoding } );
+
 		}
 		if ( extras.livePBR ) {
 		
 			var livePBRIndex = 0;
-			extras.scene.extraFunctions.push( function () {
+			this.pbrInterval = setInterval( function () {
 				if ( extras.scene.getObjectList != undefined && extras.scene.getObjectList() != undefined ) {
 
-					var object = extras.scene.getObjectList()[ livePBRIndex ]
-					getMeshByName( object.name ).pbr? getMeshByName( object.name ).pbr() : undefined;
+					var object = extras.scene.getObjectList()[ livePBRIndex ];
+					//
 					livePBRIndex ++;
+					if ( livePBRIndex > extras.scene.getObjectList().length ) {
+
+						livePBRIndex = 0
+
+					}
+					//
+					if ( object == undefined || getMeshByName( object.name ) == undefined ) {
+
+						return
+
+					}
+					getMeshByName( object.name ).pbr? getMeshByName( object.name ).pbr() : undefined;
 
 				}
-			} )
+			}, 1000 )
 
 		}
 		//dynamic resolution
@@ -3200,15 +3209,7 @@ const Proton3DInterpreter = {
 			oldMaterial = object.material;
 		if ( scene.usePBR != false && !skipPBRReplacement && !skipPBRReplacement_light && object.material ) {
 
-			object.pbr = function ( scene = Proton3DInterpreter, PBRCamera = null ) {
-				if ( !object.pbrCam ) {
-
-					object.pbrCam = scene.PBRCamera.clone();
-					object.add( object.pbrCam );
-
-				}
-				PBRCamera = object.pbrCam;
-				//
+			object.pbr = function ( scene = Proton3DInterpreter, PBRCamera = object.pbrCam ) {
 				object.visible = false
 				PBRCamera.update( scene.renderer, scene.objects );
 				object.visible = true;
@@ -3310,6 +3311,9 @@ const Proton3DInterpreter = {
 			];
 			if ( usePBRInTheFirstPlace ) {
 
+				object.pbrCam = new THREE.CubeCamera( 1, 100, 4, { encoding: THREE.sRGBEncoding } );
+				object.add( object.pbrCam );
+				//
 				hasProto = material.__proto__.type != null;
 				oldMaterial = hasProto? material.__proto__ : material;
 				newMaterial = new THREE.MeshStandardMaterial( {
@@ -3346,7 +3350,7 @@ const Proton3DInterpreter = {
 					newMaterial.normalMap = oldMaterial.normalMap
 
 				}
-				newMaterial.envMap = Proton3DInterpreter.PBRCamera.renderTarget.texture;
+				newMaterial.envMap = object.pbrCam.renderTarget.texture;
 				newMaterial.shadowSide = THREE.BackSide;
 				newMaterial.color = oldMaterial.color;
 
