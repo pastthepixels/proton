@@ -3135,7 +3135,7 @@ const Proton3DInterpreter = {
 		this.fpsMeasurements = [];
 		this.renderer.setSize( extras.width, extras.height );
 		this.renderer.shadowMap.enabled = true;
-		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+		this.renderer.shadowMap.type = THREE.VSMShadowMap;
 		//physics
 		this.objects = new Physijs.Scene();
 		this.objects.setGravity( new THREE.Vector3( 0, ( extras.gravity || -9.81 ), 0 ) );
@@ -3501,12 +3501,17 @@ const Proton3DInterpreter = {
 				//low quality: 2048
 				//medium quality: 8192
 				//high quality: 16384
-				spotlight.shadow.mapSize.width = 2048;
-				spotlight.shadow.mapSize.height = 2048;
-				spotlight.penumbra = 1;
-				spotlight.shadow.radius = 1.5;
-				spotlight.shadow.bias = -0.00004;
+				spotlight.angle = Math.PI / 5;
+				spotlight.penumbra = 0.3;
+				spotlight.castShadow = true;
+				spotlight.shadow.mapSize.width = 1024;
+				spotlight.shadow.mapSize.height = 1024;
 				spotlight.name = object.name;
+				spotlight.shadow.camera.near = 8;
+				spotlight.shadow.camera.far = 200;
+				spotlight.shadow.bias = -0.002;
+				spotlight.shadow.radius = 5;
+				//
 				meshes.push( spotlight );
 				//
 				object.changeColor = function ( hexString ) {
@@ -4337,7 +4342,7 @@ const Proton3DInterpreter = {
 					c.receiveShadow = true
 
 				}
-				c.children.forEach( castShadow );
+				c.children? c.children.forEach( castShadow ) : undefined;
 			}
 			//animations
 			if ( extras.fileType.toLowerCase() === "gltf" && object.animations && object.animations.length ) {
