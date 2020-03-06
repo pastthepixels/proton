@@ -36,9 +36,9 @@ document.writeln( '<link href="https://fonts.googleapis.com/css?family=Roboto|Ro
 //proton3d: threejs
 document.writeln( '<script src="https://threejs.org/build/three.js"></script>' );
 //proton3d models: threejs
-//document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/MTLLoader.js"></script>' );
-//document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/loaders/LoaderSupport.js"></script>' );
-//document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/OBJLoader2.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/MTLLoader.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/loaders/LoaderSupport.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/OBJLoader2.js"></script>' );
 document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/GLTFLoader.js"></script>' );
 document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/utils/BufferGeometryUtils.js"></script>' );
 //threejs effects
@@ -61,17 +61,6 @@ document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@mast
 document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/js/controls/TrackballControls.js"></script>' )
 //three.js' sky shader, by https://github.com/zz85
 document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js"></script>' );
-
-document.writeln( `
-	<script>
-		//MTLLoader
-		import { MTLLoader } from { https://rawcdn.githack.com/mrdoob/three.js/b11f897812a8a48bcd81e9bd46785d07939ec59e/examples/jsm/loaders/MTLLoader.js }
-
-		//OBJLoader
-		import { OBJLoader } from { https://rawcdn.githack.com/mrdoob/three.js/b11f897812a8a48bcd81e9bd46785d07939ec59e/examples/jsm/loaders/OBJLoader2.js }
-
-	</script>
-` )
 
 //\\//\\//\\//\\// //
 //\\ variables \// // loc:2
@@ -3512,11 +3501,11 @@ const Proton3DInterpreter = {
 				//low quality: 2048
 				//medium quality: 8192
 				//high quality: 16384
-			//	spotlight.shadow.mapSize.width = 8192;
-			//	spotlight.shadow.mapSize.height = 8192;
+				spotlight.shadow.mapSize.width = 2048;
+				spotlight.shadow.mapSize.height = 2048;
 				spotlight.penumbra = 1;
 				spotlight.shadow.radius = 1.5;
-				spotlight.shadow.bias = -0.0008;
+				spotlight.shadow.bias = -0.00004;
 				spotlight.name = object.name;
 				meshes.push( spotlight );
 				//
