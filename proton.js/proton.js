@@ -36,9 +36,9 @@ document.writeln( '<link href="https://fonts.googleapis.com/css?family=Roboto|Ro
 //proton3d: threejs
 document.writeln( '<script src="https://threejs.org/build/three.js"></script>' );
 //proton3d models: threejs
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/MTLLoader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/loaders/LoaderSupport.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/OBJLoader2.js"></script>' );
+//document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/MTLLoader.js"></script>' );
+//document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/loaders/LoaderSupport.js"></script>' );
+//document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/OBJLoader2.js"></script>' );
 document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/GLTFLoader.js"></script>' );
 document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/utils/BufferGeometryUtils.js"></script>' );
 //threejs effects
@@ -60,7 +60,19 @@ document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@mast
 document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/js/controls/OrbitControls.js"></script>' )
 document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/js/controls/TrackballControls.js"></script>' )
 //three.js' sky shader, by https://github.com/zz85
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js"></script>' )
+document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js"></script>' );
+
+document.writeln( `
+	<script>
+		//MTLLoader
+		import { MTLLoader } from { https://rawcdn.githack.com/mrdoob/three.js/b11f897812a8a48bcd81e9bd46785d07939ec59e/examples/jsm/loaders/MTLLoader.js }
+
+		//OBJLoader
+		import { OBJLoader } from { https://rawcdn.githack.com/mrdoob/three.js/b11f897812a8a48bcd81e9bd46785d07939ec59e/examples/jsm/loaders/OBJLoader2.js }
+
+	</script>
+` )
+
 //\\//\\//\\//\\// //
 //\\ variables \// // loc:2
 //\\//\\//\\//\\// //
@@ -379,10 +391,7 @@ const protonjs = {
 	},
 	resume: function () {
 		this.paused = false;
-		this.justResumed = true;
-		setTimeout( function() {
-			this.justResumed = false;
-		} );
+		Proton3DInterpreter.resume();
 		if ( window.onresume ) {
 
 			window.onresume();
@@ -2168,7 +2177,7 @@ class Proton3DScene {
 		this.objectList = []
 	}
 	update( scene ) {
-		requestAnimationFrame( function () {
+		requestAnimationFrame( function() {
 			scene.update( scene )
 		} );
 		//pausing
@@ -2180,7 +2189,7 @@ class Proton3DScene {
 		//rendering using Proton3DInterpreter.render
 		Proton3DInterpreter.render( this )
 		//extraFunctions
-		scene.priorityExtraFunctions.forEach( function ( e ) {
+		this.priorityExtraFunctions.forEach( function ( e ) {
 			e();
 		} );
 	}
@@ -3133,7 +3142,8 @@ const Proton3DInterpreter = {
 		//	logarithmicDepthBuffer: true
 		} );
 		this.frame = 0;
-		this.fpsMeasurements = [] 
+		this.renderThing = this.renderer;
+		this.fpsMeasurements = [];
 		this.renderer.setSize( extras.width, extras.height );
 		this.renderer.shadowMap.enabled = true;
 		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -3146,11 +3156,6 @@ const Proton3DInterpreter = {
 		//updating a scene
 		Proton3DInterpreter.render( extras.scene )
 		//PBR
-		if ( extras.pbr ) {
-
-			this.PBRCamera = new THREE.CubeCamera( 1, 100, 16, { encoding: THREE.sRGBEncoding } );
-
-		}
 		if ( extras.livePBR ) {
 		
 			var livePBRIndex = 0;
@@ -3182,7 +3187,19 @@ const Proton3DInterpreter = {
 
 			setInterval( function() {
 				Proton3DInterpreter.renderer.setPixelRatio( ( Proton3DInterpreter.fps / 60 ) / ( extras.dynamicResolutionFactor || 4 ) ) 
-			}, 500 )
+			}, 500 );
+			extras.scene.priorityExtraFunctions.push( function() {
+				//getting the fps, slightly modified from https://www.growingwiththeweb.com/2017/12/fast-simple-js-fps-counter.html
+				const now = performance.now();
+				while ( Proton3DInterpreter.fpsMeasurements.length > 0 && Proton3DInterpreter.fpsMeasurements[0] <= now - 1000 ) {
+					
+					Proton3DInterpreter.fpsMeasurements.shift();
+
+				}
+				Proton3DInterpreter.fpsMeasurements.push( now );
+				Proton3DInterpreter.fps = Proton3DInterpreter.fpsMeasurements.length;	
+
+			} )
 
 		}
 		//
@@ -3311,7 +3328,7 @@ const Proton3DInterpreter = {
 			];
 			if ( usePBRInTheFirstPlace ) {
 
-				object.pbrCam = new THREE.CubeCamera( 1, 100, 4, { encoding: THREE.sRGBEncoding } );
+				object.pbrCam = new THREE.CubeCamera( 1, 10, 4, { encoding: THREE.sRGBEncoding } );
 				object.add( object.pbrCam );
 				//
 				hasProto = material.__proto__.type != null;
@@ -3399,26 +3416,12 @@ const Proton3DInterpreter = {
 	},
 	render( scene ) {
 		//rendering using three.js
-		( this.composer || this.renderer ).render( this.objects, getMeshByName( scene.camera.name ) );
+		this.renderThing.render( this.objects, getMeshByName( scene.camera.name ) );
 		//physics
-			//resumption
-			if( protonjs.justResumed ) {
-				
-				this.objects.onSimulationResume();
-				protonjs.justResumed = false;
-
-			}
-			//doing the stuff
-			this.objects.simulate()
-		//getting the fps, slightly modified from https://www.growingwiththeweb.com/2017/12/fast-simple-js-fps-counter.html
-		const now = performance.now();
-		while ( this.fpsMeasurements.length > 0 && this.fpsMeasurements[0] <= now - 1000 ) {
-			
-			this.fpsMeasurements.shift();
-
-		}
-		this.fpsMeasurements.push( now );
-		this.fps = this.fpsMeasurements.length;
+		this.objects.simulate()
+	},
+	resume() {
+		this.objects.onSimulationResume();
 	},
 
 
@@ -4649,9 +4652,9 @@ const Proton3DInterpreter = {
 			case "sphere":
 				var geoParameters = ( obj || {
 					radius: ( extras.radius || 1 ),
-					widthSegments: ( extras.sphereSegments || 100 ),
-					heightSegments: ( extras.sphereSegments || 100 ),
-					depthSegments: ( extras.sphereSegments || 100 )
+					widthSegments: ( extras.sphereSegments || 16 ),
+					heightSegments: ( extras.sphereSegments || 16 ),
+					depthSegments: ( extras.sphereSegments || 16 )
 				} );
 				if ( extras.sphereSegments ) {
 
