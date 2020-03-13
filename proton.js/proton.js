@@ -457,8 +457,8 @@ class Proton3DScene {
 	dynamicResize() {
 		Proton3DInterpreter.dynamicResize( this )
 	}
-	setKeyControls( obj, speed = 2.5, jumpHeight = 4 ) {
-		var x = this;
+	setKeyControls( obj, speed = 2.5, jumpHeight = 4, extras = {} ) {
+		var x = this, gunMoveFrame = 0;
 		window.addEventListener( "keydown", function ( e ) {
 			e = e || event;
 			x.keys[ e.keyCode ] = e.type;
@@ -604,7 +604,12 @@ class Proton3DScene {
 				obj.setLinearVelocity( y.x * speed * ( negatise? -1 : 1 ), z.y, y.z * speed * ( negatise? -1 : 1 ) );
 
 			}
+			if ( x.gun && extras.gunAnimations ) {
 
+				var position = x.gun.position, movement = ( ( Math.sin( gunMoveFrame += 0.1 ) * speed ) / 5000 );
+				x.gun.setPosition( position.x + ( movement / 1.5 ), position.y + movement, undefined );
+
+			}
 		}
 	}
 	makeDoor( door, width = door.width || 2.5, faceInwards = true ) {
@@ -694,6 +699,7 @@ class Proton3DScene {
 					if ( extras.gun ) {
 
 						x.camera.add( extras.gun )
+						x.gun = extras.gun;
 						extras.gun.setPosition( 0.9, -0.8, -1.4 )
 						if ( extras.gunPosition ) {
 
