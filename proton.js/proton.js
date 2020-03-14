@@ -469,6 +469,8 @@ class Proton3DScene {
 			x.keys[ e.keyCode ] = false;
 			if ( extras.gunAnimations && x.gun && x.gun.movePosition ) {
 
+				clearInterval( window.gunWalkingAnimation );
+				window.gunWalkingAnimation = undefined;
 				$( x.gun.movePosition ).animate( {
 					x: x.gun.starterPosition.x,
 					y: x.gun.starterPosition.y,
@@ -620,10 +622,17 @@ class Proton3DScene {
 			}
 			if ( x.gun && extras.gunAnimations && gunAnimation == true ) {
 
-				var movement = ( ( Math.sin( gunMoveFrame += 0.1 ) * speed ) / 5000 );
+				var movement = ( ( Math.sin( gunMoveFrame ) * speed ) / 5000 );
 				x.gun.movePosition? $( x.gun.movePosition ).stop() : undefined;
 				x.gun.setPosition( x.gun.position.x + ( ( 2 * movement ) ), x.gun.position.y + ( movement / 2 ), undefined );
 				x.gun.movePosition = x.gun.position.clone();
+				if ( window.gunWalkingAnimation == undefined ) {
+
+					window.gunWalkingAnimation = setInterval( function() {
+						gunMoveFrame += 0.1
+					}, 32 )
+
+				}
 			
 			}
 		}
