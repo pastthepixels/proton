@@ -467,6 +467,20 @@ class Proton3DScene {
 		window.addEventListener( "keyup", function ( e ) {
 			e = e || event;
 			x.keys[ e.keyCode ] = false;
+			if ( extras.gunAnimations && x.gun && x.gun.movePosition ) {
+
+				$( x.gun.movePosition ).animate( {
+					x: x.gun.starterPosition.x,
+					y: x.gun.starterPosition.y,
+					z: x.gun.starterPosition.z
+				}, {
+					step: function() {
+						x.gun.position.set( x.gun.movePosition.x, x.gun.movePosition.y, x.gun.movePosition.z );
+					},
+					duration: 1500
+				} )
+
+			}
 		} );
 		x.priorityExtraFunctions.push( checkKeys );
 
@@ -505,7 +519,7 @@ class Proton3DScene {
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move( y, z, speed - 0.5 )
+					move( y, z, speed - 0.5, undefined, undefined, false )
 					return
 
 				}
@@ -518,7 +532,7 @@ class Proton3DScene {
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move( y, z, speed - 0.5 )
+					move( y, z, speed - 0.5, undefined, undefined, false )
 					return
 
 				}
@@ -540,7 +554,7 @@ class Proton3DScene {
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move( y, z, speed - 0.5, true )
+					move( y, z, speed - 0.5, true, undefined, false )
 					return
 
 				}
@@ -553,7 +567,7 @@ class Proton3DScene {
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move( y, z, speed - 0.5, true )
+					move( y, z, speed - 0.5, true, undefined, false )
 					return
 
 				}
@@ -593,7 +607,7 @@ class Proton3DScene {
 
 			}
 		}
-		function move ( y, z, speed, negatise = false, forward = false ) {
+		function move ( y, z, speed, negatise = false, forward = false, gunAnimation = true) {
 			if ( x.noclip ) {
 
 				var pos = obj.position.clone().add( new THREE.Vector3( y.x * ( speed / 10 ) * ( negatise? -1 : 1 ) , forward? ( x.camera.getWorldDirection().y * (speed / 10) * ( negatise? -1 : 1 ) ) : 0, y.z * (speed / 10) * ( negatise? -1 : 1 )  ) )
@@ -604,11 +618,13 @@ class Proton3DScene {
 				obj.setLinearVelocity( y.x * speed * ( negatise? -1 : 1 ), z.y, y.z * speed * ( negatise? -1 : 1 ) );
 
 			}
-			if ( x.gun && extras.gunAnimations ) {
+			if ( x.gun && extras.gunAnimations && gunAnimation == true ) {
 
-				var position = x.gun.position, movement = ( ( Math.sin( gunMoveFrame += 0.1 ) * speed ) / 5000 );
-				x.gun.setPosition( position.x + ( movement / 1.5 ), position.y + movement, undefined );
-
+				var movement = ( ( Math.sin( gunMoveFrame += 0.1 ) * speed ) / 5000 );
+				x.gun.movePosition? $( x.gun.movePosition ).stop() : undefined;
+				x.gun.setPosition( x.gun.position.x + ( ( 2 * movement ) ), x.gun.position.y + ( movement / 2 ), undefined );
+				x.gun.movePosition = x.gun.position.clone();
+			
 			}
 		}
 	}
@@ -706,6 +722,7 @@ class Proton3DScene {
 							extras.gun.setPosition( extras.gunPosition.x, extras.gunPosition.y, extras.gunPosition.z )
 
 						}
+						extras.gun.starterPosition = extras.gun.position.clone();
 
 					}
 
