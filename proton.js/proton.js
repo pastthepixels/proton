@@ -1457,8 +1457,13 @@ const Proton3DInterpreter = {
 			var livePBRIndex = 0;
 			this.pbrInterval = setInterval( function () {
 				if ( extras.scene.getObjectList != undefined && extras.scene.getObjectList() != undefined ) {
-
+					
 					var object = extras.scene.getObjectList()[ livePBRIndex ];
+					if ( object.position.distanceTo( extras.scene.camera.position ) > 3) {
+
+						return
+
+					}
 					//
 					livePBRIndex ++;
 					if ( livePBRIndex > extras.scene.getObjectList().length ) {
@@ -1475,7 +1480,7 @@ const Proton3DInterpreter = {
 					getMeshByName( object.name ).pbr? getMeshByName( object.name ).pbr() : undefined;
 
 				}
-			}, 1000 )
+			}, 100 )
 
 		}
 		//dynamic resolution
