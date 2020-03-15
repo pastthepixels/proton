@@ -625,15 +625,13 @@ class Proton3DScene {
 				if ( window.gunWalkingAnimation == undefined ) {
 
 					window.gunWalkingAnimation = setInterval( function() {
-						gunMoveFrame += 0.2;
-						window.gunWalkingMovement = ( ( Math.sin( gunMoveFrame ) * speed ) / 5000 )
+						var movement = ( ( Math.sin( gunMoveFrame += 0.2 ) * speed ) / 5000 )
+						x.gun.movePosition? $( x.gun.movePosition ).stop() : undefined;
+						x.gun.setPosition( x.gun.position.x + ( ( 2 * movement ) ), x.gun.position.y + ( movement / 2 ), undefined );
+						x.gun.movePosition = x.gun.position.clone();
 					}, 32 )
 
 				}
-				var movement = window.gunWalkingMovement || ( ( Math.sin( gunMoveFrame ) * speed ) / 5000 )
-				x.gun.movePosition? $( x.gun.movePosition ).stop() : undefined;
-				x.gun.setPosition( x.gun.position.x + ( ( 2 * movement ) ), x.gun.position.y + ( movement / 2 ), undefined );
-				x.gun.movePosition = x.gun.position.clone();
 			}
 		}
 	}
