@@ -341,6 +341,10 @@ const Element = function ( elementType = "div", innerHTML = "", properties = nul
 	}
 	return elem;
 }
+//toggling
+const toggle = function ( boolean ) {
+	return !boolean;
+}
 //bringing back object.watch from user Eli Grey on:
 //https://stackoverflow.com/questions/1759987/listening-for-variable-changes-in-javascript
 Object.defineProperty( Object.prototype, "watch", {
@@ -639,8 +643,9 @@ class Proton3DScene {
 		function move ( y, z, speed, negatise = false, forward = false, gunAnimation = true) {
 			if ( x.noclip ) {
 
-				var pos = obj.position.clone().add( new THREE.Vector3( y.x * ( speed / 10 ) * ( negatise? -1 : 1 ) , forward? ( x.camera.getWorldDirection().y * (speed / 10) * ( negatise? -1 : 1 ) ) : 0, y.z * (speed / 10) * ( negatise? -1 : 1 )  ) )
-				obj.setPosition( pos.x, pos.y, pos.z )
+				var pos = obj.position.clone().add( new THREE.Vector3( y.x * ( speed / 500 ) * ( negatise? -1 : 1 ) , forward? ( x.camera.getWorldDirection().y * (speed / 500) * ( negatise? -1 : 1 ) ) : 0, y.z * (speed / 500) * ( negatise? -1 : 1 )  ) )
+				obj.setPosition( pos.x, pos.y, pos.z );
+				obj.applyLocRotChange();
 
 			} else {
 
@@ -918,55 +923,60 @@ class Proton3DScene {
 			}
 			if ( x.keys[ x.mappedKeys.use ] && x.crosshair.position.distanceTo( child.position ) <= ( child.__pickupDistance || 2 ) && child.pickingUp == null && window.pickingUpChild == undefined ) {
 
-				window.keyErrorCheck = true
-				setInterval( function () { window.keyErrorCheck = false }, 250 )
-				//
-
-				if ( child.onUse ) {
-
-					child.onUse();
-					if ( child.__returnAfterPickup ) {
-
-						return
-
-					}
-
-				}
-				
-				child.pickingUp = true;
-				if ( child.oldMass != 0 ) {
-
-					child.oldMass = child.mass;
-
-				}
-				child.addEventListener( "collision", function( otherobj ) {
-					if ( child.pickingUp && otherobj.p3dParent != x.camera.parent ) {
-
-						resetPickingUp( child )
-
-					}
-				} )
-				child.oldPos = child.position.clone();
-				child.distance = x.crosshair.position.distanceTo( child.position );
-				child.setLinearVelocity( 0, 0, 0 );
-				child.setLinearFactor( 0, 0, 0 );
-				child.setAngularVelocity( 0, 0, 0 );
-				child.setAngularFactor( 0, 0, 0 );
-				x.crosshair.hide();
+				x.pickUpObject( child )
 
 			}
 		}
+		
+		var resetPickingUp = function ( child ) { x.resetPickingUp( child, x ) }
+	}
+	resetPickingUp( child, scene ) {
+		child.pickingUp = false;
+		child.pickingUp = "wrapping";
+		scene.crosshair.show()
+		//
+		window.keyErrorCheck = true;
+		setInterval( function () {
+			window.keyErrorCheck = false;
+		}, 500 )
+	}
+	pickUpObject( child ) {
+		var x = this, resetPickingUp = function ( child ) { x.resetPickingUp( child, x ) };
+		window.keyErrorCheck = true
+		setInterval( function () { window.keyErrorCheck = false }, 250 )
+		//
 
-		function resetPickingUp ( child ) {
-			child.pickingUp = false;
-			child.pickingUp = "wrapping";
-			x.crosshair.show()
-			//
-			window.keyErrorCheck = true;
-			setInterval( function () {
-				window.keyErrorCheck = false;
-			}, 500 )
+		if ( child.onUse ) {
+
+			child.onUse();
+			if ( child.__returnAfterPickup ) {
+
+				return
+
+			}
+
 		}
+		
+		child.pickingUp = true;
+		if ( child.oldMass != 0 ) {
+
+			child.oldMass = child.mass;
+
+		}
+		child.addEventListener( "collision", function( otherobj ) {
+			if ( child.pickingUp && otherobj != this && otherobj.p3dParent != x.camera.parent && otherobj.p3dParent != x.gun ) {
+
+				resetPickingUp( child )
+
+			}
+		} )
+		child.oldPos = child.position.clone();
+		child.distance = this.crosshair.position.distanceTo( child.position );
+		child.setLinearVelocity( 0, 0, 0 );
+		child.setLinearFactor( 0, 0, 0 );
+		child.setAngularVelocity( 0, 0, 0 );
+		child.setAngularFactor( 0, 0, 0 );
+		this.crosshair.hide();
 	}
 }
 /*
@@ -1452,18 +1462,15 @@ const Proton3DInterpreter = {
 		//updating a scene
 		Proton3DInterpreter.render( extras.scene )
 		//PBR
+		this.pbrTexture = extras.pbrTexture;
 		if ( extras.livePBR ) {
 		
 			var livePBRIndex = 0;
-			this.pbrInterval = setInterval( function () {
+			this.livePBR = true;
+			this.pbrInterval = extras.scene.priorityExtraFunctions.push( function () {
 				if ( extras.scene.getObjectList != undefined && extras.scene.getObjectList() != undefined ) {
 					
 					var object = extras.scene.getObjectList()[ livePBRIndex ];
-					if ( object.position.distanceTo( extras.scene.camera.position ) > 3) {
-
-						return
-
-					}
 					//
 					livePBRIndex ++;
 					if ( livePBRIndex > extras.scene.getObjectList().length ) {
@@ -1472,7 +1479,7 @@ const Proton3DInterpreter = {
 
 					}
 					//
-					if ( object == undefined || getMeshByName( object.name ) == undefined ) {
+					if ( object == undefined || getMeshByName( object.name ) == undefined || object.position.distanceTo( extras.scene.camera.parent.position ) > 5 ) {
 
 						return
 
@@ -1480,7 +1487,7 @@ const Proton3DInterpreter = {
 					getMeshByName( object.name ).pbr? getMeshByName( object.name ).pbr() : undefined;
 
 				}
-			}, 100 )
+			} )
 
 		}
 		//dynamic resolution
@@ -1534,12 +1541,12 @@ const Proton3DInterpreter = {
 				if ( object.material[0] != null ) {
 
 					object.material.forEach( function ( material ) {
-						( material.proto? material.proto : material ).envMap = PBRCamera.renderTarget.texture
+						( material.proto? material.proto : material ).envMap = object.pbrTexture || PBRCamera.renderTarget.texture
 					} )
 
 				} else {
 
-					( object.material.proto? object.material.proto : object.material ).envMap = PBRCamera.renderTarget.texture
+					( object.material.proto? object.material.proto : object.material ).envMap = object.pbrTexture || PBRCamera.renderTarget.texture
 
 				}
 			}
@@ -1610,7 +1617,9 @@ const Proton3DInterpreter = {
 			];
 			if ( usePBRInTheFirstPlace ) {
 
-				object.pbrCam = new THREE.CubeCamera( 1, 10, 4, { encoding: THREE.sRGBEncoding } );
+				object.pbrCam = Proton3DInterpreter.livePBR? new THREE.CubeCamera( 1, 5, 4 ) : new THREE.CubeCamera( 1, 100, 1024 );
+				object.pbrTexture = Proton3DInterpreter.pbrTexture? new THREE.TextureLoader().load( Proton3DInterpreter.pbrTexture ) : undefined;
+				console.log( object.pbrTexture )
 				object.add( object.pbrCam );
 				//
 				hasProto = material.__proto__.type != null;
