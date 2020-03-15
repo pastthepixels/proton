@@ -1658,7 +1658,6 @@ const Proton3DInterpreter = {
 				var m = hasProto? new Physijs.createMaterial(
 					newMaterial
 				) : newMaterial;
-				m.transparent = true;
 				object.material[materialLocation] = m;
 				if ( materialName ) {
 
@@ -1673,7 +1672,6 @@ const Proton3DInterpreter = {
 				var m = hasProto? new Physijs.createMaterial(
 					newMaterial
 				) : newMaterial;
-				m.transparent = true;
 				object.material = m;
 				if ( materialName ) {
 
@@ -2774,6 +2772,7 @@ const Proton3DInterpreter = {
 			return getMaterialByName( P3DMaterial.name ).metalness
 		},
 		setOpacity( value, P3DMaterial ) {
+			getMaterialByName( P3DMaterial.name ).transparent = true;
 			getMaterialByName( P3DMaterial.name ).opacity = value
 		},
 		getOpacity( P3DMaterial ) {
