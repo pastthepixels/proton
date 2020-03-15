@@ -1658,6 +1658,7 @@ const Proton3DInterpreter = {
 				var m = hasProto? new Physijs.createMaterial(
 					newMaterial
 				) : newMaterial;
+				m.transparent = false;
 				object.material[materialLocation] = m;
 				if ( materialName ) {
 
@@ -1672,6 +1673,7 @@ const Proton3DInterpreter = {
 				var m = hasProto? new Physijs.createMaterial(
 					newMaterial
 				) : newMaterial;
+				m.transparent = false;
 				object.material = m;
 				if ( materialName ) {
 
