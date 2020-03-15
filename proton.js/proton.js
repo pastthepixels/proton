@@ -20,6 +20,7 @@
 //\\//\\//\\//\\//\\//\\//\\ //
 //\\ adding extra scripts \\ // //loc:1
 //\\//\\//\\//\\//\\//\\//\\ //
+//25 lines in total will be added to the HTML of a document using Proton3D.
 var three_revision = { veryMin: "0.99.0", min: "0.105.0", max: "0.106.0" }
 //do not forget to use the tag below
 document.writeln( '<meta name="viewport" content="width = device-width, initial-scale = 1.0">' );
@@ -313,6 +314,32 @@ const radian = function ( angle ) {
 const angle = function ( converto, degOrRad ) {
 	//This assumes that the variable converto is in the opposite measurement that you want to convert it to.
 	return degOrRad == "rad"? THREE.Math.degToRad( converto ) : THREE.Math.radToDeg( converto )
+}
+//creating elements
+const Element = function ( elementType = "div", innerHTML = "", properties = null) {
+	var elem = document.createElement( elementType );
+	elem.innerHTML = innerHTML;
+	if ( properties ) {
+
+		for ( var i in properties ) {
+			if ( i === "class" ) {
+
+				var array = properties[i].split(" ");
+				array.forEach( function ( classString ) {
+					elem.classList.add( classString )
+				} )
+
+			}
+
+			if ( i === "id" ) {
+				elem.id = properties[i]
+
+			}
+			elem[i] = properties[i];
+		}
+
+	}
+	return elem;
 }
 //bringing back object.watch from user Eli Grey on:
 //https://stackoverflow.com/questions/1759987/listening-for-variable-changes-in-javascript
