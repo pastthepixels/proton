@@ -134,7 +134,7 @@
 	</body>
 	<script>
 		function parse() {
-			pickledocs_data.objects.forEach( function ( object ) {
+			docs_data.objects.forEach( function ( object ) {
 				//creates the main div
 				var div = document.createElement( "div" );
 				div.classList.add( "block" );
@@ -169,16 +169,26 @@
 					}
 					//creates stuff for the properties
 					if ( object.properties ) {
-					
+						
 						var header_second = document.createElement( "h3" );
 						header_second.innerHTML = "Properties";
 						div.appendChild( header_second );
 						
-						object.properties.forEach( function ( property ) {
+						if ( typeof object.properties[ 0 ] == "string" ) {
+					
 							var property_info = document.createElement( "p" );
-							property_info.innerHTML = "<code>." + property.name + "</code>" + "<tag>" + property.type + "</tag>" + "<desc>" + property.description + "</desc>";
+							property_info.innerHTML = "See '" + object.properties[ 0 ] + "' for common properties.";
 							div.appendChild( property_info );
-						} );
+
+						} else {
+
+							object.properties.forEach( function ( property ) {
+								var property_info = document.createElement( "p" );
+								property_info.innerHTML = "<code>." + property.name + "</code>" + "<tag>" + property.type + "</tag>" + "<desc>" + property.description + "</desc>";
+								div.appendChild( property_info );
+							} );
+
+						}
 						
 					}
 					//creates stuff for the functions
