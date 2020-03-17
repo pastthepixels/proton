@@ -198,11 +198,21 @@
 						header_second.innerHTML = "Functions";
 						div.appendChild( header_second );
 						
-						object.functions.forEach( function ( property ) {
+						if ( typeof object.functions[ 0 ] == "string" ) {
+					
 							var property_info = document.createElement( "p" );
-							property_info.innerHTML = "<code>." + property.name + "</code>" + "<desc>" + property.description + "</desc>";
+							property_info.innerHTML = "See '" + object.functions[ 0 ] + "' for common properties.";
 							div.appendChild( property_info );
-						} );
+
+						} else {
+							
+							object.functions.forEach( function ( property ) {
+								var property_info = document.createElement( "p" );
+								property_info.innerHTML = "<code>." + property.name + "</code>" + "<desc>" + property.description + "</desc>";
+								div.appendChild( property_info );
+							} );
+
+						}
 						
 					}
 				//creates scroller

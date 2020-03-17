@@ -180,15 +180,44 @@ var docs_data = {
 			use: "new Proton3DObject( { type: (string; ['cube', 'sphere', 'cylinder']) } )",
 			
 			properties: [
-				"Proton3DObject (universal)"
+				{
+					name: "width (cube)",
+					type: "float",
+					description: "Gets the cube's width."
+				},
+				{
+					name: "height (cube)",
+					type: "float",
+					description: "Gets the cube's height."
+				},
+				{
+					name: "depth (cube)",
+					type: "float",
+					description: "Gets the cube's depth."
+				},
+				{
+					name: "radius (sphere)",
+					type: "float",
+					description: "Gets the sphere's radius."
+				},
+				{
+					name: "radiusTop (cylinder)",
+					type: "float",
+					description: "Gets the cylinder's top radius."
+				},
+				{
+					name: "height (cylinder)",
+					type: "float",
+					description: "Gets the cylinder's height."
+				},
+				{
+					name: "radiusBottom (cylinder)",
+					type: "float",
+					description: "Gets the cylinder's bottom radius."
+				}
 			],
 			functions: [
-				/*
-				{
-					name: "getShadowOptions( ... (?), ... (?) )",
-					description: "..."
-				}
-				*/
+				"Proton3DObject (universal)"
 			],
 		},
 		{
@@ -200,12 +229,7 @@ var docs_data = {
 				"Proton3DObject (universal)"
 			],
 			functions: [
-				/*
-				{
-					name: "getShadowOptions( ... (?), ... (?) )",
-					description: "..."
-				}
-				*/
+				"Proton3DObject (universal)"
 			],
 		},
 		{
@@ -217,12 +241,38 @@ var docs_data = {
 				"Proton3DObject (universal)"
 			],
 			functions: [
-				/*
 				{
-					name: "getShadowOptions( ... (?), ... (?) )",
-					description: "..."
+					name: "changeViewingWidth( value (float) ) (orthographic)",
+					description: "Changes the width of the camera"
+				},
+				{
+					name: "changeViewingHeight( value (float) ) (orthographic)",
+					description: "Changes the height of the camera"
+				},
+				{
+					name: "changeNear( value (float) )",
+					description: "Changes the 'near' value of the camera"
+				},
+				{
+					name: "changeFar( value (float) )",
+					description: "Changes the 'far' value of the camera"
+				},
+				{
+					name: "changeAspectRatio( value (float) )",
+					description: "Changes the aspect ratio of the camera"
+				},
+				{
+					name: "changeFOV( value (float) ) (perspective)",
+					description: "Changes the field of view of the camera"
+				},
+				{
+					name: "setZoom( value (float) ) (perspective)",
+					description: "Changes the 'zoom' of the camera"
+				},
+				{
+					name: "getZoom() (perspective)",
+					description: "Gets the 'zoom' of the camera"
 				}
-				*/
 			],
 		},
 		{
@@ -231,15 +281,117 @@ var docs_data = {
 			use: "new Proton3DObject( { type: (string; ['pointlight', 'directionallight' ]) } )",
 			
 			properties: [
-				"Proton3DObject (universal)"
+				{
+					name: "radiusBottom (cylinder)",
+					type: "float",
+					description: "Gets the cylinder's bottom radius."
+				}
 			],
 			functions: [
-				/*
 				{
-					name: "getShadowOptions( ... (?), ... (?) )",
-					description: "..."
+					name: "changeColor( hexString (string) )",
+					description: "Changes the color of the light with a CSS color string"
 				}
-				*/
+			],
+		},
+		{
+			name: "Proton3DScene",
+			description: "An scene in Proton3D.",
+			use: "new Proton3DScene()",
+			
+			properties: [
+				{
+					name: "mappedKeys",
+					type: "object",
+					description: "An array containing actions and their matching key codes. It can be edited."
+				},
+				{
+					name: "mappedKeys",
+					type: "object",
+					description: "An array containing actions and their matching key codes. It can be edited."
+				},
+				{
+					name: "extraFunctions",
+					type: "array",
+					description: "An array containing all functions to be called repedately when the computer is idle. It can be edited."
+				},
+				{
+					name: "priorityExtraFunctions",
+					type: "array",
+					description: "An array containing all functions to be called repedately when each frame is called. It can be edited."
+				},
+				{
+					name: "element",
+					type: "htmlelement",
+					description: "The element wrapper in the DOM containing the scene's canvas."
+				},
+				{
+					name: "audio",
+					type: "htmlelement",
+					description: "An audio element."
+				},
+				{
+					name: "soundtrack",
+					type: "htmlelement",
+					description: "Another audio element."
+				},
+				{
+					name: "objectList",
+					type: "array",
+					description: "An array of the scene's objects."
+				},
+				{
+					name: "gun",
+					type: "proton3dobject",
+					description: "The player's weapon."
+				},
+				{
+					name: "crosshair",
+					type: "object",
+					description: "Created from setCameraControls() and crosshair() (optional). Its position value is a three.js Vector3."
+				}
+			],
+			functions: [
+				{
+					name: "init( { antialias: boolean, shaderQuality: [ 'low', 'medium', 'high' ], pbr: boolean, gravity: float, pixelatedScene: boolean, pbrTexture: string (url), livePBR: boolean, dynamicResolution: boolean } )",
+					description: "Perhaps the most important Proton3D function. It initializes a scene."
+				},
+				{
+					name: "getObjectList()",
+					description: "Gets the scene's Proton3D objects."
+				},
+				{
+					name: "add( object (Proton3DObject) )",
+					description: "Adds an object."
+				},
+				{
+					name: "remove( object (Proton3DObject) )",
+					description: "Removes an object."
+				},
+				{
+					name: "dynamicResize()",
+					description: "When called, the scene will automatically resize to the browser window's size."
+				},
+				{
+					name: "setKeyControls( obj (Proton3DObject), speed (float), jumpHeight (float), extras ( { gunAnimation: boolean } ) )",
+					description: "Corresponds 'yer keys to the player's movement."
+				},
+				{
+					name: "makeDoor( door (Proton3DObject), width (float), faceInwards (boolean) )",
+					description: "Makes an object a door that opens when interacted with."
+				},
+				{
+					name: "setCameraControls( { xSensitivity: float, ySensitivity: float,  distance: three.js Vector3, invisibleParent: boolean, cameraParent: Proton3DObject, gun: Proton3DObject } )",
+					description: "Adds a camera to the player."
+				},
+				{
+					name: "pickUpObject( object (Proton3DObject) )",
+					description: "Picks up any object, no matter what."
+				},
+				{
+					name: "setPickingUpControls()",
+					description: "Sets controls for object interactions. It is automatically called by setCameraControls()."
+				}
 			],
 		}
 	]

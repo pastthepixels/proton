@@ -657,7 +657,7 @@ class Proton3DScene {
 				if ( window.gunWalkingAnimation == undefined ) {
 
 					window.gunWalkingAnimation = setInterval( function() {
-						var movement = ( ( Math.sin( gunMoveFrame += 0.2 ) * speed ) / 5000 )
+						var movement = ( ( Math.sin( gunMoveFrame += 0.2 ) * speed ) / 4000 )
 						x.gun.movePosition? $( x.gun.movePosition ).stop() : undefined;
 						x.gun.setPosition( x.gun.position.x + ( ( 2 * movement ) ), x.gun.position.y + ( movement / 2 ), undefined );
 						x.gun.movePosition = x.gun.position.clone();
@@ -1479,7 +1479,7 @@ const Proton3DInterpreter = {
 
 					}
 					//
-					if ( object == undefined || getMeshByName( object.name ) == undefined || object.position.distanceTo( extras.scene.camera.parent.position ) > 5 ) {
+					if ( object == undefined || getMeshByName( object.name ) == undefined || object.position.distanceTo( extras.scene.camera.parent.position ) > 5 || ( object != undefined && object.material != undefined && object.material.roughness > 0.3) ) {
 
 						return
 
@@ -1617,7 +1617,7 @@ const Proton3DInterpreter = {
 			];
 			if ( usePBRInTheFirstPlace ) {
 
-				object.pbrCam = Proton3DInterpreter.livePBR? new THREE.CubeCamera( 1, 5, 4 ) : new THREE.CubeCamera( 1, 100, 1024 );
+				object.pbrCam = new THREE.CubeCamera( 1, 100, 1024 );
 				object.pbrTexture = Proton3DInterpreter.pbrTexture? new THREE.TextureLoader().load( Proton3DInterpreter.pbrTexture ) : undefined;
 				console.log( object.pbrTexture )
 				object.add( object.pbrCam );
@@ -1797,12 +1797,7 @@ const Proton3DInterpreter = {
 
 			case "spotlight":
 				var spotlight = new THREE.SpotLight( new THREE.Color( extras.color || "#fff" ), extras.intensity || 15 )
-			//	spotlight.shadow.camera = new THREE.OrthographicCamera( -( 100 ), 100, 100, -( 100 ), 0.25, 1000 );
 				spotlight.castShadow = true;
-				//very low quality: 1024
-				//low quality: 2048
-				//medium quality: 8192
-				//high quality: 16384
 				spotlight.angle = Math.PI / 5;
 				spotlight.penumbra = 0.3;
 				spotlight.castShadow = true;
@@ -1841,6 +1836,9 @@ const Proton3DInterpreter = {
 				}
 				object.changeIntensity = function ( value ) {
 					directionallight.intensity = value
+				}
+				object.getIntensity = function ( value ) {
+					return directionallight.intensity
 				}
 				object.setTargetPosition = function ( x, y, z ) {
 					directionallight.target.position.set( x, y, z )
