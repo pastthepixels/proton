@@ -19,27 +19,27 @@ var docs_data = {
 				{
 					name: "position",
 					type: "Vector3 (three.js)",
-					description: "Gets the object's position. Setting this position may not affect an object's position. Use setPosition() instead."
+					description: "Gets the object's position. Setting this position may not affect the object's position. Use setPosition() instead."
 				},
 				{
 					name: "rotation",
 					type: "Vector3 (three.js)",
-					description: "Gets the object's rotation. Setting this position may not affect an object's rotation. Use setRotation() instead."
+					description: "Gets the object's rotation. Setting this position may not affect the object's rotation. Use setRotation() instead."
 				},
 				{
 					name: "pickupDistance",
 					type: "float",
-					description: "Gets the minimum distance required before a player can press a key to pick up the object. However, the object must have 'interacting' enabled with the function setPickup() before a player can use or pick up the object."
+					description: "Gets the minimum distance required before a player can press a key to interact with the object. However, the object must have 'interacting' enabled with the function setPickup() before a player can interact with the object."
 				},
 				{
 					name: "onNear",
 					type: "function",
-					description: "A function to be called when a player is within a range set by the object's pickupDistance property. This does not need the objects's 'interacting' ability to be enabled."
+					description: "A function to be called when a player is within a range set by the object's pickupDistance property. This does not need the object's 'interacting' ability to be enabled."
 				},
 				{
 					name: "onUse",
 					type: "function",
-					description: "A function to be called when a player picks up an object. When calling setPickup(), this can be set to be the only code that runs when a player interacts with an object. This needs the objects's 'picking up' ability to be enabled with setPickup()."
+					description: "A function to be called when a player interacts with an object. When calling setPickup(), this can be set to be the only code that runs when a player interacts with an object. This needs the object's 'interacting' ability to be enabled with setPickup()."
 				},
 				{
 					name: "mass",
@@ -74,7 +74,7 @@ var docs_data = {
 				},
 				{
 					name: "getOnUse()",
-					description: "Gets the function to be called when the player interacts with the object"
+					description: "Gets the function to be called when the player interacts with the object."
 				},
 				{
 					name: "getOnNear()",
@@ -86,7 +86,7 @@ var docs_data = {
 				},
 				{
 					name: "getPickup()",
-					description: "Returns an object's ability to be interacted with, and wether it should skip 'picking up' code."
+					description: "Returns an object's ability to be interacted with, and whether it should skip 'picking up' code."
 				},
 				{
 					name: "makeListeningObject( THREEListener (three.js AudioListener) )",
@@ -109,16 +109,12 @@ var docs_data = {
 					description: "Sets the angular dampening of an object. With the default Proton3DInterpreter, see Physijs' docs for more info."
 				},
 				{
-					name: "setAngularFactor( x (float), y (float), z (float) )",
-					description: "Sets the angular dampening of an object. With the default Proton3DInterpreter, see Physijs' docs for more info."
-				},
-				{
 					name: "addEventListener( name (string), callback (function) )",
-					description: "With the default Proton3DInterpreter, this function adds an event listener to the three.js object corrisponding to the Proton3D object."
+					description: "With the default Proton3DInterpreter, this function adds an event listener to the three.js object corresponding to the Proton3D object."
 				},
 				{
 					name: "removeEventListener( name (string), callback (function) )",
-					description: "With the default Proton3DInterpreter, this function removes an event listener to the three.js object corrisponding to the Proton3D object."
+					description: "With the default Proton3DInterpreter, this function removes an event listener to the three.js object corresponding to the Proton3D object."
 				},
 				{
 					name: "setRotation( x (float), y (float), z (float) )",
@@ -142,11 +138,11 @@ var docs_data = {
 				},
 				{
 					name: "getLinearVelocity()",
-					description: "Gets the object's linear velocity in the three.js Vector3"
+					description: "Gets the object's linear velocity in the three.js Vector3."
 				},
 				{
 					name: "getAngularVelocity()",
-					description: "Gets the object's angular velocity in the three.js Vector3"
+					description: "Gets the object's angular velocity in the three.js Vector3."
 				},
 				{
 					name: "isMesh()",
@@ -223,8 +219,7 @@ var docs_data = {
 		{
 			name: "Proton3DObject (imported)",
 			description: "An object in Proton3D. It can either be imported via a '.obj' file or a glTF file.",
-			use: "protonjs.importObject( ... )",
-			
+			use: "ProtonJS.importObject( { type: ['gltf', 'obj'], objPath: url (obj files only), mtlPath: url (obj files only) }, gltfPath: url (gltf files only), onload: function, objectType: ['box', 'sphere', 'cylinder', 'concave', 'convex'] (Physijs mesh types), mass: float, objects: Proton3DScene )",
 			properties: [
 				"Proton3DObject (universal)"
 			],
@@ -243,42 +238,42 @@ var docs_data = {
 			functions: [
 				{
 					name: "changeViewingWidth( value (float) ) (orthographic)",
-					description: "Changes the width of the camera"
+					description: "Changes the width of the camera."
 				},
 				{
 					name: "changeViewingHeight( value (float) ) (orthographic)",
-					description: "Changes the height of the camera"
+					description: "Changes the height of the camera."
 				},
 				{
 					name: "changeNear( value (float) )",
-					description: "Changes the 'near' value of the camera"
+					description: "Changes the 'near' value of the camera."
 				},
 				{
 					name: "changeFar( value (float) )",
-					description: "Changes the 'far' value of the camera"
+					description: "Changes the 'far' value of the camera."
 				},
 				{
 					name: "changeAspectRatio( value (float) )",
-					description: "Changes the aspect ratio of the camera"
+					description: "Changes the aspect ratio of the camera."
 				},
 				{
 					name: "changeFOV( value (float) ) (perspective)",
-					description: "Changes the field of view of the camera"
+					description: "Changes the field of view of the camera."
 				},
 				{
 					name: "setZoom( value (float) ) (perspective)",
-					description: "Changes the 'zoom' of the camera"
+					description: "Changes the 'zoom' of the camera."
 				},
 				{
 					name: "getZoom() (perspective)",
-					description: "Gets the 'zoom' of the camera"
+					description: "Gets the 'zoom' of the camera."
 				}
 			],
 		},
 		{
 			name: "Proton3DObject (light)",
 			description: "An light in Proton3D. It can be a point light or a directional light.",
-			use: "new Proton3DObject( { type: (string; ['pointlight', 'directionallight' ]) } )",
+			use: "new Proton3DObject( { type: ['pointlight', 'directionallight' ] } )",
 			
 			properties: [
 				{
@@ -290,7 +285,7 @@ var docs_data = {
 			functions: [
 				{
 					name: "changeColor( hexString (string) )",
-					description: "Changes the color of the light with a CSS color string"
+					description: "Changes the color of the light with a CSS color string."
 				}
 			],
 		},
@@ -313,12 +308,12 @@ var docs_data = {
 				{
 					name: "extraFunctions",
 					type: "array",
-					description: "An array containing all functions to be called repedately when the computer is idle. It can be edited."
+					description: "An array containing all functions to be called repeatedly when the computer is idle. It can be edited."
 				},
 				{
 					name: "priorityExtraFunctions",
 					type: "array",
-					description: "An array containing all functions to be called repedately when each frame is called. It can be edited."
+					description: "An array containing all functions to be called repeatedly when each frame is called. It can be edited."
 				},
 				{
 					name: "element",
@@ -348,7 +343,7 @@ var docs_data = {
 				{
 					name: "crosshair",
 					type: "object",
-					description: "Created from setCameraControls() and crosshair() (optional). Its position value is a three.js Vector3."
+					description: "Created from setCameraControls() and ProtonJS.crosshair() (optional). Its position value is a three.js Vector3."
 				}
 			],
 			functions: [
