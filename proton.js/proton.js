@@ -1463,31 +1463,61 @@ const Proton3DInterpreter = {
 		Proton3DInterpreter.render( extras.scene )
 		//PBR
 		this.pbrTexture = extras.pbrTexture;
-		if ( extras.livePBR ) {
-		
-			var livePBRIndex = 0;
-			this.livePBR = true;
-			this.pbrInterval = extras.scene.priorityExtraFunctions.push( function () {
-				if ( extras.scene.getObjectList != undefined && extras.scene.getObjectList() != undefined ) {
-					
-					var object = extras.scene.getObjectList()[ livePBRIndex ];
-					//
-					livePBRIndex ++;
-					if ( livePBRIndex > extras.scene.getObjectList().length ) {
+		this.livePBRArray = [];
+		this.livePBR = true;
+		this.pbrInterval = function () {
+			Proton3DInterpreter.livePBRArray.forEach( function ( object ) {
+				if ( object.position.distanceTo( extras.scene.camera.parent.position ) > 5 ) {
 
-						livePBRIndex = 0
+					return
 
-					}
-					//
-					if ( object == undefined || getMeshByName( object.name ) == undefined || object.position.distanceTo( extras.scene.camera.parent.position ) > 5 || ( object != undefined && object.material != undefined && object.material.roughness > 0.3) ) {
+				}
+				getMeshByName( object.name ).pbr? getMeshByName( object.name ).pbr() : undefined;
+			} );
+		}
+		this.pbrArrayInterval = function () {
+			if ( extras.scene.getObjectList != undefined && extras.scene.getObjectList() != undefined ) {
+				
+				Proton3DInterpreter.livePBRArray = [];
+				extras.scene.getObjectList().forEach( function ( object ) {
+					if ( object == undefined ) {
 
 						return
 
 					}
-					getMeshByName( object.name ).pbr? getMeshByName( object.name ).pbr() : undefined;
+					if ( getMeshByName( object.name ) == undefined || object.position.distanceTo( extras.scene.camera.parent.position ) > 100 || ( object.material != undefined && object.material.roughness > 0.3 ) ) {
 
-				}
-			} )
+						return
+
+					}
+					Proton3DInterpreter.livePBRArray.push( object )
+				} )
+
+			}
+		}
+		if ( extras.livePBR ) {
+		
+			setInterval( this.pbrInterval, 64 );
+			setInterval( this.pbrArrayInterval, 4000 );
+
+		} else {
+
+			ProtonJS.oldResume = ProtonJS.resume;
+			ProtonJS.resume = function() {
+				ProtonJS.oldResume();
+				extras.scene.getObjectList().forEach( function ( object ) {
+					if ( object == undefined ) {
+
+						return
+
+					}
+					if ( getMeshByName( object.name ) != undefined && getMeshByName( object.name ).pbr ) {
+
+						getMeshByName( object.name ).pbr()
+
+					}
+				} )
+			}
 
 		}
 		//dynamic resolution
@@ -1617,7 +1647,7 @@ const Proton3DInterpreter = {
 			];
 			if ( usePBRInTheFirstPlace ) {
 
-				object.pbrCam = new THREE.CubeCamera( 1, 100, 1024 );
+				object.pbrCam = new THREE.CubeCamera( 1, 100, 128 );
 				object.pbrTexture = Proton3DInterpreter.pbrTexture? new THREE.TextureLoader().load( Proton3DInterpreter.pbrTexture ) : undefined;
 				console.log( object.pbrTexture )
 				object.add( object.pbrCam );
