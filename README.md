@@ -30,4 +30,5 @@ Everything is (at leased supposed to be) written in [Mr.doob's Code Style](https
 
 ## What's your current roadmap for the Proton engine?
 1) Source-ifying proton.js (ex: getting a Source-like console with Source-like commands). DISCLAIMER: I really don't know how to use Source. At all.
-2) Making PickleScript a reality: it's a concept that I have for a Ruby-like scripting language that can be interpreted across programming languages, and that is designed for game development.
+=======
+1) Polishing proton.js so that it can be run on low performance devices.
