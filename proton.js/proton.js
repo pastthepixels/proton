@@ -1,30 +1,25 @@
 "use strict";
 /*
-  [proton.js beta 1.0]
-	[DISCLAIMER -- I'M STILL LOOKING FOR BUGS. IF YOU SEE ONE, JUST TELL ME. I CURRENTLY HAVE NO OPEN DOCUMENT TO STORE THEM ON.]
+	[proton.js beta 1.0]
 	[third party software]
 		>> three js ( and extra related software, found under its branches ) @ mrdoob/threejs
 		>> jquery @ jquery.com
 	[locations of sections]
-	To get to locations in notepad++, press Control+F
+	To get to locations, press Control+F
 	and type
 	"loc:[location number]"
 	Locations of sections:
 		adding extra scripts | 1
-		variables | 2
-		constants | 3
-		rendering extra features | 4
-		drawing and rendering objects | 5
-		extra functions | 6
-		pausing stuff | 7
-		misc (which includes some content from some other places on the web) | 8
-
-
-		proton3d | 9 - 10
+		constants | 2
+		pausing stuff | 3
+		misc (which includes some content from some other places on the web) | 4
+		proton3d | 9
 */
 //\\//\\//\\//\\//\\//\\//\\ //
 //\\ adding extra scripts \\ // //loc:1
 //\\//\\//\\//\\//\\//\\//\\ //
+//25 lines in total will be added to the HTML of a document using Proton3D.
+var three_revision = { veryMin: "0.99.0", min: "0.105.0", max: "0.106.0" }
 //do not forget to use the tag below
 document.writeln( '<meta name="viewport" content="width = device-width, initial-scale = 1.0">' );
 //jquery: required
@@ -33,24 +28,24 @@ document.writeln( '<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js">
 //roboto. all of it (for some reason).
 document.writeln( '<link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono|Roboto+Slab" rel="stylesheet">' );
 //proton3d: threejs
-document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/build/three.js"></script>' );
+document.writeln( '<script src="https://threejs.org/build/three.js"></script>' );
 //proton3d models: threejs
-document.writeln( '<script src="https://unpkg.com/three@0.99.0/examples/js/loaders/MTLLoader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.99.0/examples/js/loaders/LoaderSupport.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.105.0/examples/js/loaders/OBJLoader2.js"></script>' );
-document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/js/loaders/GLTFLoader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.105.0/examples/js/utils/BufferGeometryUtils.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/MTLLoader.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/loaders/LoaderSupport.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/OBJLoader2.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/GLTFLoader.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/utils/BufferGeometryUtils.js"></script>' );
 //threejs effects
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/postprocessing/EffectComposer.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/postprocessing/ShaderPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/postprocessing/RenderPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/postprocessing/MaskPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/math/SimplexNoise.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/shaders/CopyShader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/postprocessing/SSAOPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/shaders/SSAOShader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.99.0/examples/js/shaders/FXAAShader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@0.99.0/examples/js/modifiers/SubdivisionModifier.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/EffectComposer.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/ShaderPass.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/RenderPass.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/MaskPass.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/math/SimplexNoise.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/shaders/CopyShader.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/SSAOPass.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/shaders/SSAOShader.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/shaders/FXAAShader.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/modifiers/SubdivisionModifier.js"></script>' );
 //proton3d physics: physijs | ammo.js
 document.writeln( '<script src="https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js"></script>' );
 document.writeln( '<script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js"></script>' );
@@ -59,11 +54,8 @@ document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@mast
 document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/js/controls/OrbitControls.js"></script>' )
 document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/js/controls/TrackballControls.js"></script>' )
 //three.js' sky shader, by https://github.com/zz85
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js"></script>' )
-//\\//\\//\\//\\// //
-//\\ variables \// // loc:2
-//\\//\\//\\//\\// //
-window.scenes = 0;
+document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js"></script>' );
+
 //\\//\\//\\//\\// //
 //\\ constants \// //loc:3
 //\\//\\//\\//\\// //
@@ -84,11 +76,6 @@ const CSS = {
 	"canvas": [
 		"margin: 0",
 		"padding: 0"
-	],
-	" * ": [
-		"image-rendering: -moz-crisp-edges",
-		"image-rendering: -webkit-crisp-edges",
-		"image-rendering: pixelated"
 	],
 	"watermark": [
 		"position: fixed",
@@ -146,26 +133,19 @@ const CSS = {
 	  "color: white"
 	]
 }
-//WARNING: Lostsa old 2D stuff in here.
-const protonjs = {
-	version: 1.0,
-	display_version: "beta 1.0",
+const ProtonJS = {
+	version: "beta 1.0",
 	//
-	paused: false,
-	scene: function ( renderer = "proton2d" ) {
-		scenes++;
-		switch ( renderer ) {
-
-			case "proton3d":
-
-				return new Proton3DScene();
-				break;
-
-			default:
-
-				return jQuery.extend( true, {}, Proton2DScene );
-
+	cache: {
+		vector3: function ( x, y, z ) {
+			ProtonJS.threevector = ProtonJS.threevector || new THREE.Vector3( 0, 0, 0 );
+			return ProtonJS.threevector.set( x, y, z )
 		}
+	},
+	paused: false,
+	scene: function () {
+		console.warn( "ProtonJS.scene is deprecated. Use new Proton3DScene() instead.");
+		return new Proton3DScene();
 	},
 	compileCSS: function ( exclude = [] ) {
 		this.style = document.createElement( "style" );
@@ -179,123 +159,8 @@ const protonjs = {
 		}
 		document.head.appendChild( this.style );
 	},
-	setKeyDown: function ( scene ) {
-		window.addEventListener( "keydown", function ( e ) {
-			scene.onKeyDown( e, scene )
-		} );
-	},
-	setKeyUp: function ( scene ) {
-		window.addEventListener( "keyup", function ( e ) {
-			scene.onKeyUp( e, scene )
-		} );
-	},
-	create2DUpdate: function ( scene = {} ) {
-		return scene.update = function () {
-			if ( protonjs.paused ) {
-
-				requestAnimationFrame( scene.update );
-				return;
-
-			}
-			scene.render();
-			requestAnimationFrame( scene.update );
-		}
-	},
 	watermark: function ( parent = document.body ) {
 		parent.appendChild( Element( "watermark", "proton.js " + this.display_version ) );
-	},
-	camera: function ( extras = {} ) {
-		if ( extras.parent ) {
-
-			this.parent = extras.parent;
-
-		}
-		this.x = 0;
-		this.y = 0;
-		this.z = 1;
-		for ( var i in extras ) {
-			this[i] = extras[i];
-		}
-	},
-	player: function ( extras = {} ) {
-		this.x = 20;
-		this.y = 20;
-		this.width = 50;
-		this.height = 50;
-		this.health = 100;
-		this.maxHealth = 100;
-		this.speed = 5;
-		for ( var i in extras ) {
-			this[i] = extras[i];
-		}
-	},
-	square: function ( extras = {} ) {
-		this.x = 20;
-		this.y = 20;
-		this.width = 50;
-		this.height = 50;
-		for ( var i in extras ) {
-			this[i] = extras[i];
-		}
-	},
-	line: function ( extras = {} ) {
-		this.stroke = true;
-		this.line = extras.points;
-		for ( var i in extras ) {
-			this[i] = extras[i];
-		}
-	},
-	polygon: function ( extras = {} ) {
-		this.y = 20;
-		this.x = 20;
-		this.poly = extras.points;
-		this.stroke = true;
-		for ( var i in extras ) {
-			this[i] = extras[i];
-		}
-	},
-	sun: function ( extras = {} ) {
-		this.x = 20;
-		this.y = 20;
-		this.width = 90;
-		this.castShadow = true;
-		this.glare = true;
-		this.height = 10;
-		this.globalCompositeOperation = "lighter";
-		this.radialGradient = {
-			innerRadius: 0.005,
-			stops: [
-				[0.07, "#FDFEFD"],
-				[0.49, "#FFFF9700"]
-			]
-		};
-		this.circle = true;
-		for ( var i in extras ) {
-			this[i] = extras[i];
-		}
-	},
-	particle: function ( extras = {} ) {
-		this.x = 20;
-		this.y = 20;
-		this.width = 1;
-		this.height = 1;
-		for ( var i in extras ) {
-			this[i] = extras[i];
-		}
-	},
-	text: function ( extras = {} ) {
-		this.x = 20;
-		this.y = 20;
-		this.width = 50;
-		this.height = 50;
-		this.dynamicTextHeight = true;
-		this.text = ( extras.text || "" );
-		this.fontFamily = "Roboto Mono";
-		this.fontSize = 20;
-		this.textColor = "white";
-		for ( var i in extras ) {
-			this[i] = extras[i];
-		}
 	},
 	loadingManager: function ( extras = {} ) {
 		this.value = 0;
@@ -322,51 +187,6 @@ const protonjs = {
 			this[i] = extras[i];
 		}
 	},
-	setMovingInterval: function ( a, b ) {
-		this.interval = setInterval( function () {
-			a( this );
-		}, b );
-		this.code = a;
-	},
-	setCreationInterval: function ( a, b ) {
-		this.interval = setInterval( function () {
-			a( this );
-		}, b );
-		this.code = a;
-	},
-	particleFromObject: function ( parent, extras = {} ) {
-		var numbers;
-		if ( typeof extras.scene === "string" ) {
-
-			extras.scene = window[extras.scene];
-
-		}
-		var interval = setInterval( function () {
-			numbers = [random( 1, 20 ), -random( 1, 20 )];
-			var posincreaseY = numbers[random( 0, numbers.length )],
-				posincreaseX = numbers[random( 0, numbers.length )];
-			if ( posincreaseX === posincreaseY ) {
-
-				posincreaseX = numbers[random( 0, numbers.length )]
-
-			}
-			var particle = new protonjs.particle( extras );
-			particle.x = ( parent.x + ( parent.width / 2 ) );
-			particle.y = ( parent.y + ( parent.height / 2 ) );
-			protonjs.setMovingInterval( function ( interval ) {
-				if ( particle.y > extras.scene.canvas.height || particle.y < 0 || particle.x < 0 || particle.x > extras.scene.canvas.width ) {
-
-					clearInterval( interval );
-					extras.scene.remove( particle );
-
-				}
-				particle.y += posincreaseY;
-				particle.x += posincreaseX;
-			}, 20 );
-			extras.scene.objects.push( particle );
-		}, extras.speed || 10 );
-		return interval
-	},
 	pause: function () {
 		this.paused = true;
 		if ( window.onpause ) {
@@ -377,1467 +197,21 @@ const protonjs = {
 	},
 	resume: function () {
 		this.paused = false;
+		Proton3DInterpreter.resume();
 		if ( window.onresume ) {
 
 			window.onresume();
 
 		}
-	},
-	screenShake: function ( scene, intensity, duration = 1000, callback = null ) {
-		var shakeInt = setInterval( function () {
-			scene.element.style.transform = "scale(" + ( ( intensity / 100 ) + 1 ) + "," + ( ( intensity / 100 ) + 1 ) + ") translate(" + betterRandom( -intensity, intensity ) + "px, " + betterRandom( -intensity, intensity ) + "px)";
-		}, 10 );
-		window.shake = {
-			interval: shakeInt,
-			scene: scene,
-			callback: callback
-		}
-		if ( duration > 0 ) {
-
-			setTimeout( function () {
-				clearInterval( shakeInt );
-				scene.element.style.transform = null;
-				if ( callback ) {
-
-					callback()
-
-				}
-			}, duration )
-
-		}
-
-	},
-	clearScreenShake: function () {
-		if ( window.shake ) {
-
-			clearInterval( window.shake.interval );
-			window.shake.scene.element.style.transform = null;
-			if ( window.shake.callback ) {
-
-				window.shake.callback()
-
-			}
-			window.shake = null;
-
-		}
-	},
-
-	//picklescript
-	//a now deprecated attempt to create a universal programming language for gaming development.
-	//basically, it was supposed to be like proton3d, but with a wider range of interpreters (in different programming languages and in different game engines, like BGE)
-	//it still kinda works, by the way.
-
-	pickleScriptKeywords: {
-		"use": function ( parameter, variables ) {
-			return parameter
-		},
-		"thirdperson": function () {
-
-		},
-		"set": function ( parameter, variables, commands, i ) {
-			switch( parameter ) {
-
-				case "position":
-					if ( protonjs.picklePlayer ) {
-
-						protonjs.picklePlayer.setPosition( commands[ i + 2 ][ 0 ], commands[ i + 2 ][ 1 ], commands[ i + 2 ][ 2 ] )
-
-					}
-					break;
-
-				default:
-					if ( commands.indexOf( "in" ) > -1 ) {
-
-						variables[ commands[ 3 ] ][ commands[ 1 ] ] = commands[ 5 ]
-
-					} else {
-
-						variables[ commands[ 1 ] ] = commands[ 3 ]
-
-					}
-
-			}
-		},
-		"log": function ( parameter, variables, commands ) {
-			console.log(parameter, commands);
-			if ( variables[ parameter ] != null ) {
-
-				console.log( variables[ parameter ] )
-				return
-
-			} else {
-
-				console.log( parameter )
-
-			}
-		},
-		"pos": function ( parameter, variables, commands, i ) {
-			variables[ commands[ i - 2 ] ].setPosition( commands[ i ][0], commands[ i ][1], commands[ i ][2] )
-		},
-		"rot": function ( parameter, variables, commands, i ) {
-			variables[ commands[ i - 3 ] ].setRotation( commands[ i - 1 ][0], commands[ i - 1 ][1], commands[ i - 1 ][2] )
-		},
-		"import": function( parameter, variables ) {
-			if ( parameter.includes( ".glb" ) || parameter.includes( ".gltf" ) ) {
-
-				return protonjs.importObject({
-					fileType: "gltf",
-					objects: protonjs.pickleScene.objects,
-					gltfPath: parameter,
-					accountForExtraProperties: true,
-					mass: 1
-				})
-
-			} else if (  parameter.includes( ".obj" ) ){
-
-				return protonjs.importObject({
-					fileType: "obj",
-					objects: protonjs.pickleScene.objects,
-					objPath: parameter,
-					mtlPath: parameter.replace( ".obj", ".mtl" ),
-					mass: 1
-				})
-
-			} else if ( protonjs.pickleScriptObjects[ parameter ] != null ) {
-
-				return protonjs.pickleScriptObjects[ parameter ]()
-
-			}
-		},
-		"float": function ( parameter ) {
-
-		},
-		"int": function () {
-
-		},
-		"string": function () {
-
-		},
-		"array": function () {
-
-		},
-		"start": function () {
-
-		}
-	},
-	pickleScriptObjects: {
-		"floor": function () {
-			var cube = new Proton3DObject({
-				type: "cube",
-				x: 0,
-				y: -3,
-				z: 0,
-				height: 0.1,
-				width: 1000,
-				depth: 1000,
-				materialType: "phong",
-				receiveShadow: true,
-				mass: 0,
-				friction: 1,
-				restitution: 0,
-				useBufferGeometry: true,
-				bumpMapRepeat: 400,
-				roughnessMapRepeat: 400,
-				bumpMap: "../models/textures/grass.png",
-				roughnessMap: "../models/textures/grass.png",
-				shininess: 0.01,
-				color: "#000801"
-			})
-			protonjs.pickleScene.add( cube )
-			return cube
-		}
-	},
-	importPickleScript: function ( fileLocation ) {
-		var request = new XMLHttpRequest();
-		//step one: read the file
-		request.open("GET", fileLocation, false);
-		request.send();
-		//step two: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-		var commands = request.responseText.split( "\n" );
-		var variables = {};
-		commands.forEach( function ( command, i ) {
-
-			var isBrackets = false,
-				isComment = false,
-				bracketString = "",
-				toRemove = [];
-			commands[ i ] = command.split( " " );
-			commands[ i ].forEach( function ( object, ii ) {
-
-				switch ( object ) {
-
-					case "array":
-						toRemove.push( object );
-						isBrackets = true;
-						return
-
-				}
-				if ( isBrackets || object.includes( "[" ) ) {
-					bracketString += object
-					if ( object.includes( "]" ) ) {
-
-						commands[ i ][ ii ] = JSON.parse( bracketString );
-						toRemove.forEach( function ( remove ) {
-							removeFromArray( commands[ i ], remove );
-						} )
-						bracketString = "";
-						toRemove = [];
-						isBrackets = false;
-						return;
-
-					} else {
-
-						toRemove.push( object );
-
-					}
-
-				}
-
-			} )
-			commands[ i ].start = function () {
-
-				commands[ i ].forEach( function ( keyword, ii ) {
-
-					var variable;
-					if ( keyword.includes( "//" ) || isComment ) {
-
-						isComment = true;
-						return;
-
-					}
-					if ( protonjs.pickleScriptKeywords[ keyword ] != null ) {
-
-						variable = protonjs.pickleScriptKeywords[ keyword ]( commands[ i ][ ii + 1 ], variables, commands[ i ], i )
-						if ( commands[ i ][ ii + 2 ] === "as" ) {
-
-							variables[ commands[ i ][ ii + 3 ].trim() ] = variable;
-
-						}
-					}
-
-				} )
-
-			}
-			if( command.includes( "start" ) ) {
-
-				commands.forEach( function ( startingcommand ) {
-
-					if ( startingcommand.start ) {
-
-						startingcommand.start()
-
-					}
-
-				} )
-
-			}
-
-		} )
-		return commands;
 	}
 }
-//Proton2D
-const Proton2DScene = {
-	keys: {},
-	mappedKeys: {
-		left: 37,
-		right: 39,
-		up: 38,
-		down: 40,
-		pause: 27
-	},
-	objects: [],
-	remove: function ( object ) {
-		( this.objects.indexOf( object ) > -1 )? this.objects.splice( this.objects.indexOf( object ), 1 ) : false
-	},
-	setTransition: function ( string, time ) {
-		this.canvas.style.webkitTransition = "all " + time + "s " + string
-	},
-	setFilter: function ( string, value ) {
-		this.canvas.style.webkitFilter = string + "(  " + value + "  )"
-	},
-	resetFilter: function ( string, value ) {
-		this.canvas.style.webkitFilter = null;
-	},
-	init: function ( extras = {} ) {
-		//create the scene's elements (  in the DOM  )
-		this.element = document.createElement( "scene" );
-		this.offscreenCanvas = new OffscreenCanvas(
-			extras.width || window.innerWidth,
-			extras.height || window.innerHeight
-		);
-		this.canvas = document.createElement( "canvas" );
-		this.canvas.width = this.offscreenCanvas.width;
-		this.canvas.height = this.offscreenCanvas.height;
-		this.audio = new Audio();
-		//create the offscreen context
-		this.offscreenContext = this.offscreenCanvas.getContext( "2d" );
-		this.offscreenContext.imageSmoothingEnabled = false;
-		this.offscreenContext.globalCompositeOperation = "source - over";
-		//create the context
-		this.context = this.canvas.getContext( "2d" );
-		this.context.imageSmoothingEnabled = false;
-		this.context.globalCompositeOperation = "source - over";
-		this.element.appendChild( this.canvas );
-		//ifs
-		if ( extras.parent == undefined ) {
-
-			document.body.appendChild( this.element );
-
-		} else if ( extras.parent ) {
-
-			extras.parent.appendChild( this.element );
-
-		}
-		//event listeners
-		var scene = this;
-		window.addEventListener( "click", function ( e ) {
-			scene.onclick( e )
-		} );
-		window.addEventListener( "mousemove", function ( e ) {
-			scene.onMouseMove( e );
-			if ( window["mousedown"] ) {
-
-				scene.onMouseDrag( e );
-
-			}
-		} );
-		window.addEventListener( "mousedown", function ( e ) {
-			window["mousedown"] = true;
-		} );
-		window.addEventListener( "mouseup", function ( e ) {
-			if ( window["mousedown"] ) {
-
-				scene.onMouseDragUp( e );
-
-			}
-			window["mousedown"] = false;
-		} );
-		//watching for variables
-		this.extraBackgroundInfo = "";
-		scene.watch( "background", function ( id, oldval, newval ) {
-			this.canvas.style.background = this.extraBackgroundInfo + newval;
-		} );
-		//compile
-		this.element.style.height = this.canvas.height + "px";
-		this.element.style.width = this.canvas.width + "px";
-		requestAnimationFrame( protonjs.create2DUpdate( this ) );
-	},
-	switchAudio: function ( audioSourceFile ) {
-		if ( this.audio.crossfade ) {
-
-			var audio = this.audio,
-				volume = ( audio.volume || 1 );
-			//fade the volume to 0
-			$( this.audio ).animate( {
-				volume: 0
-			}, ( ( audio.fadeTime / 2 ) || 500 ), function () {
-				audio.src = audioSourceFile;
-				audio.play();
-				//animate the volume to what it was before
-				$( audio ).animate( {
-					volume: volume
-				}, ( ( audio.fadeTime / 2 ) || 500 ) );
-			} );
-
-		} else {
-
-			this.audio.pause();
-			this.audio.src = audioSourceFile;
-			this.audio.play();
-
-		}
-	},
-	dynamicResize: function ( extras = {} ) {
-		var canvas = this.canvas,
-			element = this.element,
-			offscreenCanvas = this.offscreenCanvas;
-		//resizes the scene
-		element.style.height = ( extras.elementSize || "100%" );
-		element.style.width = ( extras.elementSize || "100%" );
-		//creates a faulty callback if there is none
-		extras.callback = ( extras.callback || function () {} )
-		//resizes the scene again when the screen size changes
-		window.addEventListener( "resize", function () {
-			switch ( extras.changeHeightWidth ) {
-
-				case "height":
-					offscreenCanvas.height = window.innerHeight;
-					offscreenCanvas.height = window.innerHeight;
-					break;
-
-				case "width":
-					canvas.width = window.innerWidth;
-					offscreenCanvas.width = window.innerWidth;
-					break;
-
-				default:
-					offscreenCanvas.height = window.innerHeight;
-					canvas.height = window.innerHeight;
-					canvas.width = window.innerWidth;
-					offscreenCanvas.width = window.innerWidth;
-
-			}
-			extras.callback();
-		} );
-	},
-	clear: function () {
-		this.offscreenContext.clearRect( this.element.scrollLeft, this.element.scrollTop, this.element.offsetWidth, this.element.offsetHeight );
-	},
-	render: function () {
-		var scene = this;
-		this.clear();
-		this.objects = this.objects.sort( sortMultiple( "castShadow", "changeBackground", "zIndex", "glare" ) );
-		this.objects.forEach( function ( i ) {
-			renderProtonExtras( i, scene.offscreenContext, scene, scene.objects, scene.offscreenContext );
-			scene.renderEach2d( i, scene.offscreenContext, scene.objects, scene );
-			if ( i.glare ) {
-
-				renderEachGlare( i, scene.offscreenContext, scene, scene.objects );
-
-			}
-			if ( i.castShadow && i.changeBackground ) {
-
-				scene.extraBackgroundInfo += "radial - gradient(  circle at " + ( i.x + ( i.width / 2 ) ) + "px " + ( i.y + ( i.height / 2 ) ) + "px, rgba(  255, 255, 255, 0.55  ) 5px, rgba(  255, 255, 255, 0  ) " + ( i.width * ( i.backgroundBrightness || 3 ) ) + "px  ), ";
-
-			}
-		} );
-		this.context.clearRect( 0, 0, this.canvas.width, this.canvas.height );
-		this.context.drawImage( this.offscreenCanvas, 0, 0 );
-		this.updateCamera();
-	},
-	renderEach2d: function ( i, ctx, obj, scene, visCtx, extras = {} ) {
-		//percentages
-		if ( i.x_percent ) {
-
-			i.x = ( i.x_percent / 100 ) * ( scene.canvas.width );
-			if ( i.x_percent === 50 ) {
-				i.x = ( window.innerWidth / 2 ) - ( i.width / 2 )
-			}
-
-		}
-		if ( i.y_percent ) {
-
-			i.y = ( i.y_percent / 100 ) * ( scene.canvas.height );
-			if ( i.y_percent === 50 ) {
-				i.y = ( window.innerHeight / 2 ) - ( i.height / 2 )
-			}
-
-		}
-		if ( i.width_percent ) {
-
-			i.width = ( i.width_percent / 100 ) * ( scene.canvas.width );
-
-		}
-		if ( i.height_percent ) {
-
-			i.height = ( i.height_percent / 100 ) * ( scene.canvas.height );
-
-		}
-		//if a percentage cannot be correected, do this and then move on.
-		if ( i.x > ctx.canvas.width || i.y > ctx.canvas.height ||
-			scene.element && i.x > ( scene.element.scrollLeft + scene.element.width ) || scene.element && i.y > ( scene.element.scrollTop + scene.element.height ) ) {
-
-			return;
-
-		}
-		//
-		var x = i.x,
-			y = i.y,
-			height = i.height,
-			width = i.width;
-		//initiate each render
-		ctx.save();
-		ctx.lineWidth = i.lineWidth;
-		ctx.lineCap = i.lineCap;
-		ctx.lineJoin = i.lineJoin;
-		ctx.fillStyle = ( i.color || "black" );
-		ctx.strokeStyle = ( i.strokeColor || i.color || "black" );
-		ctx.globalAlpha = 1;
-		if ( i.alpha ) {
-
-			ctx.globalAlpha = i.alpha
-
-		}
-		ctx.globalCompositeOperation = ( i.globalCompositeOperation || "source - over" );
-		//transformations
-		//i.rotate example: - 360 to 360
-		if ( i.rotate ) {
-
-			ctx.translate( i.x - ( width / -2 ), i.y - ( height / -2 ) );
-			ctx.rotate( i.rotate * Math.PI / 180 );
-			x = width / -2;
-			y = height / -2;
-
-		}
-		//i.scale example:  {scaleWidth: (  up to  ) 1, scaleHeight: (  up to  ) 1}
-		if ( i.scale ) {
-
-			ctx.scale( i.scale["scaleWidth"], i.scale["scaleHeight"] );
-
-		}
-		//shadows
-		//i.shadow example:  {blur: 200, x: 0, y: 0, color: "black"}
-		if ( !extras.noEffects ) {
-
-			if ( i.shadow ) {
-
-				ctx.shadowBlur = i.shadow.blur;
-				ctx.shadowSkew = 5;
-				ctx.shadowOffsetY = ( i.shadow.y || null );
-				ctx.shadowOffsetX = ( i.shadow.x || null );
-				ctx.shadowColor = ( i.shadow.color || "black" );
-
-			}
-
-		}
-		//rendering
-		renderObject( i, x, y, ctx, obj, scene, visCtx );
-		//drawing
-		drawObject( i, x, y, ctx, obj, scene, visCtx );
-		ctx.restore();
-	},
-	updateCamera: function () {
-		if ( this.camera == undefined ) {
-
-			this.element.scrollLeft = 0;
-			this.element.scrollTop = 0;
-			return;
-
-		}
-		this.element.scrollLeft = this.camera.x;
-		this.element.scrollTop = this.camera.y;
-		if ( this.element.scrollTop === 4 ) {
-
-			this.element.scrollTop = 0
-
-		}
-	},
-	onKeyDown: function ( e, scene ) {
-		e = e || event;
-		scene.keys[e.keyCode] = e.type;
-		scene.keys[e.keyCode] = true;
-	},
-	onKeyUp: function ( e, scene ) {
-		e = e || event;
-		scene.keys[e.keyCode] = false;
-	},
-	onclick: function ( e ) {
-		this.objects.forEach( function ( i ) {
-			if ( i.onclick && mouseCheck( e, i ) ) {
-
-				i.onclick( e );
-
-			}
-		} )
-	},
-	onMouseMove: function ( e ) {
-		this.objects.forEach( function ( i ) {
-			if ( i.onmousemove && mouseCheck( e, i ) ) {
-
-				i.onmousemove( e );
-
-			}
-		} )
-	},
-	onMouseDrag: function ( e ) {
-		this.objects.forEach( function ( i ) {
-			if ( i.onmousedrag && mouseCheck( e, i ) ) {
-
-				i.onmousedrag( e );
-
-			}
-		} )
-	},
-	onMouseDragUp: function ( e ) {
-		this.objects.forEach( function ( i ) {
-			if ( i.onmousedragup && mouseCheck( e, i ) ) {
-
-				i.onmousedragup( e );
-
-			}
-		} )
-	},
-	animatePNG: function ( target, image, size, maxFrames, repeatThings, hangOn, callback ) {
-		if ( target.beginImageClip == undefined ) {
-
-			target.imgBackup = target.image.src;
-			target.beginImageClip = {
-				x: 0,
-				y: 0
-			}
-
-		}
-		//sets the image clip size
-		target.imageClip = {
-			x: size[0],
-			y: size[1]
-		}
-		//clips the image
-		target.image.src = image;
-		target.beginImageClip.x += size[0];
-		target.frameNo++;
-		if ( target.beginImageClip.x === getImgXY( image ).width ) {
-
-			target.beginImageClip.x = 0;
-			target.beginImageClip.y += size[1]
-
-		}
-		if ( target.beginImageClip.y >= getImgXY( image ).height || target.frameNo >= ( maxFrames - 1 ) ) {
-
-			if ( hangOn ) {
-				if ( callback ) {
-
-					callback();
-
-				}
-				return true;
-			}
-			//resets the image
-			if ( repeatThings && !repeatThings && hangOn != true ) {
-
-				this.resetFromAnimatePNG( target );
-				if ( callback ) {
-
-					target.frameNo = 0;
-					callback();
-
-				}
-				return true;
-
-			}
-			target.frameNo = 0;
-			target.beginImageClip.y = 0;
-		}
-		target.animating = true;
-		return false;
-	},
-	resetFromAnimatePNG: function ( target ) {
-		target.image.src = target.imgBackup;
-		target.beginImageClip = null;
-		target.frameNo = 0;
-		target.imageClip = null;
-		target.animating = false;
-	}
-}
-//\\//\\//\\//\\//\\//\\//\\// //
-//\\ rendering extra features \// //loc:4
-//\\//\\//\\//\\//\\//\\//\\// //
-//Still proton2d
-const renderProtonExtras = function ( i, ctx, scene, obj ) {
-	if ( scene.gravity && i.velocityY != null && i.noGravity != true ) {
-
-		renderGravity( i, ctx, scene, obj );
-
-	}
-	if ( i.castShadow ) {
-
-		obj.forEach( function ( ii ) {
-			if ( ii.dynamicShadowBlur ) {
-				var shadowX = ( ( ii.x + ( ii.width / 2 ) ) - ( i.x + ( i.width / 2 ) ) ) / ( ii.recieveShadowSensitivity || 1 );
-				var shadowY = ( ( ii.y + ( ii.height / 2 ) ) - ( i.y + ( i.height / 2 ) ) ) / ( ii.recieveShadowSensitivity || 1 );
-				ii.shadow.blur = Math.sqrt( ( shadowX * shadowX ), ( shadowY * shadowY ) ) + ( ii.shadowBlurSensitivity || 50 );
-			}
-			if ( ii.recieveShadow == undefined || ii === i ) {
-				return
-			}
-			if ( ii.shadow == undefined ) {
-				ii.shadow = {
-					blur: 200,
-					color: "black",
-					x: 0,
-					y: 0
-				}
-			}
-			ii.shadow.x = ( ( ii.x + ( ii.width / 2 ) ) - ( i.x + ( i.width / 2 ) ) ) / ( ii.recieveShadowSensitivity || 1 );
-			ii.shadow.fullShadow = true;
-			ii.shadow.y = ( ( ii.y + ( ii.height / 2 ) ) - ( i.y + ( i.height / 2 ) ) ) / ( ii.recieveShadowSensitivity || 1 );
-		} );
-
-	}
-	if ( i.solid ) {
-
-		obj.forEach( function ( ii ) {
-			if ( ii === i ) {
-				return
-			}
-			if ( ii.noColliding ) {
-				return
-			}
-			solid( ii, i, scene );
-		} );
-
-	}
-	if ( i.oncollision ) {
-
-		if ( i.oncollision_target == undefined && i.oncollision_targets == undefined ) {
-			obj.forEach( function ( ii ) {
-				if ( ii === i ) {
-					return
-				}
-				if ( i.oncollision_experimental ) {
-					experimentalSolid( i, ii, scene );
-					return;
-				}
-				oncollision( i, ii, scene );
-			} );
-		}
-
-		//
-		if ( i.oncollision_target ) {
-
-			if ( i.oncollision_experimental ) {
-				experimentalSolid( i, i.oncollision_target, scene );
-				return;
-			}
-			oncollision( i, i.oncollision_target, scene );
-
-		}
-		if ( i.oncollision_targets ) {
-
-			i.oncollision_targets.forEach( function ( ii ) {
-				if ( ii === i ) {
-					return
-				}
-				if ( i.oncollision_experimental ) {
-					experimentalSolid( i, ii, scene );
-					return;
-				}
-				experimentalSolid( i, ii, scene );
-			} );
-
-		}
-	}
-	if ( i.follow ) {
-
-		renderFollow( i, ctx, scene, obj );
-
-	}
-	//i.dynamics example:  {"property in the variable": "script"}
-	if ( i.dynamics ) {
-
-		renderDynamics( i, ctx, scene, obj );
-
-	}
-}
-const renderDynamics = function ( i, ctx, scene, obj ) {
-	for ( var v in i.dynamics ) {
-		switch ( typeof i.dynamics[v] ) {
-
-			case "string":
-
-				if ( v.includes( "." ) ) {
-
-					var split = JSON.parse( JSON.stringify( v ) ).split( "." );
-					i[split[0]][split[1]] = eval( i.dynamics[v] );
-
-				} else {
-
-					i[v] = eval( i.dynamics[v] );
-
-				}
-				break;
-
-			case "function":
-
-				i[v] = i.dynamics[v]( i );
-				break;
-
-			default:
-
-				i[v] = i.dynamics[v];
-
-		}
-	}
-}
-const renderFollow = function ( i, ctx, scene, obj ) {
-	var onTop = 0;
-	if ( i.follow.onTop ) {
-
-		onTop = i.height;
-
-	}
-	if ( i.follow.x ) {
-
-		i.x = i.follow.parent.x - ( i.follow.xSpace || 0 );
-
-	}
-	if ( i.follow.y ) {
-
-		i.y = i.follow.parent.y - ( i.follow.ySpace || 0 ) - onTop;
-
-	}
-	if ( i.follow.center && i.follow.center.x ) {
-
-		i.x -= ( i.width / 2 ) - ( i.follow.parent.width / 2 );
-
-	}
-	if ( i.follow.center && i.follow.center.y ) {
-
-		i.y -= ( i.height / 2 ) - ( i.follow.parent.height / 2 );
-
-	}
-	if ( i.follow.x == undefined && i.follow.y == undefined ) {
-
-		i.x = i.follow.parent.x - ( i.follow.xSpace || 0 );
-		i.y = i.follow.parent.y - ( i.follow.ySpace || 0 ) - onTop;
-
-	}
-}
-const renderEachGlare = function ( i, ctx, scene, obj ) {
-	if ( i.glare ) {
-
-		renderGlare( i, ctx, scene, obj );
-
-	}
-}
-const renderGlare = function ( i, ctx, scene, obj ) {
-	if ( i.glareShadow == undefined && i.noGlareShadow != true ) {
-
-		i.glareShadow = document.createElement( "div" );
-		i.glareShadow.style.cssText = `
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom:0;
-		`;
-		i.glareShadow.style.boxShadow = ( i.radialGradient.stops[0][1] ) + " 0px 0px " + ( i.glareBrightness || 400 ) + "px  inset";
-		scene.element.appendChild( i.glareShadow );
-
-	}
-	if ( i.glareShadow && scene.camera ) {
-
-		var glareNum,
-			distanceX = ( ( scene.camera.x + ( $( scene.element ).width() / 2 ) ) - ( i.x + ( i.width / 2 ) ) ) / ( i.glareShadowSensitivity || 1 ),
-			distanceY = ( ( scene.camera.y + ( $( scene.element ).height() / 2 ) ) - ( i.y + ( i.height / 2 ) ) ) / ( i.glareShadowSensitivity || 1 ),
-			anotherGlareNum = Math.sqrt( ( distanceX * distanceX ), ( distanceY * distanceY ) ),
-			maxBlur = 500,
-			glareN2 = ( ( anotherGlareNum ) * 100 ) / maxBlur;
-		glareNum = ( 100 - glareN2 + 0 ) * ( i.glareBlurSensitivity || 3.5 );
-		if ( glareNum < 0 ) {
-
-			glareNum = 0;
-
-		}
-		i.glareShadow.style.boxShadow = ( i.radialGradient.stops[0][1] ) + " 0px 0px " + glareNum + "px - 15px ";
-
-	}
-	if ( i.noLensFlare != true ) {
-
-		createLensFlare( i, ctx, scene, obj );
-
-	}
-}
-const renderGravity = function ( i, ctx, scene, obj ) {
-	//add velocity
-	i.velocityY += scene.gravity + ( i.weight || 0 );
-	//max acceleration
-	if ( scene.maxAcceleration && i.velocityY > scene.maxAcceleration ) {
-
-		i.velocityY = scene.maxAcceleration
-
-	}
-	//add velocity to y
-	i.y += i.velocityY;
-	//an event for when bottom of screen is reached
-	var bottom = scene.canvas.height - i.height;
-	if ( i.y > bottom ) {
-
-		i.y = bottom;
-		//bouncing
-		if ( i.bounce != null ) {
-
-			i.velocityY = -( i.velocityY * i.bounce );
-			//rotation
-			if ( i.circle != null ) {
-
-				if ( i.velocityX === 0 ) {
-					i.velocityX = i.velocityY;
-					if ( random( 0, 20 ) >= 10 ) {
-
-						i.velocityX = i.velocityX * -1
-
-					}
-				}
-
-				i.hitBottom = true;
-			}
-
-		}
-
-	}
-	if ( !i.onTop && i.velocityY2 < 0 ) {
-
-		i.velocityY2 = null;
-
-	}
-	//going left or right when bouncing
-	if ( i.hitBottom != null ) {
-
-		if ( i.velocityX > 0.1 ) {
-
-			i.velocityX -= 0.1;
-
-		}
-		if ( i.velocityX < 0 ) {
-
-			i.velocityX += 0.1;
-
-		}
-		i.x += i.velocityX;
-
-	}
-	//rotate === velocity
-	if ( i.dynamicRotate != null && i.rotate != 0 ) {
-
-		i.rotate += i.velocityX;
-
-	}
-	if ( i.velocityX === 0.049999999999992356 ) {
-
-		i.hitBottom = false;
-		i.velocityX === 0;
-
-	}
-}
-//Got this from a site long ago, but I can't site it cuz' I modified it (but by just a bit) and forgot what that site was.
-//If you see it, let me know!
-const solid = function ( shapeA, shapeB ) {
-	var xa = ( shapeA.x + ( shapeA.width / 2 ) ) - ( shapeB.x + ( shapeB.width / 2 ) ),
-		ya = ( shapeA.y + ( shapeA.height / 2 ) ) - ( shapeB.y + ( shapeB.height / 2 ) ),
-		ha = ( shapeA.height / 2 ) + ( shapeB.height / 2 ),
-		wa = ( shapeA.width / 2 ) + ( shapeB.width / 2 );
-	if ( Math.abs( xa ) < wa && Math.abs( ya ) < ha ) {
-
-		var oX = wa - Math.abs( xa ),
-			oY = ha - Math.abs( ya );
-		if ( oX >= oY ) {
-
-			if ( ya > 0 ) {
-
-				if ( shapeA.solid != true ) {
-
-					shapeA.y += oY;
-
-				}
-
-			} else {
-				shapeA.y -= oY;
-				if ( shapeA.velocityY ) {
-
-					shapeA.onTopObj = shapeB;
-					shapeA.onTop = true;
-					if ( shapeA.bounce === 0 || shapeA.bounce == undefined ) {
-
-						shapeA.velocityY = 0;
-
-					}
-					onTopBounce( shapeA );
-
-				}
-			}
-
-		} else {
-
-			if ( xa >= 0 ) {
-
-				shapeA.x += oX;
-
-			} else {
-
-				shapeA.x -= oX;
-
-			}
-
-		}
-	} else {
-
-		shapeA.onTop = false;
-
-	}
-}
-const onTopBounce = function ( i, ii ) {
-	if ( i.onTop && i.bounce && scene.gravity && i.velocityY && i.noGravity != true ) {
-
-		i.y = i.onTopObj.y - i.height;
-		//bouncing
-		if ( i.bounce ) {
-
-			i.velocityY = -( i.velocityY * i.bounce );
-			//rotation
-			if ( i.circle ) {
-
-				if ( i.velocityX === 0 ) {
-
-					i.velocityX = i.velocityY;
-					if ( random( 0, 20 ) >= 10 ) {
-
-						i.velocityX = i.velocityX * -1
-
-					}
-
-				}
-				i.hitBottom = true;
-
-			}
-		}
-
-	}
-}
-const createLensFlare = function ( i, ctx, scene, obj ) {
-	//alpha
-	var alpha,
-		distanceX = ( ( scene.element.scrollLeft + ( $( scene.element ).width() / 2 ) ) - ( i.x + ( i.width / 2 ) ) ),
-		distanceY = ( ( scene.element.scrollTop + ( $( scene.element ).height() / 2 ) ) - ( i.y + ( i.height / 2 ) ) ),
-		anotherGlareNum = Math.sqrt( ( distanceX * distanceX ), ( distanceY * distanceY ) ),
-		maxBlur = 500,
-		glareN2 = ( ( anotherGlareNum ) * 100 ) / maxBlur,
-		alpha = ( 100 - glareN2 + 0 ) / 100;
-	if ( alpha < 0 || alpha === 0 ) {
-
-		alpha = 0.00000000001;
-
-	}
-	//lens flares
-	var camera = {
-		x: scene.element.scrollLeft,
-		y: scene.element.scrollTop,
-		height: $( scene.element ).height(),
-		width: $( scene.element ).width()
-	};
-	if ( i.lensFlares == undefined ) {
-
-		i.lensFlares = [
-			addLensFlareHex( random( camera.x, camera.x + scene.element.offsetWidth ), random( camera.y, camera.y + scene.element.offsetHeight ), ctx, scene, obj, i.radialGradient.stops[0][1] ),
-			addLensFlareCircle( camera.x + 90, camera.y, ctx, scene, obj, i.radialGradient.stops[0][1] ),
-			addLensFlareHex( camera.x, camera.y + 30, ctx, scene, obj, i.radialGradient.stops[0][1] ),
-			addLensFlareHex( random( camera.x, camera.x + scene.element.offsetWidth ), random( camera.y, camera.y + scene.element.offsetHeight ), ctx, scene, obj, i.radialGradient.stops[0][1] ),
-			//
-			addLensFlareCircle( camera.x + 90, camera.y, ctx, scene, obj, i.radialGradient.stops[0][1] ),
-			addLensFlareCircle( camera.x, camera.y + 30, ctx, scene, obj, i.radialGradient.stops[0][1] ),
-			addLensFlareHex( random( camera.x, camera.x + scene.element.offsetWidth ), random( camera.y, camera.y + scene.element.offsetHeight ), ctx, scene, obj, i.radialGradient.stops[0][1] )
-		]
-
-	}
-	i.lensFlares.forEach( function ( e ) {
-		var height = Math.abs( scene.element.offsetHeight - ( i.y + ( i.height / 2 ) ) );
-		var width = Math.abs( scene.element.scrollLeft + ( scene.element.offsetWidth / 2 ) - ( i.x + ( i.width / 2 ) ) ),
-			width2 = ( scene.element.scrollLeft + ( scene.element.offsetWidth / 2 ) - ( i.x + ( i.width / 2 ) ) );
-		var posX = ( ( e.posNum ) * width2 );
-		var posY = ( ( e.posNum ) * height );
-		e.x = posX + ( i.x + ( i.width / 2 ) );
-		e.y = posY
-		e.alpha = alpha / 2;
-		scene.renderEach2d( e, ctx, scene, i.lensFlares );
-	} );
-}
-const addLensFlareHex = function ( x, y, ctx, scene, obj, color ) {
-	var colors = ["red", "green", "blue", "black"],
-		color = ( color || colors[Math.floor( Math.random() * colors.length )] ),
-		size = random( 1.0, 4.0 ),
-		alpha = random( 1, 10 ) / 100,
-		obj = new protonjs.square( {
-			x: x,
-			y: y,
-			scale: {
-				scaleWidth: size,
-				scaleHeight: size
-			},
-			poly: [
-				[20, 0],
-				[80, 0],
-				[110, 50],
-				[80, 100],
-				[20, 100],
-				[-10, 50]
-			],
-			lineJoin: "round",
-			stroke: true,
-			lineWidth: 20,
-			fill: true,
-			noStrokeOpacityOverlap: true,
-			strokeColor: color,
-			color: color,
-			alpha: alpha,
-			posNum: random( 30, 100 ) / 100
-		} );
-	return obj;
-}
-const addLensFlareCircle = function ( x, y, ctx, scene, obj, color ) {
-	var colors = ["red", "green", "blue", "black"],
-		color = ( color || colors[Math.floor( Math.random() * colors.length )] ),
-		size = random( 1.0, 8.0 ),
-		alpha = random( 1, 10 ) / 100,
-		obj = new protonjs.square( {
-			x: x,
-			y: y,
-			scale: {
-				scaleWidth: size,
-				scaleHeight: size
-			},
-			circle: true,
-			strokeColor: color,
-			color: color,
-			alpha: alpha,
-			posNum: random( 30, 100 ) / 100
-		} );
-	return obj;
-}
-//\\//\\//\\//\\//\\//\\//\\//\\  //
-//\\ drawing and rendering objects / \\  //loc:5
-//\\//\\//\\//\\//\\//\\//\\//\\  //
-//still proton2d
-const drawObject = function ( i, x, y, ctx, obj, scene, visCtx ) {
-	//filling
-	//i.image = new Image(); i.image.src example: "source / path / to / image. * "
-	if ( i.image && i.animating != true && i.pattern == undefined ) {
-
-		//i.clipImage * examples:
-		//	x: number
-		//	y: number
-		//	height and width: number
-		if ( i.clipImageX == undefined ) {
-
-			ctx.drawImage( i.image, ( i.imageX || x ), ( i.imageY || y ), ( i.imageWidth || i.width ), ( i.imageHeight || i.height ) );
-
-		} else {
-
-			ctx.drawImage( i.image, i.clipImageX, i.clipImageY, i.clipImageWidth, i.clipImageHeight, ( i.imageX || x ), ( i.imageY || y ), ( i.imageWidth || i.width ), ( i.imageHeight || i.height ) );
-
-		}
-
-	} else if ( i.borderRadius == undefined && i.animating != true && i.doNotFill != true && i.circle != true && i.ellipse != true && i.poly == undefined && i.line == undefined || i.pattern ) {
-
-		ctx.beginPath();
-		ctx.rect( x, y, i.width, i.height );
-		ctx.closePath();
-
-	}
-	//i.animating example: true or false
-	if ( i.animating ) {
-
-		ctx.drawImage( i.image, i.beginImageClip.x, i.beginImageClip.y, i.imageClip.x, i.imageClip.y, x, y, i.width, i.height );
-
-	}
-	//i.stroke example: true or false
-	if ( i.stroke ) {
-
-		ctx.stroke();
-
-	}
-	//i.noStrokeOpacityOverlap example: true or false
-	if ( i.noStrokeOpacityOverlap ) {
-
-		ctx.translate( i.x, i.y );
-		ctx.scale( ( i.width - ( i.lineWidth / 2 ) ) / 65, ( i.height - ( i.lineWidth / 2 ) ) / 65 );
-		x = i.width - ( i.lineWidth * 1.72 );
-		y = i.height - ( i.lineWidth * 1.72 );
-		renderObject( i, x, y, ctx, obj, scene );
-
-	}
-	//i.fill example: true, false, or null
-	if ( i.fill ||
-		i.stroke == undefined && i.fill == undefined && i.image == undefined && i.pattern == undefined ) {
-
-		ctx.fill();
-
-	}
-	//patterns
-	//i.pattern example: true or false
-	if ( i.pattern ) {
-
-		ctx.translate( i.x, i.y );
-		ctx.fillStyle = ctx.createPattern( i.image, i.pattern );
-		ctx.fillRect( 0, 0, i.width, i.height );
-
-	}
-	//text
-	//i.text example: string
-	if ( i.text ) {
-
-		var x2 = x,
-			y2 = y,
-			st = ctx.fillStyle,
-			sst = ctx.strokeStyle,
-			fontSize = ( i.fontSize || 30 );
-		ctx.fillStyle = ( i.textColor || "black" );
-		ctx.font = fontSize + "px " + ( i.fontFamily || "Roboto" );
-		ctx.strokeStyle = ( i.textColor || "black" );
-		ctx.lineWidth = ( i.textLineWidth || 1 );
-		var wrap = wordWrap( ctx, i.text, i.x + ( i.padding || 0 ), i.y + ( i.padding || 0 ) + fontSize, fontSize, i.width - ( i.padding || 0 ), i.strokeText, i.centerText );
-		if ( i.dynamicTextHeight ) {
-			i.height = wrap + ( ( i.padding || 0 ) * 2 ) + ( i.padding || 0 );
-		}
-		ctx.lineWidth = null;
-		ctx.fillStyle = st;
-		ctx.strokeStyle = sst;
-		ctx.textAlign = null;
-
-	}
-}
-const renderObject = function ( i, x, y, ctx, obj, scene, visCtx ) {
-	//i.circle example: true or false
-	if ( i.circle ) {
-
-		i.height = i.width;
-		ctx.beginPath();
-		ctx.arc( x + ( i.width / 2 ), y + ( i.height / 2 ), i.width / 2, 0, 2 * Math.PI );
-		ctx.closePath();
-
-	}
-	//i.ellipse example: true or false
-	if ( i.ellipse ) {
-
-		ctx.beginPath();
-		ctx.ellipse( x + ( i.width / 2 ), y + ( i.height / 2 ), i.width / 2, i.height / 2, 0, 0, 2 * Math.PI );
-		ctx.closePath();
-
-	}
-	//i.poly example: [ [ordered pair (  in a percentage  )], [ordered pair (  in a percentage  )]... ]
-	if ( i.poly ) {
-
-		ctx.beginPath();
-		ctx.moveTo( ( ( i.poly[0] / 100 ) * i.width ) + x, ( ( i.poly[1] / 100 ) * i.height ) + y );
-		i.poly.forEach( function ( p ) {
-			ctx.lineTo( ( ( p[0] / 100 ) * i.width ) + x, ( ( p[1] / 100 ) * i.height ) + y );
-		} );
-		ctx.closePath();
-
-	}
-	//i.line example: [ [ordered pair], [ordered pair]... ]
-	if ( i.line ) {
-
-		ctx.beginPath();
-		ctx.moveTo( i.line[0], i.line[1] );
-		i.line.forEach( function ( p ) {
-			ctx.lineTo( p[0], p[1] );
-		} );
-		ctx.closePath();
-
-	}
-	//borders
-	//i.borderRadius example: number
-	if ( i.borderRadius && i.poly == undefined && i.line == undefined && i.image == undefined ) {
-
-		ctx.roundRect( x, y, i.width, i.height, i.borderRadius );
-
-	}
-	//i.clip example: true or false
-	if ( i.clip ) {
-
-		ctx.clip();
-		ctx.fill();
-
-	}
-	//gradients
-	//i.linearGradient example: [ [stop, color], [stop, color]... ]
-	if ( i.linearGradient ) {
-
-		var endX = i.x,
-			endY = i.y + i.height,
-			beginX = i.x,
-			beginY = i.y;
-		if ( i.gradientRotate ) {
-			var angle = i.gradientRotate / 180 * Math.PI;
-			endX = beginX + Math.cos( angle ) * i.width;
-			endY = beginY + Math.sin( angle ) * i.height;
-		}
-		var grd = ctx.createLinearGradient( beginX, beginY, endX, endY );
-		i.linearGradient.forEach( function ( j ) {
-			grd.addColorStop( j[0], j[1] );
-		} );
-		ctx.fillStyle = grd;
-
-	}
-	//i.radialGradient example:  {innerRadius: 5, stops: [ [stop, color], [stop, color]... ]}
-	if ( i.radialGradient ) {
-
-		var grd = ctx.createRadialGradient( ( i.x + ( i.width / 2 ) ), ( i.y + ( i.height / 2 ) ), i.radialGradient.innerRadius, ( i.x + ( i.width / 2 ) ), ( i.y + ( i.height / 2 ) ), i.height );
-		i.radialGradient.stops.forEach( function ( i ) {
-			grd.addColorStop( i[0], i[1] );
-		} );
-		ctx.fillStyle = grd;
-
-	}
-}
-//\\//\\//\\//\\//\\//\\  //
-//\\ extra functions / \\  //loc:6
-//\\//\\//\\//\\//\\//\\  //
-// STILL PROTON2D
-const createLinearGradient = function ( x, y, length, angle2, scene ) {
-	var x2, y2, angle;
-	angle = +angle2 / 180 * Math.PI;
-	x2 = x + Math.cos( angle ) * length;
-	y2 = y + Math.sin( angle ) * length;
-	return scene.context.createLinearGradient( x, y, x2, y2 );
-}
-const random = function ( a, b ) {
-	if ( a.toString().includes( "." ) || b.toString().includes( "." ) ) {
-
-		return Math.random() * ( a - b ) + b;
-
-	}
-	return Math.floor( ( Math.random() * b ) + a );
-}
-//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
-const betterRandom = function ( a, b ) {
-	var min = Math.ceil( a );
-	var max = Math.floor( b );
-	return Math.floor( Math.random() * ( max - min ) ) + min;
-}
-const randomColor = function () {
-	var letters = "0123456789ABCDEF";
-	var color = "#";
-	for ( var i = 0; i < 6; i++ ) {
-		color += letters[Math.floor( Math.random() * 16 )];
-	}
-	return color;
-}
-const Element = function ( elementType = "div", innerHTML = "", properties = null) {
-	var elem = document.createElement( elementType );
-	elem.innerHTML = innerHTML;
-	if ( properties ) {
-
-		for ( var i in properties ) {
-			if ( i === "class" ) {
-
-				var array = properties[i].split(" ");
-				array.forEach( function ( classString ) {
-					elem.classList.add( classString )
-				} )
-
-			}
-
-			if ( i === "id" ) {
-				elem.id = properties[i]
-
-			}
-			elem[i] = properties[i];
-		}
-
-	}
-	return elem;
-}
-const getImgXY = function ( url ) {
-	var img = new Image();
-	img.src = url;
-	return {
-		width: img.width,
-		height: img.height
-	}
-}
-const mouseCheck = function ( a, b ) {
-	if ( a.pageX < b.x + b.width &&
-		a.pageX + 10 > b.x &&
-		a.pageY < b.y + b.height &&
-		a.pageY + 10 > b.y ) {
-
-		return true;
-
-	}
-}
-const toggle = function ( item ) {
-	item === true ? item = false : item = true;
-	item = item;
-	return item;
-}
-//https://stackoverflow.com/questions/5026961/html5-canvas-ctx-filltext-wont-do-line-breaks/21574562
-const wordWrap = function ( ctx, text, x, y, fontSize, width, stroke, center ) {
-	width -= fontSize;
-	text = text.split( " " );
-	var currentLine = 0,
-		idx = 1;
-	if ( center ) {
-
-		ctx.textAlign = "center";
-		x = x + width / 2;
-
-	}
-	if ( width <= 0 ) {
-
-		if ( stroke ) {
-
-			ctx.strokeText( text, x, y );
-
-		} else {
-
-			ctx.fillText( text, x, y );
-
-		}
-		return;
-
-	}
-	while ( text.length > 0 && idx <= text.length ) {
-		var str = text.slice( 0, idx ).join( " " ),
-			w = ctx.measureText( str ).width;
-		if ( w > width ) {
-
-			if ( idx === 1 ) {
-
-				idx = 2;
-
-			}
-			if ( stroke ) {
-
-				ctx.strokeText( text.slice( 0, idx - 1 ).join( " " ), x, y + ( fontSize * currentLine ) );
-
-			} else {
-
-				ctx.fillText( text.slice( 0, idx - 1 ).join( " " ), x, y + ( fontSize * currentLine ) );
-
-			}
-			currentLine++;
-			text = text.splice( idx - 1 );
-			idx = 1;
-
-		} else {
-
-			idx++;
-
-		}
-	}
-	if ( idx > 0 ) {
-
-		if ( stroke ) {
-
-			ctx.strokeText( text.join( " " ), x, y + ( fontSize * currentLine ) );
-
-		} else {
-
-			ctx.fillText( text.join( " " ), x, y + ( fontSize * currentLine ) );
-
-		}
-
-	}
-	return ( currentLine * fontSize );
-}
-const oncollision = function ( one, two ) {
-	var e = {
-		this: one,
-		collidee: two
-	}
-	if ( one.x < two.x + two.width &&
-		one.x + one.width > two.x &&
-		one.y < two.y + two.height &&
-		one.height + one.y > two.y ) {
-
-		one.oncollision( e );
-
-	} else if ( two.whilenotcollided ) {
-
-		two.whilenotcollided( e );
-
-	}
-}
-//removing objects from arrays
-const removeFromArray = function ( array, object ) {
-	return ( array.indexOf( object ) > -1 ) ? [ array.splice( array.indexOf( object ), 1 ), array ] : false
-}
+//For code that has "ProtonJS" and not "protonjs"
+Object.defineProperty( window, "protonjs", {
+	get: function() { return ProtonJS }
+} );	
 //\\//\\//\\//\\//\\  //
-//\\ pausing stuff \  // loc:7
+//\\ pausing stuff \  // loc:3
 //\\//\\//\\//\\//\\  //
-//not entirely proton2d...
 window.timeoutList = [];
 window.intervalList = [];
 window.intervalInfo = [];
@@ -1918,7 +292,7 @@ window.intervals = [];
 window.oldOldSetInterval = window.setInterval;
 window.setInterval = function ( code, delay ) {
 	function newCode() {
-		if ( protonjs.paused ) {
+		if ( ProtonJS.paused ) {
 
 			return;
 
@@ -1928,10 +302,8 @@ window.setInterval = function ( code, delay ) {
 	return window.oldOldSetInterval( newCode, delay );
 }
 ////////////// //
-//  misc  // //loc:8
+//   misc   // //loc:4
 ////////////// //
-//still proton2d (but some proton3d!)
-
 //get a radian from an angle in degrees
 const radian = function ( angle ) {
 	return THREE.Math.degToRad( angle );
@@ -1941,56 +313,35 @@ const angle = function ( converto, degOrRad ) {
 	//This assumes that the variable converto is in the opposite measurement that you want to convert it to.
 	return degOrRad == "rad"? THREE.Math.degToRad( converto ) : THREE.Math.radToDeg( converto )
 }
-//create a round rectangle, courtesy of
-//https://stackoverflow.com/questions/1255512/how-to-draw-a-rounded-rectangle-on-html-canvas
-CanvasRenderingContext2D.prototype.roundRect = function ( x, y, w, h, r ) {
-	if ( w < 2 * r ) {
+//creating elements
+const Element = function ( elementType = "div", innerHTML = "", properties = null) {
+	var elem = document.createElement( elementType );
+	elem.innerHTML = innerHTML;
+	if ( properties ) {
 
-		r = w / 2
+		for ( var i in properties ) {
+			if ( i === "class" ) {
 
-	}
-	if ( h < 2 * r ) {
+				var array = properties[i].split(" ");
+				array.forEach( function ( classString ) {
+					elem.classList.add( classString )
+				} )
 
-		r = h / 2
+			}
 
-	};
-	this.beginPath();
-	this.moveTo( x + r, y );
-	this.arcTo( x + w, y, x + w, y + h, r );
-	this.arcTo( x + w, y + h, x, y + h, r );
-	this.arcTo( x, y + h, x, y, r );
-	this.arcTo( x, y, x + w, y, r );
-	this.closePath();
-	return this;
-}
-OffscreenCanvasRenderingContext2D.prototype.roundRect = CanvasRenderingContext2D.prototype.roundRect;
-//sorting arrays, courtesy of user Ege ?zcan on:
-//https://stackoverflow.com/questions/1129216/sort-array-of-objects-by-string-property-value
-const sort = function ( property ) {
-	var sortOrder = 1;
-	if ( property[0] === "-" ) {
+			if ( i === "id" ) {
+				elem.id = properties[i]
 
-		sortOrder = -1;
-		property = property.substr( 1 );
-
-	}
-	return function ( a, b ) {
-		var result = ( a[property] < b[property] ) ? -1 : ( a[property] > b[property] ) ? 1 : 0;
-		return result * sortOrder;
-	}
-}
-const sortMultiple = function () {
-	var props = arguments;
-	return function ( obj1, obj2 ) {
-		var i = 0,
-			result = 0,
-			numberOfProperties = props.length;
-		while ( result === 0 && i < numberOfProperties ) {
-			result = sort( props[i] )( obj1, obj2 );
-			i++;
+			}
+			elem[i] = properties[i];
 		}
-		return result;
+
 	}
+	return elem;
+}
+//toggling
+const toggle = function ( boolean ) {
+	return !boolean;
 }
 //bringing back object.watch from user Eli Grey on:
 //https://stackoverflow.com/questions/1759987/listening-for-variable-changes-in-javascript
@@ -1999,17 +350,17 @@ Object.defineProperty( Object.prototype, "watch", {
 	configurable: true,
 	writable: false,
 	value: function ( prop, handler ) {
-		var oldval = this[prop],
+		var oldval = this[ prop ],
 			newval = oldval,
 			getVal = function () {
-				return this["_" + prop];
+				return this[ "_" + prop ];
 			},
 			setVal = function ( val ) {
-				var h = handler.call( this, prop, this["_" + prop], val );
-				this["_" + prop] = val;
+				var h = handler.call( this, prop, this[ "_" + prop ], val );
+				this[ "_" + prop ] = val;
 				return newval = h;
 			};
-		this["_" + prop] = this[prop];
+		this[ "_" + prop ] = this[ prop ];
 		if ( oldval == undefined || newval == undefined ) {
 
 			return;
@@ -2025,18 +376,6 @@ Object.defineProperty( Object.prototype, "watch", {
 		}
 	}
 } );
-const Canvas = function ( height, width ) {
-	var c = document.createElement( "canvas" );
-	c.height = height;
-	c.width = width;
-	return c;
-}
-//
-//
-// Finally! Here we are!
-// This deserves a cool divider.
-//
-//
 /*
 	~> loc:9
 		~> there are locations 9.1 - 10.0 in this section.
@@ -2046,7 +385,6 @@ class Proton3DScene {
 	constructor() {
 		Physijs.scripts.worker = "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physijs_worker.js";
 		Physijs.scripts.ammo = "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/examples/js/ammo.js";
-		this.proton3d = true;
 		this.mappedKeys = {
 			forward: 38,
 			sprint: 16,
@@ -2069,13 +407,12 @@ class Proton3DScene {
 		extras.width = extras.width || window.innerWidth;
 		extras.height = extras.height || window.innerHeight;
 		//variables
-		var scene = this;
-		this.element = (extras.sceneElement || document.createElement( "scene" ));
-		this.camera = new Proton3DObject({
+		this.element = ( extras.sceneElement || document.createElement( "scene" ) );
+		this.camera = new Proton3DObject( {
 			type: "perspectivecamera",
 			viewportWidth: extras.width,
 			viewportHeight: extras.height
-		});
+		} );
 		this.audio = new Audio();
 		//ifs
 		if ( extras.parent == undefined ) {
@@ -2089,29 +426,29 @@ class Proton3DScene {
 		}
 		//creating a scene
 		extras.element = this.element;
-		extras.scene = this
+		extras.scene = this;
 		Proton3DInterpreter.create3DScene( extras );
 		//watching for variables
 		this.background = ""
 		this.backgroundImage = "";
-		scene.watch( "background", function ( id, oldval, newval ) {
+		this.watch( "background", function ( id, oldval, newval ) {
 			this.element.style.background = newval;
 		} );
-		scene.watch( "backgroundImage", function ( id, oldval, newval ) {
+		this.watch( "backgroundImage", function ( id, oldval, newval ) {
 			this.canvas.style.background = newval;
 		} );
 		//updating
-		scene.update( scene );
-		scene.updateExtraFunctions( scene );
+		this.update( this );
+		this.updateExtraFunctions( this );
 		//objectList
 		this.objectList = []
 	}
 	update( scene ) {
-		requestAnimationFrame( function () {
+		requestAnimationFrame( function() {
 			scene.update( scene )
 		} );
 		//pausing
-		if ( protonjs.paused ) {
+		if ( ProtonJS.paused ) {
 
 			return
 
@@ -2119,7 +456,7 @@ class Proton3DScene {
 		//rendering using Proton3DInterpreter.render
 		Proton3DInterpreter.render( this )
 		//extraFunctions
-		scene.priorityExtraFunctions.forEach( function ( e ) {
+		this.priorityExtraFunctions.forEach( function ( e ) {
 			e();
 		} );
 	}
@@ -2129,7 +466,7 @@ class Proton3DScene {
 		} );
 		//functions
 		scene.extraFunctions.forEach( function ( e ) {
-			if ( protonjs.paused && !e.continuePastPausing ) {
+			if ( ProtonJS.paused && !e.continuePastPausing ) {
 
 				return
 
@@ -2149,16 +486,32 @@ class Proton3DScene {
 	dynamicResize() {
 		Proton3DInterpreter.dynamicResize( this )
 	}
-	setKeyControls( obj, speed = 2.5, jumpHeight = 4 ) {
-		var x = this;
+	setKeyControls( obj, speed = 2.5, jumpHeight = 4, extras = {} ) {
+		var x = this, gunMoveFrame = 0;
 		window.addEventListener( "keydown", function ( e ) {
 			e = e || event;
-			x.keys[e.keyCode] = e.type;
-			x.keys[e.keyCode] = true;
+			x.keys[ e.keyCode ] = e.type;
+			x.keys[ e.keyCode ] = true;
 		} );
 		window.addEventListener( "keyup", function ( e ) {
 			e = e || event;
-			x.keys[e.keyCode] = false;
+			x.keys[ e.keyCode ] = false;
+			if ( extras.gunAnimations && x.gun && x.gun.movePosition ) {
+
+				clearInterval( window.gunWalkingAnimation );
+				window.gunWalkingAnimation = undefined;
+				$( x.gun.movePosition ).animate( {
+					x: x.gun.starterPosition.x,
+					y: x.gun.starterPosition.y,
+					z: x.gun.starterPosition.z
+				}, {
+					step: function() {
+						x.gun.position.set( x.gun.movePosition.x, x.gun.movePosition.y, x.gun.movePosition.z );
+					},
+					duration: 1500
+				} )
+
+			}
 		} );
 		x.priorityExtraFunctions.push( checkKeys );
 
@@ -2175,109 +528,109 @@ class Proton3DScene {
 				f( x.keys )
 			} )
 			//
-			if ( x.keys[x.mappedKeys.forward] ) {
+			if ( x.keys[ x.mappedKeys.forward ] ) {
 
 				var y = obj.getWorldDirection(),
 					z = obj.getLinearVelocity();
 				//
-				move(y, z, speed, false, true)
+				move( y, z, speed, false, true )
 				//sprinting
-				if ( x.keys[x.mappedKeys.sprint] ) {
+				if ( x.keys[ x.mappedKeys.sprint ] ) {
 
-					move(y, z, speed + 3.5)
+					move( y, z, speed + 3.5 )
 
 				}
 				//moving left and right
-				if ( x.keys[x.mappedKeys.left] ) {
+				if ( x.keys[ x.mappedKeys.left ] ) {
 
-					var y = protonjs.rotateVector3(
+					var y = ProtonJS.rotateVector3(
 						new THREE.Vector3( 0, 1, 0 ),
 						45,
 						obj.getWorldDirection().multiply( new THREE.Vector3( 1, 0, 1, ) ),
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move(y, z, speed - 0.5)
+					move( y, z, speed - 0.5, undefined, undefined, false )
 					return
 
 				}
-				if ( x.keys[x.mappedKeys.right] ) {
+				if ( x.keys[ x.mappedKeys.right ] ) {
 
-					var y = protonjs.rotateVector3(
+					var y = ProtonJS.rotateVector3(
 						new THREE.Vector3( 0, 1, 0 ),
 						-45,
 						obj.getWorldDirection().multiply( new THREE.Vector3( 1, 0, 1, ) ),
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move(y, z, speed - 0.5)
+					move( y, z, speed - 0.5, undefined, undefined, false )
 					return
 
 				}
 
 			}
-			if ( x.keys[x.mappedKeys.backward] ) {
+			if ( x.keys[ x.mappedKeys.backward ] ) {
 
 				var y = obj.getWorldDirection(),
 					z = obj.getLinearVelocity();
 				//
-				move(y, z, speed, true, true)
+				move( y, z, speed, true, true )
 				//moving left and right
-				if ( x.keys[x.mappedKeys.left] ) {
+				if ( x.keys[ x.mappedKeys.left ] ) {
 
-					var y = protonjs.rotateVector3(
+					var y = ProtonJS.rotateVector3(
 						new THREE.Vector3( 0, 1, 0 ),
 						-45,
 						obj.getWorldDirection().multiply( new THREE.Vector3( 1, 0, 1, ) ),
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move(y, z, speed - 0.5, true)
+					move( y, z, speed - 0.5, true, undefined, false )
 					return
 
 				}
-				if ( x.keys[x.mappedKeys.right] ) {
+				if ( x.keys[ x.mappedKeys.right ] ) {
 
-					var y = protonjs.rotateVector3(
+					var y = ProtonJS.rotateVector3(
 						new THREE.Vector3( 0, 1, 0 ),
 						45,
 						obj.getWorldDirection().multiply( new THREE.Vector3( 1, 0, 1, ) ),
 						true
-					).add(new THREE.Vector3( 0, obj.getPosition().y, 0 ));
+					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move(y, z, speed - 0.5, true)
+					move( y, z, speed - 0.5, true, undefined, false )
 					return
 
 				}
 
 			}
-			if ( x.keys[x.mappedKeys.left] ) {
+			if ( x.keys[ x.mappedKeys.left ] ) {
 
 				var z = obj.getLinearVelocity();
-				var y = protonjs.rotateVector3(
+				var y = ProtonJS.rotateVector3(
 					new THREE.Vector3( 0, 1, 0 ),
 					90,
 					obj.getWorldDirection().multiply( new THREE.Vector3( 1, 0, 1, ) ),
 					true
-				).add(new THREE.Vector3( 0, obj.getPosition().y, 0 ));
+				).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 				//
-				move(y, z, speed - 0.5)
+				move( y, z, speed - 0.5 )
 
 			}
-			if ( x.keys[x.mappedKeys.right] ) {
+			if ( x.keys[ x.mappedKeys.right ] ) {
 
 				var z = obj.getLinearVelocity();
-				var y = protonjs.rotateVector3(
+				var y = ProtonJS.rotateVector3(
 					new THREE.Vector3( 0, 1, 0 ),
 					-90,
 					obj.getWorldDirection(),
 					true
-				).add(new THREE.Vector3( 0, obj.getPosition().y, 0 ));
+				).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 				//
-				move(y, z, speed - 0.5)
+				move( y, z, speed - 0.5 )
 
 			}
-			if ( x.keys[x.mappedKeys.jump] && obj.getCollidingObjects().length > 0 ) {
+			if ( x.keys[ x.mappedKeys.jump ] && obj.getCollidingObjects().length > 0 ) {
 
 				var rotation = x.camera.getRotation(),
 					z = obj.getLinearVelocity();
@@ -2285,18 +638,31 @@ class Proton3DScene {
 
 			}
 		}
-		function move ( y, z, speed, negatise = false, forward = false ) {
+		function move ( y, z, speed, negatise = false, forward = false, gunAnimation = true) {
 			if ( x.noclip ) {
 
-				var pos = obj.position.clone().add( new THREE.Vector3( y.x * (speed / 10) * ( negatise? -1 : 1 ) , forward? ( x.camera.getWorldDirection().y * (speed / 10) * ( negatise? -1 : 1 ) ) : 0, y.z * (speed / 10) * ( negatise? -1 : 1 )  ) )
-				obj.setPosition( pos.x, pos.y, pos.z )
+				var pos = obj.position.clone().add( new THREE.Vector3( y.x * ( speed / 500 ) * ( negatise? -1 : 1 ) , forward? ( x.camera.getWorldDirection().y * (speed / 500) * ( negatise? -1 : 1 ) ) : 0, y.z * (speed / 500) * ( negatise? -1 : 1 )  ) )
+				obj.setPosition( pos.x, pos.y, pos.z );
+				obj.applyLocRotChange();
 
 			} else {
 
 				obj.setLinearVelocity( y.x * speed * ( negatise? -1 : 1 ), z.y, y.z * speed * ( negatise? -1 : 1 ) );
 
 			}
+			if ( x.gun && extras.gunAnimations && gunAnimation == true ) {
 
+				if ( window.gunWalkingAnimation == undefined ) {
+
+					window.gunWalkingAnimation = setInterval( function() {
+						var movement = ( ( Math.sin( gunMoveFrame += 0.2 ) * speed ) / 4000 )
+						x.gun.movePosition? $( x.gun.movePosition ).stop() : undefined;
+						x.gun.setPosition( x.gun.position.x + ( ( 2 * movement ) ), x.gun.position.y + ( movement / 2 ), undefined );
+						x.gun.movePosition = x.gun.position.clone();
+					}, 32 )
+
+				}
+			}
 		}
 	}
 	makeDoor( door, width = door.width || 2.5, faceInwards = true ) {
@@ -2334,7 +700,7 @@ class Proton3DScene {
 
 		returningObject.init = function () {
 			document.body.requestPointerLock();
-			protonjs.resume();
+			ProtonJS.resume();
 			init();
 		}
 
@@ -2342,7 +708,12 @@ class Proton3DScene {
 
 		function init(){
 			var localPosClone = x.crosshair.localPosition.clone();
-
+			
+			//physics
+			extras.cameraParent.setAngularFactor( 0, 0, 0 );
+			extras.cameraParent.setLinearFactor( 1.2, 1.2, 1.2 );
+			
+			//everything else
 			extras.cameraParent.add( x.camera );
 			extras.cameraParent.cameraRotation = new THREE.Vector3();
 
@@ -2375,15 +746,28 @@ class Proton3DScene {
 
 					if ( extras.distance != 5 ) {
 
-						x.camera.setPosition( extras.distance.x, extras.distance.y, extras.distance.z);
+						x.camera.setPosition( extras.distance.x, extras.distance.y, extras.distance.z );
+
+					}
+					if ( extras.gun ) {
+
+						x.camera.add( extras.gun )
+						x.gun = extras.gun;
+						extras.gun.setPosition( 0.9, -0.8, -1.4 )
+						if ( extras.gunPosition ) {
+
+							extras.gun.setPosition( extras.gunPosition.x, extras.gunPosition.y, extras.gunPosition.z )
+
+						}
+						extras.gun.starterPosition = extras.gun.position.clone();
 
 					}
 
 			}
 			window.addEventListener( "mousemove", function ( e ) {
-				if ( !protonjs.paused ) {
+				if ( !ProtonJS.paused ) {
 
-					x.crosshair.__localPosition = protonjs.rotateVector3(
+					x.crosshair.__localPosition = ProtonJS.rotateVector3(
 						new THREE.Vector3( 0, 1, 0 ),
 						-radian( e.movementX / extras.xSensivity ),
 						localPosClone,
@@ -2392,11 +776,26 @@ class Proton3DScene {
 					);
 
 					//
-
-					if ( ( (x.cameraType === "thirdperson" || extras.type === "thirdperson" ) &&
-						( ( ( x.camera.getPosition().y - e.movementY / extras.ySensivity ) > -9 ||
-						( x.camera.getPosition().y - e.movementY / extras.ySensivity ) < 9 ) ) ) ||
-						x.cameraType != "thirdperson" ) {
+					var crosshairPos = ( e.movementY / ( extras.ySensivity * 40 ) ) * ( x.crosshair.__localPosition.distanceTo( x.camera.getPosition() ) );
+					if ( 
+						//If it's third person and [???]
+						(
+							(x.cameraType === "thirdperson" || extras.type === "thirdperson" ) &&
+							(
+								( x.camera.getPosition().y - e.movementY / extras.ySensivity ) > -9 ||
+								( x.camera.getPosition().y - e.movementY / extras.ySensivity ) < 9
+							) 
+						) ||
+						
+						// If it's first person and the camera's within a certain range
+						(
+							x.cameraType != "thirdperson" &&
+							(
+								( x.crosshair.__localPosition.y - crosshairPos ) > -4.5 &&
+								( x.crosshair.__localPosition.y - crosshairPos ) < 4.5
+							) 
+						)
+						) {
 
 						x.crosshair.__localPosition.y -= ( e.movementY / ( extras.ySensivity * 40 ) ) * ( x.crosshair.__localPosition.distanceTo( x.camera.getPosition() ) )
 
@@ -2424,8 +823,8 @@ class Proton3DScene {
 
 		//
 		x.crosshair = {}
-		x.crosshair.localPosition = new THREE.Vector3(0, 0, 1);
-		x.crosshair.__localPosition = new THREE.Vector3(0, 0, 0);
+		x.crosshair.localPosition = new THREE.Vector3( 0, 0, 1 );
+		x.crosshair.__localPosition = new THREE.Vector3( 0, 0, 0 );
 		//
 
 		if ( !extras.cameraParent.parent ) {
@@ -2434,7 +833,7 @@ class Proton3DScene {
 
 		}
 
-		protonjs.pause();
+		ProtonJS.pause();
 		returningObject.crosshair = x.crosshair;
 		return returningObject;
 	}
@@ -2473,14 +872,15 @@ class Proton3DScene {
 			}
 			if ( child.pickingUp ) {
 
-				var pos = x.crosshair.__localPosition.clone().multiply( new THREE.Vector3( 2.5, 1.5, 2.5 ) ).add( x.camera.parent.getPosition() );
-				child.mass = 0;
+				var pos = x.crosshair.__localPosition.clone()
+				pos.y = pos.y > 2? 2 : pos.y;
+				pos.y = pos.y < -2? -2 : pos.y;
+				pos.multiply( new THREE.Vector3( 2.5, 1.5, 2.5 ) ).add( x.camera.parent.getPosition() );
 				child.setPosition(
 					pos.x,
 					pos.y,
 					pos.z
 				);
-				child.setRotation(0, 0, 0);
 
 			}
 			if ( child.pickingUp === "wrapping" ) {
@@ -2488,6 +888,8 @@ class Proton3DScene {
 				child.mass = child.oldMass;
 				child.setLinearVelocity( 0, 0, 0 );
 				child.setLinearFactor( 1, 1, 1 );
+				child.setAngularVelocity( 0, 0, 0 );
+				child.setAngularFactor( 1, 1, 1 );
 				child.pickingUp = null;
 
 			}
@@ -2511,54 +913,75 @@ class Proton3DScene {
 				return
 
 			}
-			if ( x.keys[x.mappedKeys.use] && child.pickingUp === true ) {
+			if ( x.keys[ x.mappedKeys.use ] && child.pickingUp === true ) {
 
-				child.pickingUp = false;
-				x.crosshair.show()
-				child.pickingUp = "wrapping";
-				//
-				window.keyErrorCheck = true
-				setInterval( function () { window.keyErrorCheck = false }, 500 )
+				resetPickingUp( child )
 				return
 
 			}
-			if ( x.keys[x.mappedKeys.use] && x.crosshair.position.distanceTo( child.position ) <= ( child.__pickupDistance || 2 ) && child.pickingUp == null && window.pickingUpChild == undefined ) {
+			if ( x.keys[ x.mappedKeys.use ] && x.crosshair.position.distanceTo( child.position ) <= ( child.__pickupDistance || 2 ) && child.pickingUp == null && window.pickingUpChild == undefined ) {
 
-				window.keyErrorCheck = true
-				setInterval( function () { window.keyErrorCheck = false }, 500 )
-				//
-
-				if ( child.onUse ) {
-
-					child.onUse();
-					if ( child.__returnAfterPickup ) {
-
-						return
-
-					}
-
-				}
-
-				child.pickingUp = true;
-				if ( child.oldMass != 0 ) {
-
-					child.oldMass = child.mass;
-
-				}
-				child.oldPos = child.position.clone();
-				child.distance = x.crosshair.position.distanceTo( child.position );
-				child.setLinearFactor( 0, 0, 0 );
-				x.crosshair.hide()
+				x.pickUpObject( child )
 
 			}
 		}
+		
+		var resetPickingUp = function ( child ) { x.resetPickingUp( child, x ) }
+	}
+	resetPickingUp( child, scene ) {
+		child.pickingUp = false;
+		child.pickingUp = "wrapping";
+		scene.crosshair.show()
+		//
+		window.keyErrorCheck = true;
+		setInterval( function () {
+			window.keyErrorCheck = false;
+		}, 500 )
+	}
+	pickUpObject( child ) {
+		var x = this, resetPickingUp = function ( child ) { x.resetPickingUp( child, x ) };
+		window.keyErrorCheck = true
+		setInterval( function () { window.keyErrorCheck = false }, 250 )
+		//
+
+		if ( child.onUse ) {
+
+			child.onUse();
+			if ( child.__returnAfterPickup ) {
+
+				return
+
+			}
+
+		}
+		
+		child.pickingUp = true;
+		if ( child.oldMass != 0 ) {
+
+			child.oldMass = child.mass;
+
+		}
+		child.addEventListener( "collision", function( otherobj ) {
+			if ( child.pickingUp && otherobj != this && otherobj.p3dParent != x.camera.parent && otherobj.p3dParent != x.gun ) {
+
+				resetPickingUp( child )
+
+			}
+		} )
+		child.oldPos = child.position.clone();
+		child.distance = this.crosshair.position.distanceTo( child.position );
+		child.setLinearVelocity( 0, 0, 0 );
+		child.setLinearFactor( 0, 0, 0 );
+		child.setAngularVelocity( 0, 0, 0 );
+		child.setAngularFactor( 0, 0, 0 );
+		this.crosshair.hide();
 	}
 }
 /*
 	loc:9.1
 	tools
 */
-protonjs.crosshair = function ( crosshair ) {
+ProtonJS.crosshair = function ( crosshair ) {
 	var crosshairElement = document.createElement( "div" );
 	crosshairElement.style.cssText = `
 		position: fixed;
@@ -2567,6 +990,7 @@ protonjs.crosshair = function ( crosshair ) {
 		transform: translate(  -50%, -50%  );
 		height: 21px;
 		width: 21px;
+		image-rendering: auto !important;
 		background: url(  "data:image / png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAKXnpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjarZhpliMrDoX / s4peArNgOYzn9A56 + f0JIp1DDa + yuu2qjDAmQOheSVc26z//3uZfvILzxcQkJdecLa9YY / WNm2Lv616djefv / ZCe79zncfP6wjMUuIb7Ma9nfmM8vT8g8Rnvn8eNjGed8izkXgufV9Cd9X4 + Rj4LBX / H3fPZ1OeBlj8c5 / nvx7Pss / jXz1FwxkysF7zxK7hg79 + 7U8CKUEPjms9f8Xe0hXT + hpB + 9J95ue4nDnzdffGffbMsvLvjLvR2rPzFT / mF1Ofx8NrGf7LI + dfO / hPU23b78fXBf3vPsve6p2sxG9yVn0O9HeXcMZFFYjiPZd7C / 8S9nHflXWyzA9QmR + 2GPYerzuPr7aKbrrnt1rkONzAx + uVxt / d ++HDGCu6vfhxQor7d9mLAZ4YCKgPkAsP + ZYs7 + 1bdj80KO0 / HTO9YzPHEp7f5OvC3708L7a00d86Wl6 + wyytlMUOR07 / MigeI69N0 / OvMvdivLwU2gGA6bi4csNl + l + jJvXMrHJyDTYap0d54cTKfBXAReyeMcQEEbHYhueyseC / O4ccCPg3LfYi + g4BLJvmJlT6GkAGneN2bZ8SduT75O0x6AYhE0AjQEECAFWOKmXgrUKiZFFJMKeUkqaSaWg455pRzlqx5qkmQKEmyiBSp0koosaSSi5RSamnV10AaS6bmKrXUWltj0xYbazXmNwa676HHnnru0kuvvQ3oM + JIIw8ZZdTRpp9hkgLMzFNmmXW25RZUWnGllZessupqG67tsONOO2 / ZZdfdXqg9qH5G7Styv0fNPaj5A5TOk3fUGBZ5W8JpOkmKGYj56EBcFAEI7RUzW1yMXpFTzGz1wZClPFYmBWc6RQwE43I + bffC7h25X + Jm8O53cfM / Q84odP8P5IxC9wG5H3H7CWqznXQbDkAahfiUDBkIPyas0nxpWpe + ee2rj12Mr5uFfCw9Br3rQgYlanzCbkmrz2XrLivxZcFLkQORybZWOJE1Zee0Q9hG9s4T + yWv6rBr7ZoBa87CGq3YwNQVkuwBxlPCXrMwUli7rxjbTnO7tocRf1fHcT4Ip4d1PvSd4 + 4JkHY / duZda5c8Ci4SGd3VsebA4p0WHKCKkJ59ybu3XHuHXdlXCb3jaL4d4OZ2L7J6HJg9GQ1Sc3BlbMFBNfW13G4pmdxqHDzIl1OKPjDr2iyCcZKcVho74bw + 5StHhioiXVlfA9NqZFJSNfLc / C / X5P02c1KZnFNblpJ4TpKhKg + BZ03mctBqdzDlK8ySGbN6TfpGeOjDFg6XhhqBzappxsbqHpMvu4 / Ausds6Oo6vgEB5vRfm2W + eY4Fo + 0gdJWL4rKNoKPrGzbe76YnbtuDYrE + tMNfa3G / 8me2qggkz6KEvcJgly24ZBvic6p67EP6BNYVp0968nTM + OOr + fUEUrElHFpO5J + rDWdxS0UHZGhx4ra5wlxFwTJLtcMcdaeWSF8SojKRIkUlurGp34WodYkzXnL10tT4 / Fp7ZgM80PEHfn1wM2u6f84C5qdfVNInt1HvNuS + wwJHyPDiDu / ZqGrmqnd70ohaplhabsiLScUNsfvYR7YKk1R6n / Z1qp2KfrpO6LUl21I3DORK + dJgCqOHNSOhuvDmN3Jbjc5gt + Ih1MKYJ2acWNHStigcVJ96uJf1uz7VopkP7V1QXpLuDwbB9HmcGrqA6Hg4pPaeaScN6BnafNAsGZoCIVxc2g34RTaHjIbPM + Cd + h0OvsjBmg60YYYZCm0Q1 / jPyljRjiV3VEd8nEQryctTfiU1XXAqCrkwLdsFBLuagwbiDvs1ZpyrLR + mASd7wrpaS6AeMeeMS / ZbofVs1yljuQU1xqDC9tC8N3uUU3URt7VRC9zxqRImkZg1Bw1osKm2eh + pF5sSSOLe241m9i0t1EPbtt2CiN7d6n / M0LTvqId9TbcoPrvFGuRUnbznzqEMzKeO9oisWRycCrCWZrPv + VxLRE2bAjdos3ZJ9BRLxccIdfqe0kzohk2 + WmNjSa0UkJZznLOjLRKCvVPxivaTTcv0WNXkvkrfhapj0QaOHD1xQ2pttd4SwHC8TKoqgSzgNX3HMXYXidQ42mG6i21jWQbLQmUvcAMlJxX1KzR6SvdciybySwNClqJ1JgZSIFWsaZPkWLdiFqpWp / JNEe7KODFWSb / wvJ402 + Qjx1EDGBn2cAFct6N + ZyDNZjNn5747bqgUeMCI1a0558rM6GXAhknFgTzSlhZ0UkuhGm0YoAe / HDB6Cw3w22XKmi + m0HjBlJoOUzpKyW6VTCFvoCnjRZNkd89GZpWHJSvHgp3rYUk6QkFZwnkQW78vV7 + oa3Ajc4ilcCo1 + HepQRpQrbk7SX + 4Qw1aGMIKizo1DO07Gl2K0IzgZ5jRyEMK5DjUAEqlBjUeTKAGmjVlSJ9Lv571ZnlWB6De80Baolmipl0L7ZUY2vMwsDRmmytlKvkLQQm2iSaEzeqRAGjIre2p8FHrjEr3gBrv8OnJl8Qb4c + 5oMCTHcGNiM9J5zvd0UYTBtyGEFYuIeDxzhzmKraHEXDO5zX7w4im2nAoI + ZhhKJNXbukOHDLJ7grPu + qF2gutjZBQXNqxJfaEZzcQJ + NxiS9RdMG7QSmU3bn96q9TbE0qk1pyi4W0qquIeQ7Ny3e8TEs4QIKNxXTnUTX67g1zuaqQPXij9djBwsjDaWpWrG5RLsvaEoZU6U + gs3XVOhRIyFzpOkVOZ5exo5eKVWnlkXOWQz7 + u1FS5YktF7VZxzZbiJO26kWS0OXaH4rBl5LGWDtkCWMGbpmce1pbUljadLWVM6G / k1efedq3m7Sk4OQLeQNdDRF8MiWQ79zj + hxjyDolN / ocZaWm1O4zQXhKbBRG7SqBVS5iaRiIh7 / E4Fpfq88pTwSeHlu4xUKiA + HD45mmFWrFvQ05BcNFtimSJJlZVIwkx5Ig0BDykXXbub9Ex996yraUmsCRuOrBIhefXTsKZrFtd / Q39OSxrAmb3K5b9rJC5inWpg59EHyHyoSBXPDWw9nItFij1PnUh2tima2ez6VUtR79J4qGaWT / uYCIED5jtcVXOavus + XUjtuA / hG0FI3K6RZ800lxkJ8Hf3ZyKlr0Q + jYtCd4vXnTe2BfNfmh6gvJKmVEW9iVGQrXFWtR8nQ2MDxGxBhPMJTlANFW4aL4k + Sgfl2r / C6to6CJWuSzPGaNjWTHkYlYjtB + jCyHV5p66haBRD0UZ1wFNpdarcciKjDUmP / JkJ / cmUhlWOWbG7nh347k5Fp0X1Mb / 02Qo9yhsq43TaZTTpp73TbNGFG2 + 2g2k6GpuHKo6T + jb9Pd6 + pBxIKJQLp0PdyWi4Laq3rvlodEfmjL4PIQqqNRFeBcvCnjd3BruA61TSoLY7SkSkZS39JODWD5Hh / S5hHRkQB / rS99sJhUG / UThS5BoBmOhikQXVaYQVef1dCEECYhoJVpiUfSA / ZtxgQ7PX0N9PfTBTakfNTmxOCA0HV5vwaD3rFllkRWP8FPvsaKYhf9VwAAAGFaUNDUElDQyBQUk9GSUxFAAB4nH2RPUjDQBzFX1O1RSoOdlBxyFCdLIqKOEoVi2ChtBVadTC59ENo0pCkuDgKrgUHPxarDi7Oujq4CoLgB4iLq5Oii5T4v6TQIsaD4368u / e4ewcI9TJTzY5xQNUsIxWPidncihh4RReCEDCGAYmZeiK9kIHn + LqHj693UZ7lfe7P0aPkTQb4ROJZphsW8Trx9Kalc94nDrOSpBCfE48adEHiR67LLr9xLjos8MywkUnNEYeJxWIby23MSoZKPEUcUVSN8oWsywrnLc5qucqa9 + QvDOW15TTXaQ4hjkUkkIQIGVVsoAwLUVo1UkykaD / m4R90 / ElyyeTaACPHPCpQITl + 8D / 43a1ZmJxwk0IxoPPFtj + GgcAu0KjZ9vexbTdOAP8zcKW1 / JU6MPNJeq2lRY6A3m3g4rqlyXvA5Q7Q / 6RLhuRIfppCoQC8n9E35YC + W6B71e2tuY / TByBDXS3dAAeHwEiRstc83h1s7 + 3fM83 + fgBjZ3KhWgKGVwAAAAZiS0dEADcASwDADel / eAAAAAlwSFlzAAAuIwAALiMBeKU / dgAAAAd0SU1FB + MGCAIyI1pj764AAAAqSURBVDjL7dUxEQAADMJA / EuGgUpoh455D7lIR0kqAIu2 / SzKNuUBr48az6wTuvSPBCoAAAAASUVORK5CYII="  )
 	`;
 	crosshair.hide = function () {
@@ -2581,7 +1005,7 @@ protonjs.crosshair = function ( crosshair ) {
 	document.body.appendChild( crosshairElement );
 	return crosshair;
 }
-protonjs.rotateVector3 = function ( axis, angle, vector, normalize, cancelAutoAngle ) {
+ProtonJS.rotateVector3 = function ( axis, angle, vector, normalize, cancelAutoAngle ) {
 	if ( !cancelAutoAngle ) {
 
 		angle = radian( angle );
@@ -2983,10 +1407,10 @@ function getMaterialByName ( name ) {
 		return x.name === name
 	} )
 }
-//\\//\\//\\//\\//\\//\\//\\//\\//\\// //
-//\\ Proton3DInterpreter						 / //
-//\\ (the star of the Proton3D show) / // loc:10 - 10.9
-//\\//\\//\\//\\//\\//\\//\\//\\//\\// //
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//  //
+//\\ Proton3DInterpreter		    	//  //
+//\\ (the star of the Proton3D show)    //  // loc:10 - 10.11
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//  //
 //	README
 //		[!] All functions shown below that have parameters and that
 //				are not called by other functions in the Interpreter
@@ -3010,32 +1434,110 @@ const Proton3DInterpreter = {
 	create3DScene( extras ) {
 		extras.refreshRate = extras.refreshRate || this.refreshRate || 10
 		extras.antialias = extras.antialias || false;
+		extras.shaderQuality = extras.shaderQuality || "low";
 		//variables
+		extras.scene.usePBR = extras.pbr;
 		this.canvas = document.createElement( "canvas" );
-		this.context = this.canvas.getContext( "webgl2" );
-		this.objects = new Physijs.Scene();
-		this.objects.setGravity( new THREE.Vector3( 0, ( extras.gravity || -9.81 ), 0 ) );
+		this.context = this.canvas.getContext( "webgl2", { alpha: false } );
 		this.renderer = new THREE.WebGLRenderer( {
-			alpha: true,
 			antialias: extras.antialias,
 			canvas: this.canvas,
 			context: this.context,
-			powerPreference: "high-performance"
+			precision: extras.shaderQuality.toLowerCase() + "p"
 		} );
+		this.frame = 0;
+		this.renderThing = this.renderer;
+		this.fpsMeasurements = [];
 		this.renderer.setSize( extras.width, extras.height );
 		this.renderer.shadowMap.enabled = true;
-		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+		this.renderer.shadowMap.type = THREE.VSMShadowMap;
+		//physics
+		this.objects = new Physijs.Scene();
+		this.objects.setGravity( new THREE.Vector3( 0, ( extras.gravity || -9.81 ), 0 ) );
 		//some element - y stuff
 		extras.element.appendChild( this.canvas );
+		extras.scene.element.style.imageRendering = extras.pixelatedScene? "pixelated": "";
 		//updating a scene
 		Proton3DInterpreter.render( extras.scene )
 		//PBR
-		this.PBRCamera = new THREE.CubeCamera( 1, 10, 32, {
-			type: THREE.FloatType
-		} );
-		this.objects.add( this.PBRCamera );
-		this.PBRCamera.renderTarget.texture.format = THREE.RGBAFormat;
-		this.PBRCamera.renderTarget.texture.generateMipmaps = true;
+		this.pbrTexture = extras.pbrTexture;
+		this.livePBRArray = [];
+		this.livePBR = true;
+		this.pbrInterval = function () {
+			Proton3DInterpreter.livePBRArray.forEach( function ( object ) {
+				if ( object.position.distanceTo( extras.scene.camera.parent.position ) > 5 ) {
+
+					return
+
+				}
+				getMeshByName( object.name ).pbr? getMeshByName( object.name ).pbr() : undefined;
+			} );
+		}
+		this.pbrArrayInterval = function () {
+			if ( extras.scene.getObjectList != undefined && extras.scene.getObjectList() != undefined ) {
+				
+				Proton3DInterpreter.livePBRArray = [];
+				extras.scene.getObjectList().forEach( function ( object ) {
+					if ( object == undefined ) {
+
+						return
+
+					}
+					if ( getMeshByName( object.name ) == undefined || object.position.distanceTo( extras.scene.camera.parent.position ) > 100 || ( object.material != undefined && object.material.roughness > 0.3 ) ) {
+
+						return
+
+					}
+					Proton3DInterpreter.livePBRArray.push( object )
+				} )
+
+			}
+		}
+		if ( extras.livePBR ) {
+		
+			setInterval( this.pbrInterval, 64 );
+			setInterval( this.pbrArrayInterval, 4000 );
+
+		} else {
+
+			ProtonJS.oldResume = ProtonJS.resume;
+			ProtonJS.resume = function() {
+				ProtonJS.oldResume();
+				extras.scene.getObjectList().forEach( function ( object ) {
+					if ( object == undefined ) {
+
+						return
+
+					}
+					if ( getMeshByName( object.name ) != undefined && getMeshByName( object.name ).pbr ) {
+
+						getMeshByName( object.name ).pbr()
+
+					}
+				} )
+			}
+
+		}
+		//dynamic resolution
+		if ( extras.dynamicResolution ) {
+
+			setInterval( function() {
+				Proton3DInterpreter.renderer.setPixelRatio( ( Proton3DInterpreter.fps / 60 ) / ( extras.dynamicResolutionFactor || 4 ) ) 
+			}, 500 );
+			extras.scene.priorityExtraFunctions.push( function() {
+				//getting the fps, slightly modified from https://www.growingwiththeweb.com/2017/12/fast-simple-js-fps-counter.html
+				const now = performance.now();
+				while ( Proton3DInterpreter.fpsMeasurements.length > 0 && Proton3DInterpreter.fpsMeasurements[0] <= now - 1000 ) {
+					
+					Proton3DInterpreter.fpsMeasurements.shift();
+
+				}
+				Proton3DInterpreter.fpsMeasurements.push( now );
+				Proton3DInterpreter.fps = Proton3DInterpreter.fpsMeasurements.length;	
+
+			} )
+
+		}
 		//
 		return this.canvas
 	},
@@ -3056,23 +1558,23 @@ const Proton3DInterpreter = {
 		//physically based rendering
 		var skipPBRReplacement = object.skipPBRReplacement,
 			skipPBRReplacement_light = object.skipPBRReplacement_light,
-			object = getMeshByName( object.name ) || object,
+			object = object.name? getMeshByName( object.name ) : object,
 			oldMaterial = object.material;
 		if ( scene.usePBR != false && !skipPBRReplacement && !skipPBRReplacement_light && object.material ) {
 
-			object.pbr = function (scene = Proton3DInterpreter, PBRCamera = scene.PBRCamera) {
-				PBRCamera.position.copy( object.position );
-				PBRCamera.rotation.copy( object.rotation );
+			object.pbr = function ( scene = Proton3DInterpreter, PBRCamera = object.pbrCam ) {
+				object.visible = false
 				PBRCamera.update( scene.renderer, scene.objects );
+				object.visible = true;
 				if ( object.material[0] != null ) {
 
 					object.material.forEach( function ( material ) {
-						material.envMap = PBRCamera.renderTarget.texture
+						( material.proto? material.proto : material ).envMap = object.pbrTexture || PBRCamera.renderTarget.texture
 					} )
 
 				} else {
 
-					object.material.envMap = PBRCamera.renderTarget.texture
+					( object.material.proto? object.material.proto : object.material ).envMap = object.pbrTexture || PBRCamera.renderTarget.texture
 
 				}
 			}
@@ -3102,40 +1604,21 @@ const Proton3DInterpreter = {
 			var oldMaterial, newMaterial, hasProto, supportedPropertyList = [
 				"color",
 				"alphaMap",
-			//	"alphaTest",
 				"aoMap",
 				"aoMapIntensity",
-			//	"blendDst",
-			//	"blendDstAlpha",
-			//	"blendEquation",
-			//	"blendEquationAlpha",
-			//	"blendSrc",
-			//	"blendSrcAlpha",
-			//	"blending",
 				"bumpMap",
 				"bumpScale",
-			//	"clipIntersection",
-			//	"clipShadows",
-			//	"clippingPlanes",
-			//	"colorWrite",
-			//	"combine",
-			//	"depthFunc",
-			//	"depthTest",
-			//	"depthWrite",
 				"displacementBias",
 				"displacementMap",
 				"displacementScale",
-			//	"dithering",
 				"emmisive",
 				"emmisiveIntensity",
 				"emmisiveMap",
 				"envMap",
 				"envMapIntensity",
 				"flatShading",
-			//	"fog",
 				"lightMap",
 				"lightMapIntensity",
-			//	"lights",
 				"map",
 				"metalness",
 				"metalnessMap",
@@ -3162,6 +1645,11 @@ const Proton3DInterpreter = {
 			];
 			if ( usePBRInTheFirstPlace ) {
 
+				object.pbrCam = new THREE.CubeCamera( 1, 100, 128 );
+				object.pbrTexture = Proton3DInterpreter.pbrTexture? new THREE.TextureLoader().load( Proton3DInterpreter.pbrTexture ) : undefined;
+				console.log( object.pbrTexture )
+				object.add( object.pbrCam );
+				//
 				hasProto = material.__proto__.type != null;
 				oldMaterial = hasProto? material.__proto__ : material;
 				newMaterial = new THREE.MeshStandardMaterial( {
@@ -3198,7 +1686,7 @@ const Proton3DInterpreter = {
 					newMaterial.normalMap = oldMaterial.normalMap
 
 				}
-				newMaterial.envMap = Proton3DInterpreter.PBRCamera.renderTarget.texture;
+				newMaterial.envMap = object.pbrCam.renderTarget.texture;
 				newMaterial.shadowSide = THREE.BackSide;
 				newMaterial.color = oldMaterial.color;
 
@@ -3210,11 +1698,9 @@ const Proton3DInterpreter = {
 			if ( materialLocation != null ) {
 
 				var m = hasProto? new Physijs.createMaterial(
-					newMaterial,
-					0.999,
-					0.111
+					newMaterial
 				) : newMaterial;
-				m.transparent = true;
+				m.transparent = false;
 				object.material[materialLocation] = m;
 				if ( materialName ) {
 
@@ -3227,11 +1713,9 @@ const Proton3DInterpreter = {
 			} else {
 
 				var m = hasProto? new Physijs.createMaterial(
-					newMaterial,
-					0.999,
-					0.111
+					newMaterial
 				) : newMaterial;
-				m.transparent = true;
+				m.transparent = false;
 				object.material = m;
 				if ( materialName ) {
 
@@ -3250,18 +1734,13 @@ const Proton3DInterpreter = {
 		this.objects.remove( getMeshByName( object.name ) || object )
 	},
 	render( scene ) {
+		//rendering using three.js
+		this.renderThing.render( this.objects, getMeshByName( scene.camera.name ) );
 		//physics
 		this.objects.simulate()
-		//rendering using renderer.render
-		if ( this.composer ) {
-
-			this.composer.render();
-
-		} else {
-
-			this.renderer.render( this.objects, getMeshByName( scene.camera.name ) );
-
-		}
+	},
+	resume() {
+		this.objects.onSimulationResume();
 	},
 
 
@@ -3346,18 +1825,18 @@ const Proton3DInterpreter = {
 
 			case "spotlight":
 				var spotlight = new THREE.SpotLight( new THREE.Color( extras.color || "#fff" ), extras.intensity || 15 )
-				spotlight.shadow.camera = new THREE.OrthographicCamera( -( 100 ), 100, 100, -( 100 ), 0.25, 1000 );
 				spotlight.castShadow = true;
-				//very low quality: 1024
-				//low quality: 2048
-				//medium quality: 8192
-				//high quality: 16384
-				spotlight.shadow.mapSize.width = 8192;
-				spotlight.shadow.mapSize.height = 8192;
-				spotlight.penumbra = 1;
-				spotlight.shadow.radius = 1.5;
-				spotlight.shadow.bias = -0.00005;
+				spotlight.angle = Math.PI / 5;
+				spotlight.penumbra = 0.3;
+				spotlight.castShadow = true;
+				spotlight.shadow.mapSize.width = 1024;
+				spotlight.shadow.mapSize.height = 1024;
 				spotlight.name = object.name;
+				spotlight.shadow.camera.near = 8;
+				spotlight.shadow.camera.far = 200;
+				spotlight.shadow.bias = -0.002;
+				spotlight.shadow.radius = 5;
+				//
 				meshes.push( spotlight );
 				//
 				object.changeColor = function ( hexString ) {
@@ -3373,10 +1852,10 @@ const Proton3DInterpreter = {
 				break;
 
 			case "directionallight":
-				var directionallight = new THREE.DirectionalLight( new THREE.Color( extras.color || "#fff" ), extras.intensity || 15 )
+				var directionallight = new THREE.DirectionalLight( new THREE.Color( extras.color || "#fff" ), extras.intensity == null? 15 : extras.intensity )
 				directionallight.shadow.camera = new THREE.OrthographicCamera( -100, 100, 100, -100, 0.25, 1000 );
 				directionallight.shadow.radius = 1.5;
-				directionallight.shadow.bias = -0.00005;
+				directionallight.shadow.bias = -0.0008;
 				directionallight.name = object.name;
 				meshes.push( directionallight );
 				//
@@ -3385,6 +1864,13 @@ const Proton3DInterpreter = {
 				}
 				object.changeIntensity = function ( value ) {
 					directionallight.intensity = value
+				}
+				object.getIntensity = function ( value ) {
+					return directionallight.intensity
+				}
+				object.setTargetPosition = function ( x, y, z ) {
+					directionallight.target.position.set( x, y, z )
+					directionallight.target.updateMatrixWorld();
 				}
 				//
 				break;
@@ -3603,7 +2089,7 @@ const Proton3DInterpreter = {
 					}
 				}
 				break
-
+			
 			default:
 
 				var mesh = extras.mesh;
@@ -3681,7 +2167,8 @@ const Proton3DInterpreter = {
 
 			object.material = extras.material || new Proton3DMaterial( getMeshByName( object.name ), {
 				name: extras.materialName,
-				material: getMeshByName( object.name ).material
+				material: getMeshByName( object.name ).material,
+				materialType: extras.materialType
 			} )
 
 		}
@@ -3706,7 +2193,7 @@ const Proton3DInterpreter = {
 			sound.setMediaElementSource( audio );
 			return audio;
 		},
-		applyImpulse( force, offset = new THREE.Vector3( 0, 0, 0 ), P3DObject ) {
+		applyImpulse( force, offset = ProtonJS.cache.vector3( 0, 0, 0 ), P3DObject ) {
 			getMeshByName( P3DObject.name ).applyImpulse( force, offset )
 		},
 		delete( P3DObject ) {
@@ -3764,7 +2251,7 @@ const Proton3DInterpreter = {
 		setLinearVelocity( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( !x.x ) {
 
-				x = new THREE.Vector3( x, y, z )
+				x = ProtonJS.cache.vector3( x, y, z )
 
 			}
 			getMeshByName( P3DObject.name ).setLinearVelocity( x )
@@ -3772,7 +2259,7 @@ const Proton3DInterpreter = {
 		setAngularVelocity( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( !x.x ) {
 
-				x = new THREE.Vector3( x, y, z )
+				x = ProtonJS.cache.vector3( x, y, z )
 
 			}
 			getMeshByName( P3DObject.name ).setAngularVelocity( x )
@@ -3780,7 +2267,7 @@ const Proton3DInterpreter = {
 		setLinearFactor( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( !x.x ) {
 
-				x = new THREE.Vector3( x, y, z )
+				x = ProtonJS.cache.vector3( x, y, z )
 
 			}
 			getMeshByName( P3DObject.name ).setLinearFactor( x )
@@ -3788,7 +2275,7 @@ const Proton3DInterpreter = {
 		setAngularFactor( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( !x.x ) {
 
-				x = new THREE.Vector3( x, y, z )
+				x = ProtonJS.cache.vector3( x, y, z )
 
 			}
 			getMeshByName( P3DObject.name ).setAngularFactor( x )
@@ -3884,7 +2371,7 @@ const Proton3DInterpreter = {
 		},
 		lookAt( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( getMeshByName( P3DObject.name ).lookAt ) {
-				getMeshByName( P3DObject.name ).lookAt( new THREE.Vector3( x, y, z ) )
+				getMeshByName( P3DObject.name ).lookAt( ProtonJS.cache.vector3( x, y, z ) )
 				getMeshByName( P3DObject.name ).__dirtyRotation = true;
 			}
 		},
@@ -3957,13 +2444,11 @@ const Proton3DInterpreter = {
 			if ( extras.noPhysics != true ) {
 
 				mesh.children.forEach( function ( c, i ) {
-					var m,
-						oldGeometry;
+					var m;
 					//some geometry stuff  {
 					if ( c.isMesh && c.geometry != null && !c._physijs ) {
 
 						c.updateMatrix();
-					//	oldGeometry = c.geometry.clone();
 						c.geometry = new THREE.Geometry().fromBufferGeometry( c.geometry );
 						if ( extras.accountForExtraProperties ) {
 
@@ -3999,44 +2484,6 @@ const Proton3DInterpreter = {
 						return;
 
 					}
-					//some material stuff
-					function toMeshPhongMaterial( material ) {
-						var newmaterial = new THREE.MeshPhongMaterial();
-						if ( material.type === "MeshPhongMaterial" ) {
-
-							return Physijs.createMaterial(
-								material,
-								1,
-								0
-							);
-
-						}
-						for ( var i in material ) {
-							if ( typeof material[ i ] === "function" || material[ i ] === material.type || material[ i ] === material.id || material[ i ] === material.uuid ) {
-
-								continue
-
-							}
-							newmaterial[ i ] = material[ i ]
-						}
-						return Physijs.createMaterial(
-							newmaterial,
-							1,
-							0
-						);
-					}
-					if ( c.material[ 0 ] != null ) {
-
-						c.material.forEach( function ( material, i ) {
-							c.material[ i ] = toMeshPhongMaterial( material )
-						} )
-
-					} else {
-
-						c.material = toMeshPhongMaterial( c.material )
-
-					}
-					//}
 					if ( extras.objectType ) {
 
 						switch ( typeof extras.objectType ) {
@@ -4210,7 +2657,6 @@ const Proton3DInterpreter = {
 
 			}
 			mesh.children.forEach( castShadow );
-
 			function castShadow( c ) {
 				if ( extras.castShadow ) {
 
@@ -4222,7 +2668,7 @@ const Proton3DInterpreter = {
 					c.receiveShadow = true
 
 				}
-				c.children.forEach( castShadow );
+				c.children? c.children.forEach( castShadow ) : undefined;
 			}
 			//animations
 			if ( extras.fileType.toLowerCase() === "gltf" && object.animations && object.animations.length ) {
@@ -4237,7 +2683,7 @@ const Proton3DInterpreter = {
 				for ( var i in object.animations ) {
 					var mixer = new THREE.AnimationMixer( mesh );
 					var animation = {
-						action: mixer.clipAction( object.animations[i] ),
+						action: mixer.clipAction( object.animations[ i ] ),
 						play: function ( animatingObjects = [] ) {
 							if ( !this.action.paused ) {
 
@@ -4256,16 +2702,16 @@ const Proton3DInterpreter = {
 
 										action.stop();
 										action.reset();
-										clearInterval(animation);
+										clearInterval( animation );
 										action.paused = true;
 										return;
 
 									}
 									mixer.update( frame += 0.005 );
 									mesh.children.forEach( function ( object ) {
-										if ( animatingObjects.indexOf(object) > -1 ) {
+										if ( animatingObjects.indexOf( object ) > -1 ) {
 
-											object.position.add(extras.starterPos);
+											object.position.add( extras.starterPos );
 
 										}
 										object.__dirtyPosition = true;
@@ -4307,7 +2753,7 @@ const Proton3DInterpreter = {
 	create3DMaterial( extras, P3DMaterial, parentObject ){
 		if ( !extras.material ) {
 
-			var material = new THREE.MeshStandardMaterial()
+			var material = eval( "new THREE.Mesh" + ( extras.materialType? ( extras.materialType.charAt( 0 ).toUpperCase() + extras.materialType.slice( 1 ) ) : "Standard") + "Material()" )
 			material.name = P3DMaterial.name;
 			material.transparent = true;
 			materials.push( material )
@@ -4341,7 +2787,7 @@ const Proton3DInterpreter = {
 			getMaterialByName( P3DMaterial.name ).wireframeIntensity = value
 		},
 		getWireframe( P3DMaterial ) {
-			return getMaterialByName( P3DMaterialname ).wireframeIntensity
+			return getMaterialByName( P3DMaterial.name ).wireframeIntensity
 		},
 		setEmmisive( value, P3DMaterial ) {
 			getMaterialByName( P3DMaterial.name ).emmisiveIntensity = value
@@ -4368,6 +2814,7 @@ const Proton3DInterpreter = {
 			return getMaterialByName( P3DMaterial.name ).metalness
 		},
 		setOpacity( value, P3DMaterial ) {
+			getMaterialByName( P3DMaterial.name ).transparent = true;
 			getMaterialByName( P3DMaterial.name ).opacity = value
 		},
 		getOpacity( P3DMaterial ) {
@@ -4462,21 +2909,21 @@ const Proton3DInterpreter = {
 		door.setPickup( true, true );
 		//gets (and rotates) the door's contraint's position
 		var vector = new THREE.Vector3( ( width / 2 ), -1, 0 );
-		vector = protonjs.rotateVector3(
+		vector = ProtonJS.rotateVector3(
 			new THREE.Vector3( 0, 1, 0 ),
 			door.getRotation().y,
 			vector,
 			false,
 			true
 		);
-		vector = protonjs.rotateVector3(
+		vector = ProtonJS.rotateVector3(
 			new THREE.Vector3( 1, 0, 0 ),
 			door.getRotation().x,
 			vector,
 			false,
 			true
 		);
-		vector = protonjs.rotateVector3(
+		vector = ProtonJS.rotateVector3(
 			new THREE.Vector3( 0, 0, 1 ),
 			door.getRotation().z,
 			vector,
@@ -4485,14 +2932,14 @@ const Proton3DInterpreter = {
 		).add( door.getPosition() );
 		//gets the "opening velocity" (see line 2722 in toggleDoor for more info)
 		door.getOpeningVelocity = function ( velocity = new THREE.Vector3( 1, 1, 1 ), addExtraStuff = true ) {
-			velocity = protonjs.rotateVector3(
+			velocity = ProtonJS.rotateVector3(
 				new THREE.Vector3( 1, 0, 0 ),
 				door.getRotation().x,
 				velocity,
 				false,
 				true
 			);
-			velocity = protonjs.rotateVector3(
+			velocity = ProtonJS.rotateVector3(
 				new THREE.Vector3( 0, 0, 1 ),
 				door.getRotation().z,
 				velocity,
@@ -4526,9 +2973,9 @@ const Proton3DInterpreter = {
 			case "sphere":
 				var geoParameters = ( obj || {
 					radius: ( extras.radius || 1 ),
-					widthSegments: ( extras.sphereSegments || 100 ),
-					heightSegments: ( extras.sphereSegments || 100 ),
-					depthSegments: ( extras.sphereSegments || 100 )
+					widthSegments: ( extras.sphereSegments || 16 ),
+					heightSegments: ( extras.sphereSegments || 16 ),
+					depthSegments: ( extras.sphereSegments || 16 )
 				} );
 				if ( extras.sphereSegments ) {
 
@@ -4824,4 +3271,4 @@ const Proton3DInterpreter = {
 		}
 	}
 }
-protonjs.importObject = Proton3DInterpreter.importObject
+ProtonJS.importObject = Proton3DInterpreter.importObject

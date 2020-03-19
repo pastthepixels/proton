@@ -1,4 +1,4 @@
-# proton
+![logo](./images/logo/logo.png/)
 The Proton engine is a game engine that is designed to focus on 3 things:
 - Performance
 - Ease of use
@@ -11,6 +11,10 @@ If you're using Proton3D locally on Google Chrome, you must enable the flag `--d
 C:\Program Files (x86)\Google\Chrome\Application\chrome.exe --disable-web-security --user-data-dir=./temp
 ```
 (where `./temp` is the directory where Chrome's files will be stored)\
+If you do not have the best processor in the world, it is a good idea to disable v-sync. You can do that with these two flags: `--disable-gpu-vsync` and `--disable-frame-rate-limit`. With every flag, it would look like this:
+```
+C:\Program Files (x86)\Google\Chrome\Application\chrome.exe --disable-web-security --user-data-dir=./temp --disable-gpu-vsync --disable-frame-rate-limit
+```\
 Make sure no other windows of the browser are open!
 
 ## Alright! How do I contribute?
@@ -25,5 +29,6 @@ Everything is (at leased supposed to be) written in [Mr.doob's Code Style](https
 - All versions except betas of the engine are guaranteed to not be changed in such a way as to break code designed for older versions, with one exception to Proton2D in proton.js.
 
 ## What's your current roadmap for the Proton engine?
-1) Polishing proton.js so that it can be run on low performance devices. UPDATE: It's not in the `master` branch, but things like this have already have been done. Active changes are in the `beta` branch.
-2) Making PickleScript a reality: it's a concept that I have for a Ruby-like scripting language that can be interpreted across programming languages, and that is designed for game development.
+1) Source-ifying proton.js (ex: getting a Source-like console with Source-like commands). DISCLAIMER: I really don't know how to use Source. At all.
+=======
+1) Polishing proton.js so that it can be run on low performance devices.

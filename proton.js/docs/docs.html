@@ -1,0 +1,205 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Proton.JS Docs</title>
+		<link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono|Roboto+Slab&display=swap" rel="stylesheet">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="docs_data.js"></script>
+		<style>
+			/* vars, body, html, and * [loc:0-css] */
+			:root {
+				--element-outline-border: 5px solid #f1f1f1;
+				--element-outline-border-radius: 0px;
+				--element-box-shadow: 0px 2px 10px rgba( 0, 0, 0, 0.4 );
+				--element-background-gradient: white;
+				--header-background: #3a672b;
+				--header-color: #f1f1f1;
+				--header-border-radius: 0px;
+				--header-box-shadow: 0px 5px 50px rgba( 0, 0, 0, 0.5 );
+				--accent: #629643;
+			}
+			body {
+				margin: 0;
+				padding: 0;
+				background: #f9f9f9;
+			}
+			* {
+				box-sizing: border-box;
+				font-family: "Roboto";
+			}
+			/* header [loc:1-css] */
+			header {
+				color: var( --header-color );
+				background: var( --header-background );
+				backdrop-filter: blur( 10px );
+				display: inline-block;
+				width: 100%;
+				padding: 20px;
+				border-bottom-right-radius: var( --header-border-radius );
+				border-bottom-left-radius: var( --header-border-radius );
+				box-shadow: var( --header-box-shadow );
+				margin-bottom: 10px;
+			}
+			h1, h2, h3, h4 {
+				font-family: "Roboto Mono";
+			}
+			/* those big blocks or stuff [loc:2-css] */
+			div.block {
+				background: var( --element-background-gradient );
+				border: var( --element-outline-border );
+				border-radius: var( --element-outline-border-radius );
+				box-shadow: var( --element-box-shadow );
+				margin: 20px 40px;
+				padding: 15px 30px;
+				color: #333;
+			}
+			div.navigation {
+				margin-bottom: 60px;
+				border-color: var( --accent );
+			}
+			a {
+				color: var( --accent );
+				cursor: pointer;
+				text-decoration: underline;
+				display: block;
+				margin: 10px 0;
+			}
+			div.block p {
+				margin-left: 40px;
+			}
+			div.block h3 {
+				margin-left: 20px;
+			}
+			div.block desc {
+				display: block;
+				margin: 10px;
+				margin-left: 40px;
+				border-left: 4px solid var( --accent );
+				padding-left: 10px;
+			}
+			/* code blocks and tags [loc:3-css] */
+			code {
+				font-family: "Roboto Mono";
+				padding: 5px;
+				background: rgba( 0, 0, 0, 0.9 );
+				border-radius: 5px;
+				color: seagreen;
+				margin: 0 2px;
+				line-height: 2;
+			}
+			tag {
+				font-family: "Roboto Mono";
+				padding: 5px;
+				background: var( --accent );
+				color: #111;
+				border-radius: 5px;
+				margin: 0 2px;
+				line-height: 2;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<h1>Proton.JS Docs</h1>
+		</header>
+		<div class="navigation block" id="navblock"></div>
+	</body>
+	<script>
+		function parse() {
+			docs_data.objects.forEach( function ( object ) {
+				//creates the main div
+				var div = document.createElement( "div" );
+				div.classList.add( "block" );
+				div.id = object.name;
+					//creates a header
+					var header_main = document.createElement( "h2" );
+					header_main.innerHTML = object.name;
+					div.appendChild( header_main );
+					//creates stuff for the use
+					if ( object.use ) {
+					
+						var header_second = document.createElement( "h3" );
+						header_second.innerHTML = "Use/Creation";
+						div.appendChild( header_second );
+						
+						var use_info = document.createElement( "p" );
+						use_info.innerHTML = "<code>" + object.use + "</code>";
+						div.appendChild( use_info );
+						
+					}
+					//creates stuff for the description
+					if ( object.description ) {
+					
+						var header_second = document.createElement( "h3" );
+						header_second.innerHTML = "Description";
+						div.appendChild( header_second );
+						
+						var description_info = document.createElement( "p" );
+						description_info.innerHTML = object.description;
+						div.appendChild( description_info );
+						
+					}
+					//creates stuff for the properties
+					if ( object.properties ) {
+						
+						var header_second = document.createElement( "h3" );
+						header_second.innerHTML = "Properties";
+						div.appendChild( header_second );
+						
+						if ( typeof object.properties[ 0 ] == "string" ) {
+					
+							var property_info = document.createElement( "p" );
+							property_info.innerHTML = "See '" + object.properties[ 0 ] + "' for common properties.";
+							div.appendChild( property_info );
+
+						} else {
+
+							object.properties.forEach( function ( property ) {
+								var property_info = document.createElement( "p" );
+								property_info.innerHTML = "<code>." + property.name + "</code>" + "<tag>" + property.type + "</tag>" + "<desc>" + property.description + "</desc>";
+								div.appendChild( property_info );
+							} );
+
+						}
+						
+					}
+					//creates stuff for the functions
+					if ( object.functions ) {
+					
+						var header_second = document.createElement( "h3" );
+						header_second.innerHTML = "Functions";
+						div.appendChild( header_second );
+						
+						if ( typeof object.functions[ 0 ] == "string" ) {
+					
+							var property_info = document.createElement( "p" );
+							property_info.innerHTML = "See '" + object.functions[ 0 ] + "' for common properties.";
+							div.appendChild( property_info );
+
+						} else {
+							
+							object.functions.forEach( function ( property ) {
+								var property_info = document.createElement( "p" );
+								property_info.innerHTML = "<code>." + property.name + "</code>" + "<desc>" + property.description + "</desc>";
+								div.appendChild( property_info );
+							} );
+
+						}
+						
+					}
+				//creates scroller
+				var scroller = document.createElement( "a" );
+				scroller.innerHTML = object.name;
+				scroller.onclick = function () {
+					div.scrollIntoView( { 
+						behavior: "smooth"
+					} );
+				}
+				//adds everything
+				document.body.appendChild( div );
+				navblock.appendChild( scroller );
+			} );
+		}
+		parse();
+	</script>
+</html>
