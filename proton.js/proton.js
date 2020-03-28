@@ -890,6 +890,7 @@ class Proton3DScene {
 				child.setLinearFactor( 1, 1, 1 );
 				child.setAngularVelocity( 0, 0, 0 );
 				child.setAngularFactor( 1, 1, 1 );
+				x.pickingUpObject = null;
 				child.pickingUp = null;
 
 			}
@@ -928,20 +929,24 @@ class Proton3DScene {
 		
 		var resetPickingUp = function ( child ) { x.resetPickingUp( child, x ) }
 	}
-	resetPickingUp( child, scene ) {
+	resetPickingUp( child, scene, callback = function(){} ) {
+		this.pickingUpObject = null;
 		child.pickingUp = false;
 		child.pickingUp = "wrapping";
 		scene.crosshair.show()
 		//
 		window.keyErrorCheck = true;
-		setInterval( function () {
+		setTimeout( function () {
+		callback();
+		}, 50 );
+		setTimeout( function () {
 			window.keyErrorCheck = false;
 		}, 500 )
 	}
 	pickUpObject( child ) {
 		var x = this, resetPickingUp = function ( child ) { x.resetPickingUp( child, x ) };
 		window.keyErrorCheck = true
-		setInterval( function () { window.keyErrorCheck = false }, 250 )
+		setTimeout( function () { window.keyErrorCheck = false }, 250 )
 		//
 
 		if ( child.onUse ) {
@@ -956,6 +961,7 @@ class Proton3DScene {
 		}
 		
 		child.pickingUp = true;
+		x.pickingUpObject = child;
 		if ( child.oldMass != 0 ) {
 
 			child.oldMass = child.mass;
@@ -2443,8 +2449,15 @@ const Proton3DInterpreter = {
 			} )
 			if ( extras.noPhysics != true ) {
 
-				mesh.children.forEach( function ( c, i ) {
-					var m;
+				mesh.children.forEach( function ( child, i ) {
+					var m, c = mesh.children[ i ];
+					//armature
+					if ( child.name.toLowerCase().includes( "armature" ) || extras.armature ) {
+
+						extras.armature = child;
+						c = child.children[ child.children.length - 1 ]
+
+					}
 					//some geometry stuff  {
 					if ( c.isMesh && c.geometry != null && !c._physijs ) {
 
@@ -2567,6 +2580,11 @@ const Proton3DInterpreter = {
 					physicalObject.name = c.name;
 					physicalObject.userData = c.userData;
 					physicalObject.material.transparent = true;
+					if ( extras.armature ) {
+
+						physicalObject.add( extras.armature );
+
+					}
 					if ( extras.starterPos && extras.fileType.toLowerCase() != "gltf" ) {
 
 						physicalObject.position.set(
@@ -2729,6 +2747,19 @@ const Proton3DInterpreter = {
 			objects.forEach( function ( mesh, i ) {
 				var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } )
 				x.children.push( object )
+				if ( extras.armature ) {
+
+					object.armature = extras.armature;
+					object.armatureObject = extras.armature.children[ extras.armature.children.length - 1 ];
+					object.armatureObject.material =  object.armatureObject.material.clone();
+					object.material = new Proton3DMaterial( object.armatureObject, {
+						material: object.armatureObject.material
+					} )
+					//
+					getMeshByName( object.name ).material.visible = false;
+					getMeshByName( object.name ).castShadow = false;
+
+				}
 				if ( extras.objects ) {
 
 					extras.objects.add( object )

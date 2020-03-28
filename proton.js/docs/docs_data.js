@@ -219,7 +219,7 @@ var docs_data = {
 		{
 			name: "Proton3DObject (imported)",
 			description: "An object in Proton3D. It can either be imported via a '.obj' file or a glTF file.",
-			use: "ProtonJS.importObject( { type: ['gltf', 'obj'], objPath: url (obj files only), mtlPath: url (obj files only) }, gltfPath: url (gltf files only), onload: function, objectType: ['box', 'sphere', 'cylinder', 'concave', 'convex'] (Physijs mesh types), mass: float, objects: Proton3DScene )",
+			use: "ProtonJS.importObject( { type: ['gltf', 'obj'], objPath: url (obj files only), mtlPath: url (obj files only) }, gltfPath: url (gltf files only), onload: function, objectType: ['box', 'sphere', 'cylinder', 'concave', 'convex'] (Physijs mesh types), mass: float, objects: Proton3DScene, armature: boolean (whether or not an imported object is just armature; the object in question must be the last child of the armature)",
 			properties: [
 				"Proton3DObject (universal)"
 			],
