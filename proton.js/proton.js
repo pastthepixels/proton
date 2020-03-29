@@ -34,25 +34,16 @@ document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min +
 document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/loaders/LoaderSupport.js"></script>' );
 document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/OBJLoader2.js"></script>' );
 document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/GLTFLoader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/utils/BufferGeometryUtils.js"></script>' );
 //threejs effects
 document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/EffectComposer.js"></script>' );
 document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/ShaderPass.js"></script>' );
 document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/RenderPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/MaskPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/math/SimplexNoise.js"></script>' );
 document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/shaders/CopyShader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/SSAOPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/shaders/SSAOShader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/shaders/FXAAShader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/modifiers/SubdivisionModifier.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/postprocessing/UnrealBloomPass.js"></script>' );
+document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/shaders/LuminosityHighPassShader.js"></script>' );
 //proton3d physics: physijs | ammo.js
 document.writeln( '<script src="https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js"></script>' );
 document.writeln( '<script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js"></script>' );
-//proton3d controls: threejs
-document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/js/controls/PointerLockControls.js"></script>' )
-document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/js/controls/OrbitControls.js"></script>' )
-document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/js/controls/TrackballControls.js"></script>' )
 //three.js' sky shader, by https://github.com/zz85
 document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js"></script>' );
 
@@ -1451,8 +1442,8 @@ const Proton3DInterpreter = {
 			context: this.context,
 			precision: extras.shaderQuality.toLowerCase() + "p"
 		} );
+		this.renderer.toneMapping = THREE.ReinhardToneMapping;
 		this.frame = 0;
-		this.renderThing = this.renderer;
 		this.fpsMeasurements = [];
 		this.renderer.setSize( extras.width, extras.height );
 		this.renderer.shadowMap.enabled = true;
@@ -1741,7 +1732,7 @@ const Proton3DInterpreter = {
 	},
 	render( scene ) {
 		//rendering using three.js
-		this.renderThing.render( this.objects, getMeshByName( scene.camera.name ) );
+		this.composer? this.composer.render() : this.renderer.render( this.objects, getMeshByName( scene.camera.name ) );
 		//physics
 		this.objects.simulate()
 	},
@@ -2414,14 +2405,14 @@ const Proton3DInterpreter = {
 					loader.loadMtl( extras.mtlPath, null, function ( materials ) {
 						loader.setMaterials( materials );
 						loader.load( extras.objPath, function ( object ) {
-							finishLoad( object, object.detail.loaderRootNode )
+							finishLoad( object.detail.loaderRootNode, object )
 						} );
 					} );
 
 				} else {
 
 					loader.load( extras.objPath, function ( object ) {
-						finishLoad( object, object.detail.loaderRootNode )
+						finishLoad( object.detail.loaderRootNode, object )
 					} );
 
 				}
@@ -2431,26 +2422,38 @@ const Proton3DInterpreter = {
 
 				loader = new THREE.GLTFLoader( extras.loadManager );
 				loader.load( extras.gltfPath, function ( object ) {
-					finishLoad( object, object.scene )
+					finishLoad( object.scene, object )
 				} );
 				break;
 
 		}
 		//finishes the loading stuff
-		function finishLoad( object, threeObject ) {
-			mesh = threeObject;
-			mesh.children.forEach( function ( child ) {
+		function getAllMaterials( scene ) {
+			var materials = [];
+			scene.traverse( getMaterial );
+			function getMaterial( object ) {
+				object.children.forEach( getMaterial )
+				object.material? materials.push( object.material ) : undefined;
+			}
+			return materials;
+		}
+		function finishLoad( scene, load ) {
+			//takes out the children from a group and puts them into the scene.
+			scene.children.forEach( function ( child ) {
 				if ( child.isGroup ) {
+
 					child.children.forEach( function ( child_child ) {
-						mesh.add( child_child )
+						scene.add( child_child )
 					} )
-					mesh.remove( child )
+					scene.remove( child )
+
 				}
 			} )
+			//registers each object as a physics object.
 			if ( extras.noPhysics != true ) {
 
-				mesh.children.forEach( function ( child, i ) {
-					var m, c = mesh.children[ i ];
+				scene.children.forEach( function( child, i ) {
+					var m, c = scene.children[ i ];
 					//armature
 					if ( child.name.toLowerCase().includes( "armature" ) || extras.armature ) {
 
@@ -2458,11 +2461,17 @@ const Proton3DInterpreter = {
 						c = child.children[ child.children.length - 1 ]
 
 					}
-					//some geometry stuff  {
-					if ( c.isMesh && c.geometry != null && !c._physijs ) {
+					//kicks out already recorded stuff
+					if ( c._physijs ) {
 
-						c.updateMatrix();
-						c.geometry = new THREE.Geometry().fromBufferGeometry( c.geometry );
+						return;
+
+					}
+					//geometry stuff
+					if ( c.isMesh && c.geometry != undefined ) {
+						
+						//'bakes' the scale into the geometry
+						c.geometry = c.geometry.type == "BufferGeometry" ? new THREE.Geometry().fromBufferGeometry( c.geometry ) : c.geometry;
 						if ( extras.accountForExtraProperties ) {
 
 							c.geometry.vertices.forEach( function ( vertex ) {
@@ -2470,14 +2479,16 @@ const Proton3DInterpreter = {
 							} );
 
 						}
+						//adds the starter position to the object's position.
 						if ( extras.starterPos && extras.fileType.toLowerCase() === "gltf" ) {
 
 							c.position.add( extras.starterPos )
 
 						}
 
-					} else if ( !c._physijs ) {
+					} else {
 
+						//if the object is not a mesh, forget about it.
 						if ( c.position && extras.starterPos ) {
 
 							c.position.add( extras.starterPos );
@@ -2486,17 +2497,15 @@ const Proton3DInterpreter = {
 						objects.push( c );
 						return;
 
-					} else if ( c._physijs ) {
-
-						return
-
 					}
+					//if the object has a --noPhysics flag in its name, forget about it.
 					if ( c.name && c.name.includes( " --noPhysics" ) ) {
 
 						objects.push( c );
 						return;
 
 					}
+					//if extras.objectType is an array corrisponding to the objects in the scene, well, make note of that or something.
 					if ( extras.objectType ) {
 
 						switch ( typeof extras.objectType ) {
@@ -2513,6 +2522,7 @@ const Proton3DInterpreter = {
 						}
 
 					}
+					//if the object has a --geometry flag in its name, extras.objectType will be overridden with this.
 					if ( c.name && c.name.includes( "--geometry-" ) ) {
 
 						m = c.name.slice( c.name.indexOf( "--geometry-" ) + 11, c.name.length )
@@ -2524,7 +2534,7 @@ const Proton3DInterpreter = {
 						}
 
 					}
-					//
+					//if the object must have a transparent collision material, so be it.
 					if ( extras.collisionMaterialTransparent ) {
 
 						extras.collisionMaterial = new THREE.MeshBasicMaterial();
@@ -2533,7 +2543,7 @@ const Proton3DInterpreter = {
 						extras.collisionMaterial.depthWrite = false;
 
 					}
-					//
+					//same as above, but for mass.
 					var mass = 0;
 					if ( extras.mass ) {
 
@@ -2551,6 +2561,7 @@ const Proton3DInterpreter = {
 						}
 
 					}
+					//same as above, but for mass.
 					if ( c.name && c.name.includes( "--mass" ) ) {
 
 						mass = c.name.slice( c.name.indexOf( "--mass-" ) + 7, c.name.length )
@@ -2562,7 +2573,7 @@ const Proton3DInterpreter = {
 						mass = parseFloat( mass );
 
 					}
-					//
+					//creates a physijs object
 					var physicalObject = eval( `new Physijs.` + ( m || "Box" ) + `Mesh(
 						(  extras.collisionGeometry || c.geometry  ),
 						(  extras.collisionMaterial || c.material  ),
@@ -2577,6 +2588,7 @@ const Proton3DInterpreter = {
 						c.name = c.name.replace( /_/ig, " " )
 
 					}
+					physicalObject.material = extras._material? extras._material : physicalObject.material;
 					physicalObject.name = c.name;
 					physicalObject.userData = c.userData;
 					physicalObject.material.transparent = true;
@@ -2610,28 +2622,30 @@ const Proton3DInterpreter = {
 						)
 
 					}
-					//
+					//collision box weirdness
 					if ( extras.useCollisionBox ) {
 
 						extras.collisionBoxPosition = ( extras.collisionBoxPosition || new THREE.Vector3( 0, 0, 0 ) );
 						c.position.set( extras.collisionBoxPosition.x, extras.collisionBoxPosition.y, extras.collisionBoxPosition.z );
 						physicalObject.add( c );
-						mesh.children.push( physicalObject );
+						scene.children.push( physicalObject );
 						objects.push( physicalObject );
 						return;
 
 					}
+					//resizing the mesh to account for properties such as scaling
 					if ( extras.accountForExtraProperties ) {
 
-						mesh.children.push( physicalObject );
+						scene.children.push( physicalObject );
 						objects.push( physicalObject );
 						return;
 
 					}
+					//done
 					if ( extras.fileType != "gltf" ) {
 
 						physicalObject.add( c );
-						mesh.children.push( physicalObject );
+						scene.children.push( physicalObject );
 						objects.push( physicalObject );
 
 					} else {
@@ -2648,22 +2662,22 @@ const Proton3DInterpreter = {
 
 					}
 					physicalObject.geometry = new THREE.BufferGeometry().fromGeometry( physicalObject.geometry );
-					c.geometry = new THREE.BufferGeometry().fromGeometry( c.geometry );
-					if ( mesh.children.length === 1 ) {
+					c.geometry = c.type === "BufferGeometry"? c.geometry : new THREE.BufferGeometry().fromGeometry( c.geometry );
+					if ( scene.children.length === 1 ) {
 
-						mesh = mesh.children[ 0 ];
+						scene = scene.children[ 0 ];
 
 					}
-				} );
+				} )
 
 			} else {
 
 				if ( extras.starterPos ) {
 
-					mesh.position.add( extras.starterPos )
+					scene.position.add( extras.starterPos )
 
 				}
-				mesh.children.forEach( function ( child ) {
+				scene.children.forEach( function ( child ) {
 					if ( extras.starterPos ) {
 
 						child.position.add( extras.starterPos )
@@ -2674,7 +2688,8 @@ const Proton3DInterpreter = {
 
 
 			}
-			mesh.children.forEach( castShadow );
+			//shadows
+			scene.children.forEach( castShadow );
 			function castShadow( c ) {
 				if ( extras.castShadow ) {
 
@@ -2689,19 +2704,19 @@ const Proton3DInterpreter = {
 				c.children? c.children.forEach( castShadow ) : undefined;
 			}
 			//animations
-			if ( extras.fileType.toLowerCase() === "gltf" && object.animations && object.animations.length ) {
+			if ( extras.fileType.toLowerCase() === "gltf" && load.animations && load.animations.length ) {
 
 				x.animations = [];
 				if ( extras.starterPos ) {
 
-					mesh.position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z );
-					object.scene.position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z );
+					scene.position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z );
+					load.scene.position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z );
 
 				}
-				for ( var i in object.animations ) {
-					var mixer = new THREE.AnimationMixer( mesh );
+				for ( var i in load.animations ) {
+					var mixer = new THREE.AnimationMixer( scene );
 					var animation = {
-						action: mixer.clipAction( object.animations[ i ] ),
+						action: mixer.clipAction( load.animations[ i ] ),
 						play: function ( animatingObjects = [] ) {
 							if ( !this.action.paused ) {
 
@@ -2726,7 +2741,7 @@ const Proton3DInterpreter = {
 
 									}
 									mixer.update( frame += 0.005 );
-									mesh.children.forEach( function ( object ) {
+									scene.children.forEach( function ( object ) {
 										if ( animatingObjects.indexOf( object ) > -1 ) {
 
 											object.position.add( extras.starterPos );
@@ -2742,10 +2757,11 @@ const Proton3DInterpreter = {
 					x.animations[ i ] = animation;
 				}
 			}
-			//
+			//creating Proton3D objects
 			x.children = [];
 			objects.forEach( function ( mesh, i ) {
 				var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } )
+				console.log( object.material )
 				x.children.push( object )
 				if ( extras.armature ) {
 
@@ -2769,12 +2785,12 @@ const Proton3DInterpreter = {
 			//
 			if ( extras.onload ) {
 
-				extras.onload( threeObject );
+				extras.onload( scene );
 
 			}
 			if ( x.onload ) {
 
-				x.onload( threeObject );
+				x.onload( scene );
 
 			}
 		}
