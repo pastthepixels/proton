@@ -125,7 +125,7 @@ var docs_data = {
 					description: "Sets the object's position. If it has physics, make sure to call applyLocRotChange()."
 				},
 				{
-					name: "animatePosition( x (float), y (float), z (float), time (float) )",
+					name: "animatePosition( x (float), y (float), z (float), time (float), step (function) )",
 					description: "Sets the object's position through an easing animation."
 				},
 				{

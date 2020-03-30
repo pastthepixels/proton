@@ -871,7 +871,7 @@ class Proton3DScene {
 					pos.x,
 					pos.y,
 					pos.z,
-					700
+					100
 				);
 
 			}
@@ -1221,21 +1221,41 @@ class Proton3DObject {
 	setPosition( x, y, z ) {
 		return Proton3DInterpreter.Proton3DObject.setPosition( x, y, z, this )
 	}
-	animatePosition( x, y, z, time = 1500 ) {
-		var object = this;
-		this.__movePosition = this.__movePosition? this.__movePosition : this.position.clone();
-		$( this.__movePosition ).stop();
-		$( this.__movePosition ).animate( {
-			x: x,
-			y: y,
-			z: z
-		}, {
-			step: function() {
-				object.setPosition( object.__movePosition.x, object.__movePosition.y, object.__movePosition.z );
-				object.applyLocRotChange();
-			},
-			duration: time
-		} )
+	animatePosition( x, y, z, time = 1500, step = undefined ) {
+		var pobject = this, target = new THREE.Vector3( x, y, z );
+		//this.__movePosition? $( this.__movePosition ).stop( true, true ) : undefined;
+		if ( this.__movePosition === undefined ) {
+			
+			this.__movePosition = this.position.clone();
+			$( pobject.__movePosition ).animate( {
+				x: target.x,
+				y: target.y,
+				z: target.z
+			}, {
+				step: function() {
+					if ( pobject.__movePosition === undefined ) {
+
+						return
+
+					}
+					if ( pobject.__movePosition.distanceTo( target ) < 1 ) {
+
+						$( pobject.__movePosition ).stop( true, true );
+						return
+
+					}
+					pobject.setPosition( pobject.__movePosition.x, pobject.__movePosition.y, pobject.__movePosition.z );
+					pobject.applyLocRotChange();
+					step? step() : step;
+				},
+				done: function() {
+					console.log( "done!" );
+					pobject.__movePosition = undefined;
+				},
+				duration: time
+			} )
+
+		}
 	}
 	getRotation() {
 		return Proton3DInterpreter.Proton3DObject.getRotation( this )
@@ -1661,7 +1681,6 @@ const Proton3DInterpreter = {
 
 				object.pbrCam = new THREE.CubeCamera( 1, 100, 128 );
 				object.pbrTexture = Proton3DInterpreter.pbrTexture? new THREE.TextureLoader().load( Proton3DInterpreter.pbrTexture ) : undefined;
-				console.log( object.pbrTexture )
 				object.add( object.pbrCam );
 				//
 				hasProto = material.__proto__.type != null;
@@ -2778,7 +2797,6 @@ const Proton3DInterpreter = {
 			x.children = [];
 			objects.forEach( function ( mesh, i ) {
 				var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } )
-				console.log( object.material )
 				x.children.push( object )
 				if ( extras.armature ) {
 
