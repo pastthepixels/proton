@@ -870,7 +870,8 @@ class Proton3DScene {
 				child.setPosition(
 					pos.x,
 					pos.y,
-					pos.z
+					pos.z,
+					700
 				);
 
 			}
@@ -1219,6 +1220,22 @@ class Proton3DObject {
 	}
 	setPosition( x, y, z ) {
 		return Proton3DInterpreter.Proton3DObject.setPosition( x, y, z, this )
+	}
+	animatePosition( x, y, z, time = 1500 ) {
+		var object = this;
+		this.__movePosition = this.__movePosition? this.__movePosition : this.position.clone();
+		$( this.__movePosition ).stop();
+		$( this.__movePosition ).animate( {
+			x: x,
+			y: y,
+			z: z
+		}, {
+			step: function() {
+				object.setPosition( object.__movePosition.x, object.__movePosition.y, object.__movePosition.z );
+				object.applyLocRotChange();
+			},
+			duration: time
+		} )
 	}
 	getRotation() {
 		return Proton3DInterpreter.Proton3DObject.getRotation( this )

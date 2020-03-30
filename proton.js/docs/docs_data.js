@@ -125,6 +125,10 @@ var docs_data = {
 					description: "Sets the object's position. If it has physics, make sure to call applyLocRotChange()."
 				},
 				{
+					name: "animatePosition( x (float), y (float), z (float), time (float) )",
+					description: "Sets the object's position through an easing animation."
+				},
+				{
 					name: "getRotation()",
 					description: "Gets the object's rotation in a three.js Euler. Changing this will not affect the object's rotation."
 				},
