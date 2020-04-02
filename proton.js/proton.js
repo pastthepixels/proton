@@ -896,24 +896,20 @@ class Proton3DScene {
 	}
 	resetPickingUp( child, scene, callback = function(){} ) {
 		var position = child.getWorldPosition();
+		child.__movePosition? $( child.__movePosition ).stop( true, true) : undefined;
 		this.pickingUpObject = null;
-		child.pickingUp = false;
-		child.pickingUp = "wrapping";
 		scene.crosshair.show();
 		scene.add( child );
-		child.position.set( position.x, position.y, position.z );
-		child.applyLocRotChange();
-		child.mass = child.oldMass;
 		child.setLinearVelocity( 0, 0, 0 );
-		child.setLinearFactor( 1, 1, 1 );
 		child.setAngularVelocity( 0, 0, 0 );
-		child.setAngularFactor( 1, 1, 1 );
+		child.setPosition( position.x, position.y, position.z );
+		child.applyLocRotChange();
 		this.pickingUpObject = null;
 		child.pickingUp = null;
 		//
 		window.keyErrorCheck = true;
 		setTimeout( function () {
-		callback();
+			callback();
 		}, 50 );
 		setTimeout( function () {
 			window.keyErrorCheck = false;
@@ -938,11 +934,6 @@ class Proton3DScene {
 		
 		child.pickingUp = true;
 		x.pickingUpObject = child;
-		if ( child.oldMass != 0 ) {
-
-			child.oldMass = child.mass;
-
-		}
 		child.addEventListener( "collision", function( otherobj ) {
 			if ( child.pickingUp && otherobj != this && otherobj.p3dParent != x.camera.parent && otherobj.p3dParent != x.gun ) {
 
@@ -952,10 +943,6 @@ class Proton3DScene {
 		} )
 		child.oldPos = child.position.clone();
 		child.distance = this.crosshair.position.distanceTo( child.position );
-		child.setLinearVelocity( 0, 0, 0 );
-		child.setLinearFactor( 0, 0, 0 );
-		child.setAngularVelocity( 0, 0, 0 );
-		child.setAngularFactor( 0, 0, 0 );
 		child.position.set( 0, 0, -5 );
 		this.camera.add( child );
 		this.crosshair.hide();
@@ -1891,6 +1878,10 @@ const Proton3DInterpreter = {
 				}
 				object.getIntensity = function ( value ) {
 					return spotlight.intensity
+				}
+				object.setTargetPosition = function ( x, y, z ) {
+					spotlight.parent.add( spotlight.target );
+					spotlight.target.position.set( x, y, z );
 				}
 				//
 				break;
