@@ -1459,7 +1459,7 @@ const Proton3DInterpreter = {
 		//PBR
 		this.pbrTexture = extras.pbrTexture;
 		this.livePBRArray = [];
-		this.livePBR = true;
+		this.livePBR = extras.livePBR;
 		this.pbrInterval = function () {
 			Proton3DInterpreter.livePBRArray.forEach( function ( object ) {
 				if ( object.position.distanceTo( extras.scene.camera.parent.position ) > 5 ) {
