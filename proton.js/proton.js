@@ -435,12 +435,12 @@ class Proton3DScene {
 		this.objectList = []
 	}
 	update( scene ) {
-		requestAnimationFrame( function() {
-			scene.update( scene )
-		} );
 		//pausing
 		if ( ProtonJS.paused ) {
 
+			requestAnimationFrame( function() {
+				scene.update( scene )
+			} );
 			return
 
 		}
@@ -449,6 +449,10 @@ class Proton3DScene {
 		//extraFunctions
 		this.priorityExtraFunctions.forEach( function ( e ) {
 			e();
+		} );
+		//looping
+		requestAnimationFrame( function() {
+			scene.update( scene )
 		} );
 	}
 	updateExtraFunctions( scene ) {
@@ -521,14 +525,13 @@ class Proton3DScene {
 			//
 			if ( x.keys[ x.mappedKeys.forward ] ) {
 
-				var y = obj.getWorldDirection(),
-					z = obj.getLinearVelocity();
+				var y = obj.getWorldDirection();
 				//
-				move( y, z, speed, false, true )
+				move( y, speed, false, true )
 				//sprinting
 				if ( x.keys[ x.mappedKeys.sprint ] ) {
 
-					move( y, z, speed + 3.5 )
+					move( y, speed + 3.5 )
 
 				}
 				//moving left and right
@@ -541,7 +544,7 @@ class Proton3DScene {
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move( y, z, speed - 0.5, undefined, undefined, false )
+					move( y, speed - 0.5, undefined, undefined, false )
 					return
 
 				}
@@ -554,7 +557,7 @@ class Proton3DScene {
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move( y, z, speed - 0.5, undefined, undefined, false )
+					move( y, speed - 0.5, undefined, undefined, false )
 					return
 
 				}
@@ -562,10 +565,9 @@ class Proton3DScene {
 			}
 			if ( x.keys[ x.mappedKeys.backward ] ) {
 
-				var y = obj.getWorldDirection(),
-					z = obj.getLinearVelocity();
+				var y = obj.getWorldDirection();
 				//
-				move( y, z, speed, true, true )
+				move( y, speed, true, true )
 				//moving left and right
 				if ( x.keys[ x.mappedKeys.left ] ) {
 
@@ -576,7 +578,7 @@ class Proton3DScene {
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move( y, z, speed - 0.5, true, undefined, false )
+					move( y, speed - 0.5, true, undefined, false )
 					return
 
 				}
@@ -589,7 +591,7 @@ class Proton3DScene {
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move( y, z, speed - 0.5, true, undefined, false )
+					move( y, speed - 0.5, true, undefined, false )
 					return
 
 				}
@@ -597,7 +599,6 @@ class Proton3DScene {
 			}
 			if ( x.keys[ x.mappedKeys.left ] ) {
 
-				var z = obj.getLinearVelocity();
 				var y = ProtonJS.rotateVector3(
 					new THREE.Vector3( 0, 1, 0 ),
 					90,
@@ -605,12 +606,11 @@ class Proton3DScene {
 					true
 				).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 				//
-				move( y, z, speed - 0.5 )
+				move( y, speed - 0.5 )
 
 			}
 			if ( x.keys[ x.mappedKeys.right ] ) {
 
-				var z = obj.getLinearVelocity();
 				var y = ProtonJS.rotateVector3(
 					new THREE.Vector3( 0, 1, 0 ),
 					-90,
@@ -618,18 +618,16 @@ class Proton3DScene {
 					true
 				).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 				//
-				move( y, z, speed - 0.5 )
+				move( y, speed - 0.5 )
 
 			}
 			if ( x.keys[ x.mappedKeys.jump ] && obj.getCollidingObjects().length > 0 ) {
 
-				var rotation = x.camera.getRotation(),
-					z = obj.getLinearVelocity();
-				obj.setLinearVelocity( z.x, jumpHeight, z.z );
+				obj.addLinearVelocity( 0, jumpHeight / 4, 0 );
 
 			}
 		}
-		function move ( y, z, speed, negatise = false, forward = false, gunAnimation = true) {
+		function move ( y, speed, negatise = false, forward = false, gunAnimation = true) {
 			if ( x.noclip ) {
 
 				var pos = obj.position.clone().add( new THREE.Vector3( y.x * ( speed / 500 ) * ( negatise? -1 : 1 ) , forward? ( x.camera.getWorldDirection().y * (speed / 500) * ( negatise? -1 : 1 ) ) : 0, y.z * (speed / 500) * ( negatise? -1 : 1 )  ) )
@@ -638,7 +636,8 @@ class Proton3DScene {
 
 			} else {
 
-				obj.setLinearVelocity( y.x * speed * ( negatise? -1 : 1 ), z.y, y.z * speed * ( negatise? -1 : 1 ) );
+				var velocity = obj.getLinearVelocity();
+				obj.setLinearVelocity( y.x * speed * ( negatise? -1 : 1 ), velocity.y, y.z * speed * ( negatise? -1 : 1 ) );
 
 			}
 			if ( x.gun && extras.gunAnimations && gunAnimation == true ) {
@@ -1206,6 +1205,14 @@ class Proton3DObject {
 	setLinearFactor( x = 0, y = 0, z = 0 ) {
 		return Proton3DInterpreter.Proton3DObject.setLinearFactor( x, y, z, this )
 	}
+	addLinearVelocity( x = 0, y = 0, z = 0 ) {
+		var velocity = this.getLinearVelocity();
+		return Proton3DInterpreter.Proton3DObject.setLinearVelocity( x + velocity.x, y + velocity.y, z + velocity.z, this )
+	}
+	addAngularVelocity( x = 0, y = 0, z = 0 ) {
+		var velocity = this.getAngularVelocity();
+		return Proton3DInterpreter.Proton3DObject.setAngularVelocity( x + velocity.x, y + velocity.y, z + velocity.z, this )
+	}
 	setAngularFactor( x = 0, y = 0, z = 0 ) {
 		return Proton3DInterpreter.Proton3DObject.setAngularFactor( x, y, z, this )
 	}
@@ -1767,10 +1774,10 @@ const Proton3DInterpreter = {
 		this.objects.remove( getMeshByName( object.name ) || object )
 	},
 	render( scene ) {
-		//rendering using three.js
-		this.composer? this.composer.render() : this.renderer.render( this.objects, getMeshByName( scene.camera.name ) );
-		//physics
+		//physics -- physijs
 		this.objects.simulate()
+		//rendering -- three.js
+		this.composer? this.composer.render() : this.renderer.render( this.objects, getMeshByName( scene.camera.name ) );
 	},
 	resume() {
 		this.objects.onSimulationResume();
@@ -2282,6 +2289,20 @@ const Proton3DInterpreter = {
 			getMeshByName( P3DObject.name ).add( THREEListener )
 		},
 		setLinearVelocity( x = 0, y = 0, z = 0, P3DObject ) {
+			if ( x == undefined ) {
+
+				x = P3DObject.getLinearVelocity().x
+			}
+			if ( y == undefined ) {
+
+				y = P3DObject.getLinearVelocity().y
+
+			}
+			if ( z == undefined ) {
+
+				z = P3DObject.getLinearVelocity().z
+
+			}
 			if ( !x.x ) {
 
 				x = ProtonJS.cache.vector3( x, y, z )
@@ -2290,6 +2311,20 @@ const Proton3DInterpreter = {
 			getMeshByName( P3DObject.name ).setLinearVelocity( x )
 		},
 		setAngularVelocity( x = 0, y = 0, z = 0, P3DObject ) {
+			if ( x == undefined ) {
+
+				x = P3DObject.getAngularVelocity().x
+			}
+			if ( y == undefined ) {
+
+				y = P3DObject.getAngularVelocity().y
+
+			}
+			if ( z == undefined ) {
+
+				z = P3DObject.getAngularVelocity().z
+
+			}
 			if ( !x.x ) {
 
 				x = ProtonJS.cache.vector3( x, y, z )

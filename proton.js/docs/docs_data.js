@@ -53,7 +53,7 @@ var docs_data = {
 					description: "Plays audio. You need a three.js AudioListener to do this. It is that simple."
 				},
 				{
-					name: "applyImpulse( force (float), offset (three.js Vector3) )",
+					name: "applyImpulse( force (Vector3), offset (three.js Vector3) )",
 					description: "Physijs' applyImpulse, if you have the default Proton3DInterpreter."
 				},
 				{
@@ -99,6 +99,14 @@ var docs_data = {
 				{
 					name: "setAngularVelocity( x (float), y (float), z (float) )",
 					description: "Sets the angular velocity of an object."
+				},
+				{
+					name: "addLinearVelocity( x (float), y (float), z (float) )",
+					description: "Adds a vector to the linear velocity of an object."
+				},
+				{
+					name: "addAngularVelocity( x (float), y (float), z (float) )",
+					description: "Adds a vector to the angular velocity of an object."
 				},
 				{
 					name: "setLinearFactor( x (float), y (float), z (float) )",
