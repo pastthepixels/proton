@@ -435,12 +435,12 @@ class Proton3DScene {
 		this.objectList = []
 	}
 	update( scene ) {
-		requestAnimationFrame( function() {
-			scene.update( scene )
-		} );
 		//pausing
 		if ( ProtonJS.paused ) {
 
+			requestAnimationFrame( function() {
+				scene.update( scene )
+			} );
 			return
 
 		}
@@ -449,6 +449,10 @@ class Proton3DScene {
 		//extraFunctions
 		this.priorityExtraFunctions.forEach( function ( e ) {
 			e();
+		} );
+		//looping
+		requestAnimationFrame( function() {
+			scene.update( scene )
 		} );
 	}
 	updateExtraFunctions( scene ) {
@@ -521,14 +525,13 @@ class Proton3DScene {
 			//
 			if ( x.keys[ x.mappedKeys.forward ] ) {
 
-				var y = obj.getWorldDirection(),
-					z = obj.getLinearVelocity();
+				var y = obj.getWorldDirection();
 				//
-				move( y, z, speed, false, true )
+				move( y, speed, false, true )
 				//sprinting
 				if ( x.keys[ x.mappedKeys.sprint ] ) {
 
-					move( y, z, speed + 3.5 )
+					move( y, speed + 3.5 )
 
 				}
 				//moving left and right
@@ -541,7 +544,7 @@ class Proton3DScene {
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move( y, z, speed - 0.5, undefined, undefined, false )
+					move( y, speed - 0.5, undefined, undefined, false )
 					return
 
 				}
@@ -554,7 +557,7 @@ class Proton3DScene {
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move( y, z, speed - 0.5, undefined, undefined, false )
+					move( y, speed - 0.5, undefined, undefined, false )
 					return
 
 				}
@@ -562,10 +565,9 @@ class Proton3DScene {
 			}
 			if ( x.keys[ x.mappedKeys.backward ] ) {
 
-				var y = obj.getWorldDirection(),
-					z = obj.getLinearVelocity();
+				var y = obj.getWorldDirection();
 				//
-				move( y, z, speed, true, true )
+				move( y, speed, true, true )
 				//moving left and right
 				if ( x.keys[ x.mappedKeys.left ] ) {
 
@@ -576,7 +578,7 @@ class Proton3DScene {
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move( y, z, speed - 0.5, true, undefined, false )
+					move( y, speed - 0.5, true, undefined, false )
 					return
 
 				}
@@ -589,7 +591,7 @@ class Proton3DScene {
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move( y, z, speed - 0.5, true, undefined, false )
+					move( y, speed - 0.5, true, undefined, false )
 					return
 
 				}
@@ -597,7 +599,6 @@ class Proton3DScene {
 			}
 			if ( x.keys[ x.mappedKeys.left ] ) {
 
-				var z = obj.getLinearVelocity();
 				var y = ProtonJS.rotateVector3(
 					new THREE.Vector3( 0, 1, 0 ),
 					90,
@@ -605,12 +606,11 @@ class Proton3DScene {
 					true
 				).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 				//
-				move( y, z, speed - 0.5 )
+				move( y, speed - 0.5 )
 
 			}
 			if ( x.keys[ x.mappedKeys.right ] ) {
 
-				var z = obj.getLinearVelocity();
 				var y = ProtonJS.rotateVector3(
 					new THREE.Vector3( 0, 1, 0 ),
 					-90,
@@ -618,18 +618,16 @@ class Proton3DScene {
 					true
 				).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 				//
-				move( y, z, speed - 0.5 )
+				move( y, speed - 0.5 )
 
 			}
 			if ( x.keys[ x.mappedKeys.jump ] && obj.getCollidingObjects().length > 0 ) {
 
-				var rotation = x.camera.getRotation(),
-					z = obj.getLinearVelocity();
-				obj.setLinearVelocity( z.x, jumpHeight, z.z );
+				obj.addLinearVelocity( 0, jumpHeight / 4, 0 );
 
 			}
 		}
-		function move ( y, z, speed, negatise = false, forward = false, gunAnimation = true) {
+		function move ( y, speed, negatise = false, forward = false, gunAnimation = true) {
 			if ( x.noclip ) {
 
 				var pos = obj.position.clone().add( new THREE.Vector3( y.x * ( speed / 500 ) * ( negatise? -1 : 1 ) , forward? ( x.camera.getWorldDirection().y * (speed / 500) * ( negatise? -1 : 1 ) ) : 0, y.z * (speed / 500) * ( negatise? -1 : 1 )  ) )
@@ -638,7 +636,8 @@ class Proton3DScene {
 
 			} else {
 
-				obj.setLinearVelocity( y.x * speed * ( negatise? -1 : 1 ), z.y, y.z * speed * ( negatise? -1 : 1 ) );
+				var velocity = obj.getLinearVelocity();
+				obj.setLinearVelocity( y.x * speed * ( negatise? -1 : 1 ), velocity.y, y.z * speed * ( negatise? -1 : 1 ) );
 
 			}
 			if ( x.gun && extras.gunAnimations && gunAnimation == true ) {
@@ -829,63 +828,38 @@ class Proton3DScene {
 		return returningObject;
 	}
 	setPickingUpControls() {
-		var x = this;
+		var x = this, objectCollision = false;
 		this.priorityExtraFunctions.push( function () {
-			x.getObjectList().forEach( function ( child ) {
-				checkObjects( child )
-			} );
+			if ( x.pickingUpObject && x.pickingUpObject.boundingBox ) {
+
+				objectCollision = false
+				x.getObjectList().forEach( function ( child ) {
+					if ( child.boundingBox && child != x.camera.parent && child != x.pickingUpObject && child.parent != x.camera.parent && child.parent != x.camera ) {
+
+						child.updateBoundingBox();
+						x.pickingUpObject.updateBoundingBox()
+						if ( child.boundingBox.intersectsBox( x.pickingUpObject.boundingBox ) ) {
+
+							objectCollision = true
+							console.log( child.name )
+	
+						}
+
+					}
+				} );
+				if ( objectCollision ) {
+
+					x.pickingUpObject.animatePosition( 0, 0, -1 )
+
+				} else {
+
+					x.pickingUpObject.animatePosition( 0, 0, -5 )
+
+				}
+
+			}
 		} );
 
-		function checkObjects( child ) {
-			if ( child.children ) {
-
-				child.children.forEach( function ( child ) {
-					checkObjects( child )
-				} );
-
-			}
-			if ( child.__pickupable != true ) {
-
-				return;
-
-			}
-			if( child.__alreadyNeared && x.crosshair.position.distanceTo( child.position ) > ( child.nearDistance || 2 ) ) {
-
-				child.__alreadyNeared = false
-				return
-
-			}
-			if ( x.crosshair.position.distanceTo( child.position ) <= ( child.nearDistance || 2 ) && child.__onNear && !child.__alreadyNeared ) {
-
-				child.onNear();
-				child.__alreadyNeared = true;
-
-			}
-			if ( child.pickingUp ) {
-
-				var pos = x.crosshair.__localPosition.clone()
-				pos.y = pos.y > 2? 2 : pos.y;
-				pos.y = pos.y < -2? -2 : pos.y;
-				pos.multiply( new THREE.Vector3( 2.5, 1.5, 2.5 ) ).add( x.camera.parent.getPosition() );
-				child.setPosition(
-					pos.x,
-					pos.y,
-					pos.z
-				);
-
-			}
-			if ( child.pickingUp === "wrapping" ) {
-
-				child.mass = child.oldMass;
-				child.setLinearVelocity( 0, 0, 0 );
-				child.setLinearFactor( 1, 1, 1 );
-				child.setAngularVelocity( 0, 0, 0 );
-				child.setAngularFactor( 1, 1, 1 );
-				x.pickingUpObject = null;
-				child.pickingUp = null;
-
-			}
-		}
 		window.addEventListener( "keypress", function () {
 			x.getObjectList().forEach( function ( child ) {
 				checkKeypress( child );
@@ -921,10 +895,21 @@ class Proton3DScene {
 		var resetPickingUp = function ( child ) { x.resetPickingUp( child, x ) }
 	}
 	resetPickingUp( child, scene, callback = function(){} ) {
+		var position = child.getWorldPosition();
 		this.pickingUpObject = null;
 		child.pickingUp = false;
 		child.pickingUp = "wrapping";
-		scene.crosshair.show()
+		scene.crosshair.show();
+		scene.add( child );
+		child.position.set( position.x, position.y, position.z );
+		child.applyLocRotChange();
+		child.mass = child.oldMass;
+		child.setLinearVelocity( 0, 0, 0 );
+		child.setLinearFactor( 1, 1, 1 );
+		child.setAngularVelocity( 0, 0, 0 );
+		child.setAngularFactor( 1, 1, 1 );
+		this.pickingUpObject = null;
+		child.pickingUp = null;
 		//
 		window.keyErrorCheck = true;
 		setTimeout( function () {
@@ -971,6 +956,8 @@ class Proton3DScene {
 		child.setLinearFactor( 0, 0, 0 );
 		child.setAngularVelocity( 0, 0, 0 );
 		child.setAngularFactor( 0, 0, 0 );
+		child.position.set( 0, 0, -5 );
+		this.camera.add( child );
 		this.crosshair.hide();
 	}
 }
@@ -1205,6 +1192,14 @@ class Proton3DObject {
 	setLinearFactor( x = 0, y = 0, z = 0 ) {
 		return Proton3DInterpreter.Proton3DObject.setLinearFactor( x, y, z, this )
 	}
+	addLinearVelocity( x = 0, y = 0, z = 0 ) {
+		var velocity = this.getLinearVelocity();
+		return Proton3DInterpreter.Proton3DObject.setLinearVelocity( x + velocity.x, y + velocity.y, z + velocity.z, this )
+	}
+	addAngularVelocity( x = 0, y = 0, z = 0 ) {
+		var velocity = this.getAngularVelocity();
+		return Proton3DInterpreter.Proton3DObject.setAngularVelocity( x + velocity.x, y + velocity.y, z + velocity.z, this )
+	}
 	setAngularFactor( x = 0, y = 0, z = 0 ) {
 		return Proton3DInterpreter.Proton3DObject.setAngularFactor( x, y, z, this )
 	}
@@ -1219,6 +1214,42 @@ class Proton3DObject {
 	}
 	setPosition( x, y, z ) {
 		return Proton3DInterpreter.Proton3DObject.setPosition( x, y, z, this )
+	}
+	animatePosition( x, y, z, time = 1500, step = undefined ) {
+		var pobject = this, target = new THREE.Vector3( x, y, z );
+		//this.__movePosition? $( this.__movePosition ).stop( true, true ) : undefined;
+		if ( this.__movePosition === undefined ) {
+			
+			this.__movePosition = this.position.clone();
+			$( pobject.__movePosition ).animate( {
+				x: target.x,
+				y: target.y,
+				z: target.z
+			}, {
+				step: function() {
+					if ( pobject.__movePosition === undefined ) {
+
+						return
+
+					}
+					if ( pobject.__movePosition.distanceTo( target ) < 1 ) {
+
+						$( pobject.__movePosition ).stop( true, true );
+						return
+
+					}
+					pobject.setPosition( pobject.__movePosition.x, pobject.__movePosition.y, pobject.__movePosition.z );
+					pobject.applyLocRotChange();
+					step? step() : step;
+				},
+				done: function() {
+					console.log( "done!" );
+					pobject.__movePosition = undefined;
+				},
+				duration: time
+			} )
+
+		}
 	}
 	getRotation() {
 		return Proton3DInterpreter.Proton3DObject.getRotation( this )
@@ -1552,11 +1583,28 @@ const Proton3DInterpreter = {
 	addToScene( object, scene ) {
 		this.objects.add( object.name? getMeshByName( object.name ) : object );
 		scene.objectList.push( object )
-		//physically based rendering
+		//vars
 		var skipPBRReplacement = object.skipPBRReplacement,
 			skipPBRReplacement_light = object.skipPBRReplacement_light,
-			object = object.name? getMeshByName( object.name ) : object,
-			oldMaterial = object.material;
+			P3DObject = object,
+			object = object.name? getMeshByName( object.name ) : object;
+		//bounding box
+		P3DObject.updateBoundingBox = function() {
+		
+			if ( P3DObject.sunPosition ) {
+
+				return
+
+			}
+			var object = P3DObject.name? getMeshByName( P3DObject.name ) : P3DObject;
+			object.updateMatrixWorld();
+			object.geometry? object.geometry.computeBoundingBox() : undefined;
+			P3DObject.boundingBox = object.geometry? object.geometry.boundingBox.clone() : undefined;
+			P3DObject.boundingBox? P3DObject.boundingBox.applyMatrix4( object.matrixWorld ) : undefined;
+			
+		}
+		P3DObject.updateBoundingBox()
+		//physically based rendering
 		if ( scene.usePBR != false && !skipPBRReplacement && !skipPBRReplacement_light && object.material ) {
 
 			object.pbr = function ( scene = Proton3DInterpreter, PBRCamera = object.pbrCam ) {
@@ -1644,7 +1692,6 @@ const Proton3DInterpreter = {
 
 				object.pbrCam = new THREE.CubeCamera( 1, 100, 128 );
 				object.pbrTexture = Proton3DInterpreter.pbrTexture? new THREE.TextureLoader().load( Proton3DInterpreter.pbrTexture ) : undefined;
-				console.log( object.pbrTexture )
 				object.add( object.pbrCam );
 				//
 				hasProto = material.__proto__.type != null;
@@ -1731,10 +1778,10 @@ const Proton3DInterpreter = {
 		this.objects.remove( getMeshByName( object.name ) || object )
 	},
 	render( scene ) {
-		//rendering using three.js
-		this.composer? this.composer.render() : this.renderer.render( this.objects, getMeshByName( scene.camera.name ) );
-		//physics
+		//physics -- physijs
 		this.objects.simulate()
+		//rendering -- three.js
+		this.composer? this.composer.render() : this.renderer.render( this.objects, getMeshByName( scene.camera.name ) );
 	},
 	resume() {
 		this.objects.onSimulationResume();
@@ -2246,6 +2293,20 @@ const Proton3DInterpreter = {
 			getMeshByName( P3DObject.name ).add( THREEListener )
 		},
 		setLinearVelocity( x = 0, y = 0, z = 0, P3DObject ) {
+			if ( x == undefined ) {
+
+				x = P3DObject.getLinearVelocity().x
+			}
+			if ( y == undefined ) {
+
+				y = P3DObject.getLinearVelocity().y
+
+			}
+			if ( z == undefined ) {
+
+				z = P3DObject.getLinearVelocity().z
+
+			}
 			if ( !x.x ) {
 
 				x = ProtonJS.cache.vector3( x, y, z )
@@ -2254,6 +2315,20 @@ const Proton3DInterpreter = {
 			getMeshByName( P3DObject.name ).setLinearVelocity( x )
 		},
 		setAngularVelocity( x = 0, y = 0, z = 0, P3DObject ) {
+			if ( x == undefined ) {
+
+				x = P3DObject.getAngularVelocity().x
+			}
+			if ( y == undefined ) {
+
+				y = P3DObject.getAngularVelocity().y
+
+			}
+			if ( z == undefined ) {
+
+				z = P3DObject.getAngularVelocity().z
+
+			}
 			if ( !x.x ) {
 
 				x = ProtonJS.cache.vector3( x, y, z )
@@ -2443,9 +2518,10 @@ const Proton3DInterpreter = {
 				if ( child.isGroup ) {
 
 					child.children.forEach( function ( child_child ) {
-						scene.add( child_child )
+						scene.children.push( child_child )
 					} )
 					scene.remove( child )
+					console.log( scene.children )
 
 				}
 			} )
@@ -2761,7 +2837,6 @@ const Proton3DInterpreter = {
 			x.children = [];
 			objects.forEach( function ( mesh, i ) {
 				var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } )
-				console.log( object.material )
 				x.children.push( object )
 				if ( extras.armature ) {
 
@@ -2781,7 +2856,12 @@ const Proton3DInterpreter = {
 					extras.objects.add( object )
 
 				}
-			} )
+			} );
+			x.getObjectByName = function( name ) {
+				return x.children.find( function( child ) {
+					return child.name === name
+				} )
+			}
 			//
 			if ( extras.onload ) {
 
