@@ -828,64 +828,38 @@ class Proton3DScene {
 		return returningObject;
 	}
 	setPickingUpControls() {
-		var x = this;
+		var x = this, objectCollision = false;
 		this.priorityExtraFunctions.push( function () {
-			x.getObjectList().forEach( function ( child ) {
-				checkObjects( child )
-			} );
+			if ( x.pickingUpObject && x.pickingUpObject.boundingBox ) {
+
+				objectCollision = false
+				x.getObjectList().forEach( function ( child ) {
+					if ( child.boundingBox && child != x.camera.parent && child != x.pickingUpObject && child.parent != x.camera.parent && child.parent != x.camera ) {
+
+						child.updateBoundingBox();
+						x.pickingUpObject.updateBoundingBox()
+						if ( child.boundingBox.intersectsBox( x.pickingUpObject.boundingBox ) ) {
+
+							objectCollision = true
+							console.log( child.name )
+	
+						}
+
+					}
+				} );
+				if ( objectCollision ) {
+
+					x.pickingUpObject.animatePosition( 0, 0, -1 )
+
+				} else {
+
+					x.pickingUpObject.animatePosition( 0, 0, -5 )
+
+				}
+
+			}
 		} );
 
-		function checkObjects( child ) {
-			if ( child.children ) {
-
-				child.children.forEach( function ( child ) {
-					checkObjects( child )
-				} );
-
-			}
-			if ( child.__pickupable != true ) {
-
-				return;
-
-			}
-			if( child.__alreadyNeared && x.crosshair.position.distanceTo( child.position ) > ( child.nearDistance || 2 ) ) {
-
-				child.__alreadyNeared = false
-				return
-
-			}
-			if ( x.crosshair.position.distanceTo( child.position ) <= ( child.nearDistance || 2 ) && child.__onNear && !child.__alreadyNeared ) {
-
-				child.onNear();
-				child.__alreadyNeared = true;
-
-			}
-			if ( child.pickingUp ) {
-
-				var pos = x.crosshair.__localPosition.clone()
-				pos.y = pos.y > 2? 2 : pos.y;
-				pos.y = pos.y < -2? -2 : pos.y;
-				pos.multiply( new THREE.Vector3( 2.5, 1.5, 2.5 ) ).add( x.camera.parent.getPosition() );
-				child.setPosition(
-					pos.x,
-					pos.y,
-					pos.z,
-					100
-				);
-
-			}
-			if ( child.pickingUp === "wrapping" ) {
-
-				child.mass = child.oldMass;
-				child.setLinearVelocity( 0, 0, 0 );
-				child.setLinearFactor( 1, 1, 1 );
-				child.setAngularVelocity( 0, 0, 0 );
-				child.setAngularFactor( 1, 1, 1 );
-				x.pickingUpObject = null;
-				child.pickingUp = null;
-
-			}
-		}
 		window.addEventListener( "keypress", function () {
 			x.getObjectList().forEach( function ( child ) {
 				checkKeypress( child );
@@ -921,10 +895,21 @@ class Proton3DScene {
 		var resetPickingUp = function ( child ) { x.resetPickingUp( child, x ) }
 	}
 	resetPickingUp( child, scene, callback = function(){} ) {
+		var position = child.getWorldPosition();
 		this.pickingUpObject = null;
 		child.pickingUp = false;
 		child.pickingUp = "wrapping";
-		scene.crosshair.show()
+		scene.crosshair.show();
+		scene.add( child );
+		child.position.set( position.x, position.y, position.z );
+		child.applyLocRotChange();
+		child.mass = child.oldMass;
+		child.setLinearVelocity( 0, 0, 0 );
+		child.setLinearFactor( 1, 1, 1 );
+		child.setAngularVelocity( 0, 0, 0 );
+		child.setAngularFactor( 1, 1, 1 );
+		this.pickingUpObject = null;
+		child.pickingUp = null;
 		//
 		window.keyErrorCheck = true;
 		setTimeout( function () {
@@ -971,6 +956,8 @@ class Proton3DScene {
 		child.setLinearFactor( 0, 0, 0 );
 		child.setAngularVelocity( 0, 0, 0 );
 		child.setAngularFactor( 0, 0, 0 );
+		child.position.set( 0, 0, -5 );
+		this.camera.add( child );
 		this.crosshair.hide();
 	}
 }
@@ -1596,11 +1583,28 @@ const Proton3DInterpreter = {
 	addToScene( object, scene ) {
 		this.objects.add( object.name? getMeshByName( object.name ) : object );
 		scene.objectList.push( object )
-		//physically based rendering
+		//vars
 		var skipPBRReplacement = object.skipPBRReplacement,
 			skipPBRReplacement_light = object.skipPBRReplacement_light,
-			object = object.name? getMeshByName( object.name ) : object,
-			oldMaterial = object.material;
+			P3DObject = object,
+			object = object.name? getMeshByName( object.name ) : object;
+		//bounding box
+		P3DObject.updateBoundingBox = function() {
+		
+			if ( P3DObject.sunPosition ) {
+
+				return
+
+			}
+			var object = P3DObject.name? getMeshByName( P3DObject.name ) : P3DObject;
+			object.updateMatrixWorld();
+			object.geometry? object.geometry.computeBoundingBox() : undefined;
+			P3DObject.boundingBox = object.geometry? object.geometry.boundingBox.clone() : undefined;
+			P3DObject.boundingBox? P3DObject.boundingBox.applyMatrix4( object.matrixWorld ) : undefined;
+			
+		}
+		P3DObject.updateBoundingBox()
+		//physically based rendering
 		if ( scene.usePBR != false && !skipPBRReplacement && !skipPBRReplacement_light && object.material ) {
 
 			object.pbr = function ( scene = Proton3DInterpreter, PBRCamera = object.pbrCam ) {
@@ -2514,9 +2518,10 @@ const Proton3DInterpreter = {
 				if ( child.isGroup ) {
 
 					child.children.forEach( function ( child_child ) {
-						scene.add( child_child )
+						scene.children.push( child_child )
 					} )
 					scene.remove( child )
+					console.log( scene.children )
 
 				}
 			} )
@@ -2851,7 +2856,12 @@ const Proton3DInterpreter = {
 					extras.objects.add( object )
 
 				}
-			} )
+			} );
+			x.getObjectByName = function( name ) {
+				return x.children.find( function( child ) {
+					return child.name === name
+				} )
+			}
 			//
 			if ( extras.onload ) {
 
