@@ -836,12 +836,26 @@ class Proton3DScene {
 				x.getObjectList().forEach( function ( child ) {
 					if ( child.boundingBox && child != x.camera.parent && child != x.pickingUpObject && child.parent != x.camera.parent && child.parent != x.camera ) {
 
+						var pos = x.pickingUpObject.position.z
 						child.updateBoundingBox();
-						x.pickingUpObject.updateBoundingBox()
+						
+						//with the object in an extended position
+						x.pickingUpObject.setPosition( 0, 0, -5 );
+						x.pickingUpObject.updateBoundingBox();
+						x.pickingUpObject.setPosition( 0, 0, pos );
+						//
 						if ( child.boundingBox.intersectsBox( x.pickingUpObject.boundingBox ) ) {
 
 							objectCollision = true
-							console.log( child.name )
+	
+						}
+
+						//with the object in its original position
+						x.pickingUpObject.updateBoundingBox();
+						//
+						if ( child.boundingBox.intersectsBox( x.pickingUpObject.boundingBox ) ) {
+
+							objectCollision = true
 	
 						}
 
@@ -849,11 +863,11 @@ class Proton3DScene {
 				} );
 				if ( objectCollision ) {
 
-					x.pickingUpObject.animatePosition( 0, 0, -1 )
+					x.pickingUpObject.animatePosition( 0, 0, -1, 500 )
 
 				} else {
 
-					x.pickingUpObject.animatePosition( 0, 0, -5 )
+					x.pickingUpObject.animatePosition( 0, 0, -5, 500 )
 
 				}
 
@@ -895,17 +909,19 @@ class Proton3DScene {
 		var resetPickingUp = function ( child ) { x.resetPickingUp( child, x ) }
 	}
 	resetPickingUp( child, scene, callback = function(){} ) {
-		var position = child.getWorldPosition();
+		this.pickingUpObject = undefined;
 		child.__movePosition? $( child.__movePosition ).stop( true, true) : undefined;
-		this.pickingUpObject = null;
+		//
+		var position = child.getWorldPosition(),
+			rotation = child.getWorldRotation();
 		scene.crosshair.show();
 		scene.add( child );
 		child.setLinearVelocity( 0, 0, 0 );
 		child.setAngularVelocity( 0, 0, 0 );
 		child.setPosition( position.x, position.y, position.z );
+		child.setRotation( rotation.x, rotation.y, rotation.z );
 		child.applyLocRotChange();
-		this.pickingUpObject = null;
-		child.pickingUp = null;
+		child.pickingUp = undefined;
 		//
 		window.keyErrorCheck = true;
 		setTimeout( function () {
@@ -934,13 +950,6 @@ class Proton3DScene {
 		
 		child.pickingUp = true;
 		x.pickingUpObject = child;
-		child.addEventListener( "collision", function( otherobj ) {
-			if ( child.pickingUp && otherobj != this && otherobj.p3dParent != x.camera.parent && otherobj.p3dParent != x.gun ) {
-
-				resetPickingUp( child )
-
-			}
-		} )
 		child.oldPos = child.position.clone();
 		child.distance = this.crosshair.position.distanceTo( child.position );
 		child.position.set( 0, 0, -5 );
@@ -1230,7 +1239,6 @@ class Proton3DObject {
 					step? step() : step;
 				},
 				done: function() {
-					console.log( "done!" );
 					pobject.__movePosition = undefined;
 				},
 				duration: time
@@ -1264,6 +1272,9 @@ class Proton3DObject {
 	}
 	getWorldPosition() {
 		return Proton3DInterpreter.Proton3DObject.getWorldPosition( this )
+	}
+	getWorldRotation() {
+		return Proton3DInterpreter.Proton3DObject.getWorldRotation( this )
 	}
 	getCollidingObjects() {
 		return Proton3DInterpreter.Proton3DObject.getCollidingObjects( this )
@@ -2441,6 +2452,9 @@ const Proton3DInterpreter = {
 		getWorldPosition( P3DObject ) {
 			return ( new THREE.Vector3() ).setFromMatrixPosition( getMeshByName( P3DObject.name ).matrixWorld )
 		},
+		getWorldRotation( P3DObject ) {
+			return getMeshByName( P3DObject.name ).getWorldQuaternion( new THREE.Euler() );
+		},
 		getCollidingObjects( P3DObject ) {
 			return getMeshByName( P3DObject.name )._physijs.touches
 		},
@@ -2512,7 +2526,6 @@ const Proton3DInterpreter = {
 						scene.children.push( child_child )
 					} )
 					scene.remove( child )
-					console.log( scene.children )
 
 				}
 			} )
