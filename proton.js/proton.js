@@ -18,36 +18,35 @@
 //\\//\\//\\//\\//\\//\\//\\ //
 //\\ adding extra scripts \\ // //loc:1
 //\\//\\//\\//\\//\\//\\//\\ //
-//25 lines in total will be added to the HTML of a document using Proton3D.
-var three_revision = { veryMin: "0.99.0", min: "0.105.0", max: "0.106.0" }
-//do not forget to use the tag below
+//15 lines in total will be added to the HTML of a document using Proton3D.
 document.writeln( '<meta name="viewport" content="width = device-width, initial-scale = 1.0">' );
-//jquery: required
-document.writeln( '<script src="https://code.jquery.com/jquery-3.4.1.js"></script>' );
-document.writeln( '<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>' );
-//roboto. all of it (for some reason).
-document.writeln( '<link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono|Roboto+Slab" rel="stylesheet">' );
-//proton3d: threejs
-document.writeln( '<script src="https://threejs.org/build/three.js"></script>' );
-//proton3d models: threejs
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/MTLLoader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/loaders/LoaderSupport.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/OBJLoader2.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/GLTFLoader.js"></script>' );
-//threejs effects
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/EffectComposer.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/ShaderPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/RenderPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/shaders/CopyShader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/postprocessing/UnrealBloomPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/shaders/LuminosityHighPassShader.js"></script>' );
-//proton3d physics: physijs | ammo.js
-document.writeln( '<script src="https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js"></script>' );
-document.writeln( '<script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js"></script>' );
-//three.js' sky shader, by https://github.com/zz85
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js"></script>' );
-
-//\\//\\//\\//\\// //
+//the part that requires an internet connection:
+	//ui
+		//jquery: required
+		document.writeln( '<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>' );
+		//roboto. all of it.
+		document.writeln( '<link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono|Roboto+Slab" rel="stylesheet">' );
+	//stuff for the default Proton3DInterpreter
+		var three_revision = { veryMin: "0.99.0", min: "0.105.0", max: "0.106.0" }
+		//three.js
+		document.writeln( '<script src="https://threejs.org/build/three.min.js"></script>' );
+		//proton3d models: three.js
+		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/MTLLoader.js"></script>' );
+		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/loaders/LoaderSupport.js"></script>' );
+		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/OBJLoader2.js"></script>' );
+		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/GLTFLoader.js"></script>' );
+		//bloom: three.js
+		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/EffectComposer.js"></script>' );
+		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/ShaderPass.js"></script>' );
+		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/RenderPass.js"></script>' );
+		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/shaders/CopyShader.js"></script>' );
+		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/postprocessing/UnrealBloomPass.js"></script>' );
+		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/shaders/LuminosityHighPassShader.js"></script>' );
+		//proton3d physics: physijs
+		document.writeln( '<script src="https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js"></script>' );
+		document.writeln( '<script src="https://cdn.jsdelivr.net/gh/Mwni/AmmoNext@master/builds/ammo.js"></script>' );
+		//three.js' sky shader, by https://github.com/zz85
+		document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js"></script>' );
 //\\ constants \// //loc:3
 //\\//\\//\\//\\// //
 const CSS = {
@@ -374,8 +373,9 @@ Object.defineProperty( Object.prototype, "watch", {
 */
 class Proton3DScene {
 	constructor() {
-		Physijs.scripts.worker = "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physijs_worker.js";
-		Physijs.scripts.ammo = "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/examples/js/ammo.js";
+		//this part requires an internet connection
+		Physijs.scripts.worker = "https://cdn.jsdelivr.net/gh/pastthepixels/proton@beta/proton.js/accessories/physijs_worker_modified.js";
+		Physijs.scripts.ammo = "https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js";
 		this.mappedKeys = {
 			forward: 38,
 			sprint: 16,
