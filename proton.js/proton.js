@@ -621,7 +621,7 @@ class Proton3DScene {
 				move( y, speed - 0.5 )
 
 			}
-			if ( x.keys[ x.mappedKeys.jump ] && obj.getCollidingObjects().length > 0 ) {
+			if ( x.keys[ x.mappedKeys.jump ] && obj.getLinearVelocity().y <= 0.5 && obj.getCollidingObjects().length > 0 ) {
 
 				obj.addLinearVelocity( 0, jumpHeight / 4, 0 );
 
@@ -2456,7 +2456,33 @@ const Proton3DInterpreter = {
 			return getMeshByName( P3DObject.name ).getWorldQuaternion( new THREE.Euler() );
 		},
 		getCollidingObjects( P3DObject ) {
-			return getMeshByName( P3DObject.name )._physijs.touches
+			var touches = [];
+			Proton3DInterpreter.objects.children.forEach( function ( obj ) {
+				var child;
+				if ( obj.p3dParent ) {
+
+					child = obj.p3dParent
+
+				} else {
+
+					return
+
+				}
+				//
+				if ( child.boundingBox && child != P3DObject && child.parent != P3DObject ) {
+
+					child.updateBoundingBox();
+					P3DObject.updateBoundingBox();
+					//
+					if ( child.boundingBox.intersectsBox( P3DObject.boundingBox ) ) {
+
+						touches.push( child )
+
+					}
+
+				}
+			} );
+			return touches
 		},
 		add( object, P3DObject ) {
 			getMeshByName( P3DObject.name ).add( getMeshByName( object.name ) );
