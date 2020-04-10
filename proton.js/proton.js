@@ -44,7 +44,6 @@ document.writeln( '<meta name="viewport" content="width = device-width, initial-
 		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/shaders/LuminosityHighPassShader.js"></script>' );
 		//proton3d physics: physijs
 		document.writeln( '<script src="https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js"></script>' );
-		document.writeln( '<script src="https://cdn.jsdelivr.net/gh/Mwni/AmmoNext@master/builds/ammo.js"></script>' );
 		//three.js' sky shader, by https://github.com/zz85
 		document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js"></script>' );
 //\\ constants \// //loc:3
@@ -374,7 +373,7 @@ Object.defineProperty( Object.prototype, "watch", {
 class Proton3DScene {
 	constructor() {
 		//this part requires an internet connection
-		Physijs.scripts.worker = "https://cdn.jsdelivr.net/gh/pastthepixels/proton@beta/proton.js/accessories/physijs_worker_modified.js";
+		Physijs.scripts.worker = "../../../proton/proton.js/accessories/physijs_worker_modified.js"//"https://cdn.jsdelivr.net/gh/pastthepixels/proton@beta/proton.js/accessories/physijs_worker_modified.js";
 		Physijs.scripts.ammo = "https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js";
 		this.mappedKeys = {
 			forward: 38,
@@ -623,7 +622,11 @@ class Proton3DScene {
 			}
 			if ( x.keys[ x.mappedKeys.jump ] && obj.getLinearVelocity().y <= 0.5 && obj.getCollidingObjects().length > 0 ) {
 
-				obj.addLinearVelocity( 0, jumpHeight / 4, 0 );
+				obj.setLinearVelocity( 
+					undefined,
+					jumpHeight,
+					undefined
+				);
 
 			}
 		}
@@ -637,6 +640,13 @@ class Proton3DScene {
 			} else {
 
 				var velocity = obj.getLinearVelocity();
+				if ( ( x.keys[ x.mappedKeys.forward ] || x.keys[ x.mappedKeys.backward ] ) &&x.keys[ x.mappedKeys.jump ] && obj.getLinearVelocity().y <= 0.5 && obj.getCollidingObjects().length > 0 ) {
+
+					y.x *= 1.2;
+					y.z *= 1.2;
+
+
+				}
 				obj.setLinearVelocity( y.x * speed * ( negatise? -1 : 1 ), velocity.y, y.z * speed * ( negatise? -1 : 1 ) );
 
 			}
@@ -1471,6 +1481,7 @@ const Proton3DInterpreter = {
 			context: this.context,
 			precision: extras.shaderQuality.toLowerCase() + "p"
 		} );
+		this.renderer.setPixelRatio( window.devicePixelRatio );
 		this.renderer.toneMapping = THREE.ReinhardToneMapping;
 		this.frame = 0;
 		this.fpsMeasurements = [];
@@ -1484,7 +1495,20 @@ const Proton3DInterpreter = {
 		extras.element.appendChild( this.canvas );
 		extras.scene.element.style.imageRendering = extras.pixelatedScene? "pixelated": "";
 		//updating a scene
-		Proton3DInterpreter.render( extras.scene )
+		Proton3DInterpreter.render( extras.scene );
+		//bloom
+		if ( extras.bloom ) {
+
+			var renderScene = new THREE.RenderPass( Proton3DInterpreter.objects, getMeshByName( extras.scene.camera.name ) );
+			var composer = new THREE.EffectComposer( Proton3DInterpreter.renderer );
+			var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+			//
+			composer.addPass( renderScene );
+			composer.addPass( bloomPass );
+
+			Proton3DInterpreter.composer = composer;
+
+		}
 		//PBR
 		this.pbrTexture = extras.pbrTexture;
 		this.livePBRArray = [];
@@ -2294,49 +2318,19 @@ const Proton3DInterpreter = {
 		makeListeningObject( THREEListener = new THREE.AudioListener(), P3DObject ) {
 			getMeshByName( P3DObject.name ).add( THREEListener )
 		},
-		setLinearVelocity( x = 0, y = 0, z = 0, P3DObject ) {
-			if ( x == undefined ) {
-
-				x = P3DObject.getLinearVelocity().x
-			}
-			if ( y == undefined ) {
-
-				y = P3DObject.getLinearVelocity().y
-
-			}
-			if ( z == undefined ) {
-
-				z = P3DObject.getLinearVelocity().z
-
-			}
-			if ( !x.x ) {
-
-				x = ProtonJS.cache.vector3( x, y, z )
-
-			}
-			getMeshByName( P3DObject.name ).setLinearVelocity( x )
+		setLinearVelocity( x, y, z, P3DObject ) {
+			getMeshByName( P3DObject.name ).setLinearVelocity( new THREE.Vector3(
+				x != undefined? x : getMeshByName( P3DObject.name ).getLinearVelocity().x,
+				y != undefined? y : getMeshByName( P3DObject.name ).getLinearVelocity().y,
+				z != undefined? z : getMeshByName( P3DObject.name ).getLinearVelocity().z,
+			) )
 		},
-		setAngularVelocity( x = 0, y = 0, z = 0, P3DObject ) {
-			if ( x == undefined ) {
-
-				x = P3DObject.getAngularVelocity().x
-			}
-			if ( y == undefined ) {
-
-				y = P3DObject.getAngularVelocity().y
-
-			}
-			if ( z == undefined ) {
-
-				z = P3DObject.getAngularVelocity().z
-
-			}
-			if ( !x.x ) {
-
-				x = ProtonJS.cache.vector3( x, y, z )
-
-			}
-			getMeshByName( P3DObject.name ).setAngularVelocity( x )
+		setAngularVelocity( x, y, z, P3DObject ) {
+			getMeshByName( P3DObject.name ).setAngularVelocity( new THREE.Vector3(
+				x != undefined? x : getMeshByName( P3DObject.name ).getAngularVelocity().x,
+				y != undefined? y : getMeshByName( P3DObject.name ).getAngularVelocity().y,
+				z != undefined? z : getMeshByName( P3DObject.name ).getAngularVelocity().z,
+			) )
 		},
 		setLinearFactor( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( !x.x ) {

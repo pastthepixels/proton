@@ -1,7 +1,7 @@
 'use strict';
 var
 	transferableMessage = self.webkitPostMessage || self.postMessage,
-
+	
 	// enum
 	MESSAGE_TYPES = {
 		WORLDREPORT: 0,
@@ -140,7 +140,7 @@ createShape = function( description ) {
 			cache_key = 'capsule_' + description.radius + '_' + description.height;
 			if ( ( shape = getShapeFromCache( cache_key ) ) === null ) {
 				// In Bullet, capsule height excludes the end spheres
-				shape = new Ammo.btCapsuleShape( description.radius, description.height * description.radius );
+				shape = new Ammo.btCapsuleShape( description.radius, description.height - ( description.height / 6 ) * description.radius );
 				setShapeCache( cache_key, shape );
 			}
 			break;
@@ -619,9 +619,9 @@ public_functions.onSimulationResume = function( params ) {
 
 public_functions.setAngularVelocity = function ( details ) {
 
-	_vec3_1.setX(details.x);
-	_vec3_1.setY(details.y);
-	_vec3_1.setZ(details.z);
+	if ( details.x ) _vec3_1.setX(details.x);
+	if ( details.y ) _vec3_1.setY(details.y);
+	if ( details.z ) _vec3_1.setZ(details.z);
 
 	_objects[details.id].setAngularVelocity(
 		_vec3_1
@@ -631,9 +631,9 @@ public_functions.setAngularVelocity = function ( details ) {
 
 public_functions.setLinearVelocity = function ( details ) {
 
-	_vec3_1.setX(details.x);
-	_vec3_1.setY(details.y);
-	_vec3_1.setZ(details.z);
+	if ( details.x ) _vec3_1.setX(details.x);
+	if ( details.y ) _vec3_1.setY(details.y);
+	if ( details.z ) _vec3_1.setZ(details.z);
 
 	_objects[details.id].setLinearVelocity(
 		_vec3_1
