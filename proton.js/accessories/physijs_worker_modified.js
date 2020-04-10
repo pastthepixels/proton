@@ -242,7 +242,7 @@ createShape = function( description ) {
 
 public_functions.init = function( params ) {
 	importScripts( params.ammo );
-	Ammo();
+	if ( typeof Ammo == "function" ) Ammo();
 
 	_transform = new Ammo.btTransform;
 	_vec3_1 = new Ammo.btVector3(0,0,0);
@@ -619,9 +619,9 @@ public_functions.onSimulationResume = function( params ) {
 
 public_functions.setAngularVelocity = function ( details ) {
 
-	if ( details.x ) _vec3_1.setX(details.x);
-	if ( details.y ) _vec3_1.setY(details.y);
-	if ( details.z ) _vec3_1.setZ(details.z);
+	_vec3_1.setX(details.x);
+	_vec3_1.setY(details.y);
+	_vec3_1.setZ(details.z);
 
 	_objects[details.id].setAngularVelocity(
 		_vec3_1
@@ -631,9 +631,9 @@ public_functions.setAngularVelocity = function ( details ) {
 
 public_functions.setLinearVelocity = function ( details ) {
 
-	if ( details.x ) _vec3_1.setX(details.x);
-	if ( details.y ) _vec3_1.setY(details.y);
-	if ( details.z ) _vec3_1.setZ(details.z);
+	_vec3_1.setX(details.x);
+	_vec3_1.setY(details.y);
+	_vec3_1.setZ(details.z);
 
 	_objects[details.id].setLinearVelocity(
 		_vec3_1
