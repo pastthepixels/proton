@@ -1579,7 +1579,7 @@ const Proton3DInterpreter = {
 		if ( extras.dynamicResolution ) {
 
 			setInterval( function() {
-				Proton3DInterpreter.renderer.setPixelRatio( ( Proton3DInterpreter.fps / 60 ) / ( extras.dynamicResolutionFactor || 4 ) ) 
+				( Proton3DInterpreter.composer || Proton3DInterpreter.renderer ).setPixelRatio( ( Proton3DInterpreter.fps / 60 ) / ( extras.dynamicResolutionFactor || 4 ) ) 
 			}, 500 );
 			extras.scene.priorityExtraFunctions.push( function() {
 				//getting the fps, slightly modified from https://www.growingwiththeweb.com/2017/12/fast-simple-js-fps-counter.html
