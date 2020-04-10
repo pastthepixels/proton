@@ -639,15 +639,14 @@ class Proton3DScene {
 
 			} else {
 
-				var velocity = obj.getLinearVelocity();
-				if ( ( x.keys[ x.mappedKeys.forward ] || x.keys[ x.mappedKeys.backward ] ) &&x.keys[ x.mappedKeys.jump ] && obj.getLinearVelocity().y <= 0.5 && obj.getCollidingObjects().length > 0 ) {
+				/*if ( ( x.keys[ x.mappedKeys.forward ] || x.keys[ x.mappedKeys.backward ] ) &&x.keys[ x.mappedKeys.jump ] && obj.getLinearVelocity().y <= 0.5 && obj.getCollidingObjects().length > 0 ) {
 
 					y.x *= 1.2;
 					y.z *= 1.2;
 
 
-				}
-				obj.setLinearVelocity( y.x * speed * ( negatise? -1 : 1 ), velocity.y, y.z * speed * ( negatise? -1 : 1 ) );
+				}*/
+				obj.setLinearVelocity( y.x * speed * ( negatise? -1 : 1 ), undefined, y.z * speed * ( negatise? -1 : 1 ) );
 
 			}
 			if ( x.gun && extras.gunAnimations && gunAnimation == true ) {
