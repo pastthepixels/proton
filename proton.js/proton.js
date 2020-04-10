@@ -18,7 +18,7 @@
 //\\//\\//\\//\\//\\//\\//\\ //
 //\\ adding extra scripts \\ // //loc:1
 //\\//\\//\\//\\//\\//\\//\\ //
-//15 lines in total will be added to the HTML of a document using Proton3D.
+//19 lines in total will be added to the HTML of a document using Proton3D.
 document.writeln( '<meta name="viewport" content="width = device-width, initial-scale = 1.0">' );
 //the part that requires an internet connection:
 	//ui
@@ -35,13 +35,20 @@ document.writeln( '<meta name="viewport" content="width = device-width, initial-
 		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/loaders/LoaderSupport.js"></script>' );
 		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/OBJLoader2.js"></script>' );
 		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/GLTFLoader.js"></script>' );
-		//bloom: three.js
+		//hdr: three.js
 		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/EffectComposer.js"></script>' );
 		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/ShaderPass.js"></script>' );
 		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/RenderPass.js"></script>' );
 		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/shaders/CopyShader.js"></script>' );
 		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/postprocessing/UnrealBloomPass.js"></script>' );
 		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/shaders/LuminosityHighPassShader.js"></script>' );
+		//
+		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/shaders/LuminosityShader.js"></script>' );
+		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/shaders/ToneMapShader.js"></script>' );
+		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/postprocessing/AdaptiveToneMappingPass.js"></script>' );
+		//antialiasing: threejs
+		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/postprocessing/SMAAPass.js"></script>' );
+		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/shaders/SMAAShader.js"></script>' );
 		//proton3d physics: physijs
 		document.writeln( '<script src="https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js"></script>' );
 		//three.js' sky shader, by https://github.com/zz85
@@ -374,7 +381,7 @@ Object.defineProperty( Object.prototype, "watch", {
 class Proton3DScene {
 	constructor() {
 		//this part requires an internet connection
-		Physijs.scripts.worker = "../../../proton/proton.js/accessories/physijs_worker_modified.js"//"https://cdn.jsdelivr.net/gh/pastthepixels/proton@beta/proton.js/accessories/physijs_worker_modified.js";
+		Physijs.scripts.worker = "https://cdn.jsdelivr.net/gh/pastthepixels/proton@beta/proton.js/accessories/physijs_worker_modified.js";
 		Physijs.scripts.ammo = ProtonJS.ammojsURL;
 		this.mappedKeys = {
 			forward: 38,
@@ -644,7 +651,6 @@ class Proton3DScene {
 
 					y.x *= 1.2;
 					y.z *= 1.2;
-
 
 				}
 				obj.setLinearVelocity( y.x * speed * ( negatise? -1 : 1 ), obj.getLinearVelocity().y, y.z * speed * ( negatise? -1 : 1 ) );
@@ -1476,7 +1482,7 @@ const Proton3DInterpreter = {
 		this.canvas = document.createElement( "canvas" );
 		this.context = this.canvas.getContext( "webgl2", { alpha: false } );
 		this.renderer = new THREE.WebGLRenderer( {
-			antialias: extras.antialias,
+			antialias: false,
 			canvas: this.canvas,
 			context: this.context,
 			precision: extras.shaderQuality.toLowerCase() + "p"
@@ -1495,18 +1501,38 @@ const Proton3DInterpreter = {
 		extras.scene.element.style.imageRendering = extras.pixelatedScene? "pixelated": "";
 		//updating a scene
 		Proton3DInterpreter.render( extras.scene );
-		//bloom
+		//renderization
+		var hdrRenderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, stencilBuffer: false } );
+		var scenePass = new THREE.RenderPass( Proton3DInterpreter.objects, getMeshByName( extras.scene.camera.name ) );
+		this.composer = new THREE.EffectComposer( Proton3DInterpreter.renderer, hdrRenderTarget );
+		this.composer.addPass( scenePass );
+		//bloom + adaptive tone mapping
+		if ( extras.hdr ) {
+
+			extras.bloom = true;
+			extras.dynamicToneMapping = true;
+
+		}
 		if ( extras.bloom ) {
 
-			var renderScene = new THREE.RenderPass( Proton3DInterpreter.objects, getMeshByName( extras.scene.camera.name ) );
-			var composer = new THREE.EffectComposer( Proton3DInterpreter.renderer );
 			var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 0.3, 1, 0.985 );
 			//
-		//	this.renderer.toneMappingExposure = Math.pow( 0, 4.0 );
-			composer.addPass( renderScene );
-			composer.addPass( bloomPass );
+			this.composer.addPass( bloomPass );
 
-			Proton3DInterpreter.composer = composer;
+		}
+		if ( extras.dynamicToneMapping ) {
+
+			var adaptToneMappingPass = new THREE.AdaptiveToneMappingPass( true, 512 );
+			adaptToneMappingPass.needsSwap = true;
+			//
+			this.composer.addPass( adaptToneMappingPass );
+
+		}
+		//antialising
+		if ( extras.antialias ) {
+
+			var smaaPass = new THREE.SMAAPass( window.innerWidth * this.renderer.getPixelRatio(), window.innerHeight * this.renderer.getPixelRatio() );
+			this.composer.addPass( smaaPass );
 
 		}
 		//PBR
@@ -1547,25 +1573,6 @@ const Proton3DInterpreter = {
 		
 			setInterval( this.pbrInterval, 64 );
 			setInterval( this.pbrArrayInterval, 4000 );
-
-		} else {
-
-			ProtonJS.oldResume = ProtonJS.resume;
-			ProtonJS.resume = function() {
-				ProtonJS.oldResume();
-				extras.scene.getObjectList().forEach( function ( object ) {
-					if ( object == undefined ) {
-
-						return
-
-					}
-					if ( getMeshByName( object.name ) != undefined && getMeshByName( object.name ).pbr ) {
-
-						getMeshByName( object.name ).pbr()
-
-					}
-				} )
-			}
 
 		}
 		//dynamic resolution
