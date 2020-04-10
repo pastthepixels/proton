@@ -1535,6 +1535,12 @@ const Proton3DInterpreter = {
 			this.composer.addPass( smaaPass );
 
 		}
+		//anisotropic filtering
+		if ( extras.anisotropicFiltering ) {
+
+			Proton3DInterpreter.anisotropicFiltering = Proton3DInterpreter.renderer.capabilities.getMaxAnisotropy();
+
+		}
 		//PBR
 		this.pbrTexture = extras.pbrTexture;
 		this.livePBRArray = [];
@@ -1737,9 +1743,9 @@ const Proton3DInterpreter = {
 						continue
 
 					}
-					if ( newMaterial[i] != null ) {
+					if ( newMaterial[ i ] != null ) {
 
-						newMaterial[i] = oldMaterial[i]
+						newMaterial[ i ] = oldMaterial[ i ];
 
 					}
 
@@ -1762,6 +1768,20 @@ const Proton3DInterpreter = {
 				newMaterial.envMap = object.pbrCam.renderTarget.texture;
 				newMaterial.shadowSide = THREE.BackSide;
 				newMaterial.color = oldMaterial.color;
+				//anisotropic filtering
+				if ( Proton3DInterpreter.anisotropicFiltering ) {
+					
+					for ( var i in newMaterial ) {
+
+						if ( newMaterial[ i ] && newMaterial[ i ].anisotropy ) {
+
+							newMaterial[ i ].anisotropy = Proton3DInterpreter.anisotropicFiltering;
+		
+						}
+
+					}
+
+				}
 
 			} else {
 
