@@ -140,7 +140,7 @@ createShape = function( description ) {
 			cache_key = 'capsule_' + description.radius + '_' + description.height;
 			if ( ( shape = getShapeFromCache( cache_key ) ) === null ) {
 				// In Bullet, capsule height excludes the end spheres
-				shape = new Ammo.btCapsuleShape( description.radius, description.height - ( description.height / 6 ) * description.radius );
+				shape = new Ammo.btCapsuleShape( description.radius, description.height - 2 * description.radius );
 				setShapeCache( cache_key, shape );
 			}
 			break;

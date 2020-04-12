@@ -381,7 +381,7 @@ Object.defineProperty( Object.prototype, "watch", {
 class Proton3DScene {
 	constructor() {
 		//this part requires an internet connection
-		Physijs.scripts.worker = "https://cdn.jsdelivr.net/gh/pastthepixels/proton@beta/proton.js/accessories/physijs_worker_modified.js";
+		Physijs.scripts.worker = "https://rawcdn.githack.com/pastthepixels/proton/8931578396b73159244d4b7e61422d71f0ddd961/proton.js/accessories/physijs_worker_modified.js";
 		Physijs.scripts.ammo = ProtonJS.ammojsURL;
 		this.mappedKeys = {
 			forward: 38,
@@ -1585,7 +1585,8 @@ const Proton3DInterpreter = {
 		if ( extras.dynamicResolution ) {
 
 			setInterval( function() {
-				( Proton3DInterpreter.composer || Proton3DInterpreter.renderer ).setPixelRatio( ( Proton3DInterpreter.fps / 60 ) / ( extras.dynamicResolutionFactor || 4 ) ) 
+				Proton3DInterpreter.composer.setPixelRatio( ( Proton3DInterpreter.fps / 60 ) / ( extras.dynamicResolutionFactor || 4 ) )
+				Proton3DInterpreter.renderer.setPixelRatio( ( Proton3DInterpreter.fps / 60 ) / ( extras.dynamicResolutionFactor || 4 ) ) 
 			}, 500 );
 			extras.scene.priorityExtraFunctions.push( function() {
 				//getting the fps, slightly modified from https://www.growingwiththeweb.com/2017/12/fast-simple-js-fps-counter.html
@@ -1616,7 +1617,7 @@ const Proton3DInterpreter = {
 		} );
 	},
 	addToScene( object, scene ) {
-		this.objects.add( object.name? getMeshByName( object.name ) : object );
+		this.objects.add( object.name && getMeshByName( object.name )? getMeshByName( object.name ) : object );
 		scene.objectList.push( object )
 		//vars
 		var skipPBRReplacement = object.skipPBRReplacement,
@@ -2572,11 +2573,10 @@ const Proton3DInterpreter = {
 			if ( extras.noPhysics != true ) {
 
 				scene.children.forEach( function( child, i ) {
-					var m, c = scene.children[ i ];
+					var m, c = child;
 					//armature
-					if ( child.name.toLowerCase().includes( "armature" ) || extras.armature ) {
+					if ( child.name.toLowerCase().includes( "armature" ) && extras.armature ) {
 
-						extras.armature = child;
 						c = child.children[ child.children.length - 1 ]
 
 					}
@@ -2590,7 +2590,7 @@ const Proton3DInterpreter = {
 					if ( c.isMesh && c.geometry != undefined ) {
 						
 						//'bakes' the scale into the geometry
-						c.geometry = c.geometry.type == "BufferGeometry" ? new THREE.Geometry().fromBufferGeometry( c.geometry ) : c.geometry;
+						c.geometry = c.geometry.type.toLowerCase() == "buffergeometry" ? new THREE.Geometry().fromBufferGeometry( c.geometry ) : c.geometry;
 						if ( extras.accountForExtraProperties ) {
 
 							c.geometry.vertices.forEach( function ( vertex ) {
@@ -2711,11 +2711,6 @@ const Proton3DInterpreter = {
 					physicalObject.name = c.name;
 					physicalObject.userData = c.userData;
 					physicalObject.material.transparent = true;
-					if ( extras.armature ) {
-
-						physicalObject.add( extras.armature );
-
-					}
 					if ( extras.starterPos && extras.fileType.toLowerCase() != "gltf" ) {
 
 						physicalObject.position.set(
@@ -2761,7 +2756,7 @@ const Proton3DInterpreter = {
 
 					}
 					//done
-					if ( extras.fileType != "gltf" ) {
+					if ( extras.fileType != "gltf" && !extras.armature ) {
 
 						physicalObject.add( c );
 						scene.children.push( physicalObject );
@@ -2771,17 +2766,23 @@ const Proton3DInterpreter = {
 
 						physicalObject.children = c.children
 						for ( var i in physicalObject ) {
-							if ( i != "position" && i != "rotation" && i != "quaternion" && i != "scale" ) {
+							if ( i != "position" && i != "rotation" && i != "quaternion" && i != "scale" && i != "uuid" && i != "id" && i != "type" ) {
 
 								c[ i ] = physicalObject[ i ];
 
 							}
 						}
+						if ( extras.armature ) {
+
+							child.add( c );
+							c.armature = child;
+
+						}
 						objects.push( c );
 
 					}
 					physicalObject.geometry = new THREE.BufferGeometry().fromGeometry( physicalObject.geometry );
-					c.geometry = c.type === "BufferGeometry"? c.geometry : new THREE.BufferGeometry().fromGeometry( c.geometry );
+					if ( c.geometry ) c.geometry = c.geometry.type.toLowerCase() === "buffergeometry"? c.geometry : new THREE.BufferGeometry().fromGeometry( c.geometry );
 					if ( scene.children.length === 1 ) {
 
 						scene = scene.children[ 0 ];
@@ -2797,12 +2798,21 @@ const Proton3DInterpreter = {
 
 				}
 				scene.children.forEach( function ( child ) {
-					if ( extras.starterPos ) {
+					if ( extras.starterPos && child.position ) {
 
 						child.position.add( extras.starterPos )
 
 					}
-					objects.push( child )
+					if ( child.name.toLowerCase().includes( "armature" ) && extras.armature ) {
+
+						child.children[ child.children.length - 1 ].armature = child;
+						objects.push( child.children[ child.children.length - 1 ] );
+
+					} else {
+						
+						objects.push( child )
+					
+					}
 				} )
 
 
@@ -2880,22 +2890,17 @@ const Proton3DInterpreter = {
 			x.children = [];
 			objects.forEach( function ( mesh, i ) {
 				var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } )
-				x.children.push( object )
-				if ( extras.armature ) {
-
-					object.armature = extras.armature;
-					object.armatureObject = extras.armature.children[ extras.armature.children.length - 1 ];
-					object.armatureObject.material =  object.armatureObject.material.clone();
-					object.material = new Proton3DMaterial( object.armatureObject, {
-						material: object.armatureObject.material
-					} )
-					//
-					getMeshByName( object.name ).material.visible = false;
-					getMeshByName( object.name ).castShadow = false;
-
-				}
+				x.children.push( object );
+				object.armature = mesh.armature;
+				object.skeleton = mesh.skeleton;
 				if ( extras.objects ) {
 
+					if ( object.armature ) {
+
+						extras.objects.add( object.armature )
+						return
+
+					}
 					extras.objects.add( object )
 
 				}
