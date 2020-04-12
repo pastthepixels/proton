@@ -1618,25 +1618,30 @@ const Proton3DInterpreter = {
 	},
 	addToScene( object, scene ) {
 		this.objects.add( object.name && getMeshByName( object.name )? getMeshByName( object.name ) : object );
-		scene.objectList.push( object )
+		scene.objectList.push( object );
+		if ( ( object.name && getMeshByName( object.name )? getMeshByName( object.name ) : object ).type.toLowerCase() == "armature" ) {
+
+			return
+
+		}
 		//vars
 		var skipPBRReplacement = object.skipPBRReplacement,
 			skipPBRReplacement_light = object.skipPBRReplacement_light,
 			P3DObject = object,
-			object = object.name? getMeshByName( object.name ) : object;
+			object = object.name && getMeshByName( object.name )? getMeshByName( object.name ) : object;
 		//bounding box
 		P3DObject.updateBoundingBox = function() {
 		
-			if ( P3DObject.sunPosition ) {
+			var object = P3DObject.name && getMeshByName( P3DObject.name )? getMeshByName( P3DObject.name ) : P3DObject;
+			if ( !object || P3DObject.sunPosition || !object.geometry ) {
 
 				return
 
 			}
-			var object = P3DObject.name? getMeshByName( P3DObject.name ) : P3DObject;
 			object.updateMatrixWorld();
-			object.geometry? object.geometry.computeBoundingBox() : undefined;
-			P3DObject.boundingBox = object.geometry? object.geometry.boundingBox.clone() : undefined;
-			P3DObject.boundingBox? P3DObject.boundingBox.applyMatrix4( object.matrixWorld ) : undefined;
+			object.geometry.computeBoundingBox();
+			P3DObject.boundingBox = object.geometry.boundingBox.clone();
+			P3DObject.boundingBox.applyMatrix4( object.matrixWorld );
 			
 		}
 		P3DObject.updateBoundingBox()
