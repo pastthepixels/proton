@@ -784,7 +784,7 @@ class Proton3DScene {
 					//
 					var crosshairPos = ( e.movementY / ( extras.ySensivity * 40 ) ) * ( x.crosshair.__localPosition.distanceTo( x.camera.getPosition() ) );
 					if ( 
-						//If it's third person and [???]
+						//If it's third person and the camera is within a certain range
 						(
 							(x.cameraType === "thirdperson" || extras.type === "thirdperson" ) &&
 							(
@@ -797,8 +797,8 @@ class Proton3DScene {
 						(
 							x.cameraType != "thirdperson" &&
 							(
-								( x.crosshair.__localPosition.y - crosshairPos ) > -4.5 &&
-								( x.crosshair.__localPosition.y - crosshairPos ) < 4.5
+								( x.crosshair.__localPosition.y - crosshairPos ) > -8 &&
+								( x.crosshair.__localPosition.y - crosshairPos ) < 8
 							) 
 						)
 						) {
@@ -2518,7 +2518,11 @@ const Proton3DInterpreter = {
 		var loader,
 			x = this,
 			objects = [],
+			initialObjectList = [],
 			mesh;
+		x.children = [];
+		x.rawObjects = [];
+		x.positions = [];
 		//gets the loader and loads the file
 		switch ( extras.fileType.toLowerCase() ) {
 
@@ -2563,21 +2567,24 @@ const Proton3DInterpreter = {
 			return materials;
 		}
 		function finishLoad( scene, load ) {
-			//takes out the children from a group and puts them into the scene.
-			scene.children.forEach( function ( child ) {
+			scene.children.forEach( function( child ) {
+				initialObjectList.push( child )
+			} )
+			//takes out the children from a group and puts them into an object list.
+			initialObjectList.forEach( function ( child ) {
 				if ( child.isGroup ) {
 
 					child.children.forEach( function ( child_child ) {
-						scene.children.push( child_child )
+						initialObjectList.push( child_child )
 					} )
-					scene.remove( child )
+					initialObjectList.remove( initialObjectList.indexOf( child ), 1 )
 
 				}
 			} )
 			//registers each object as a physics object.
 			if ( extras.noPhysics != true ) {
 
-				scene.children.forEach( function( child, i ) {
+				initialObjectList.forEach( function( child, i ) {
 					var m, c = child;
 					//armature
 					if ( child.name.toLowerCase().includes( "armature" ) && extras.armature ) {
@@ -2747,7 +2754,7 @@ const Proton3DInterpreter = {
 						extras.collisionBoxPosition = ( extras.collisionBoxPosition || new THREE.Vector3( 0, 0, 0 ) );
 						c.position.set( extras.collisionBoxPosition.x, extras.collisionBoxPosition.y, extras.collisionBoxPosition.z );
 						physicalObject.add( c );
-						scene.children.push( physicalObject );
+						initialObjectList.push( physicalObject );
 						objects.push( physicalObject );
 						return;
 
@@ -2755,7 +2762,7 @@ const Proton3DInterpreter = {
 					//resizing the mesh to account for properties such as scaling
 					if ( extras.accountForExtraProperties ) {
 
-						scene.children.push( physicalObject );
+						initialObjectList.push( physicalObject );
 						objects.push( physicalObject );
 						return;
 
@@ -2764,7 +2771,7 @@ const Proton3DInterpreter = {
 					if ( extras.fileType != "gltf" && !extras.armature ) {
 
 						physicalObject.add( c );
-						scene.children.push( physicalObject );
+						initialObjectList.push( physicalObject );
 						objects.push( physicalObject );
 
 					} else {
@@ -2788,11 +2795,6 @@ const Proton3DInterpreter = {
 					}
 					physicalObject.geometry = new THREE.BufferGeometry().fromGeometry( physicalObject.geometry );
 					if ( c.geometry ) c.geometry = c.geometry.type.toLowerCase() === "buffergeometry"? c.geometry : new THREE.BufferGeometry().fromGeometry( c.geometry );
-					if ( scene.children.length === 1 ) {
-
-						scene = scene.children[ 0 ];
-
-					}
 				} )
 
 			} else {
@@ -2802,7 +2804,7 @@ const Proton3DInterpreter = {
 					scene.position.add( extras.starterPos )
 
 				}
-				scene.children.forEach( function ( child ) {
+				initialObjectList.forEach( function ( child ) {
 					if ( extras.starterPos && child.position ) {
 
 						child.position.add( extras.starterPos )
@@ -2823,7 +2825,7 @@ const Proton3DInterpreter = {
 
 			}
 			//shadows
-			scene.children.forEach( castShadow );
+			initialObjectList.forEach( castShadow );
 			function castShadow( c ) {
 				if ( extras.castShadow ) {
 
@@ -2848,8 +2850,8 @@ const Proton3DInterpreter = {
 
 				}
 				for ( var i in load.animations ) {
-					var mixer = new THREE.AnimationMixer( scene );
-					var animation = {
+					var mixer = new THREE.AnimationMixer( scene ),
+						animation = {
 						action: mixer.clipAction( load.animations[ i ] ),
 						play: function ( animatingObjects = [] ) {
 							if ( !this.action.paused ) {
@@ -2862,6 +2864,7 @@ const Proton3DInterpreter = {
 							this.action.stop();
 							this.action.reset();
 							this.action.play();
+							console.log( scene.children )
 							var frame = 0,
 								action = this.action,
 								animation = setInterval( function () {
@@ -2874,17 +2877,16 @@ const Proton3DInterpreter = {
 										return;
 
 									}
-									mixer.update( frame += 0.005 );
+									mixer.update( frame + ( 1/30 ) );
 									scene.children.forEach( function ( object ) {
 										if ( animatingObjects.indexOf( object ) > -1 ) {
 
-											object.position.add( extras.starterPos );
+										//	object.setPo( extras.starterPos );
+										//	object.applyLocRotChange()
 
 										}
-										object.__dirtyPosition = true;
-										object.__dirtyRotation = true;
 									} );
-								}, 16 )
+								}, 32 )
 						}
 					}
 					animation.action.paused = true;
@@ -2892,8 +2894,24 @@ const Proton3DInterpreter = {
 				}
 			}
 			//creating Proton3D objects
-			x.children = [];
 			objects.forEach( function ( mesh, i ) {
+				//if the 3d object has no material nor any geometry, that seems very suspicious (as in, it's probably an empty object)... get its position and chuck that into the "positions" pile.
+				if ( !mesh.material && !mesh.geometry ) {
+
+					x.positions.push( mesh );
+					return;
+
+				}
+
+				//if the 3d object cannot be built into a Proton3DObject, just chuck it into the "raw objects" pile.
+				if ( !mesh.material || !mesh.geometry ) {
+
+					x.rawObjects.push( mesh );
+					return;
+
+				}
+
+				//build the 3d object
 				var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } )
 				x.children.push( object );
 				object.armature = mesh.armature;
@@ -2912,6 +2930,16 @@ const Proton3DInterpreter = {
 			} );
 			x.getObjectByName = function( name ) {
 				return x.children.find( function( child ) {
+					return child.name === name
+				} )
+			}
+			x.getRawObjectByName = function( name ) {
+				return x.rawObjects.find( function( child ) {
+					return child.name === name
+				} )
+			}
+			x.getPositionByName = function( name ) {
+				return x.positions.find( function( child ) {
 					return child.name === name
 				} )
 			}
