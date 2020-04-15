@@ -2867,43 +2867,83 @@ const Proton3DInterpreter = {
 					var mixer = new THREE.AnimationMixer( scene ),
 						animation = {
 						action: mixer.clipAction( load.animations[ i ] ),
+						repeat: false,
 						play: function ( animatingObjects = [] ) {
 							if ( !this.action.paused ) {
 
 								return
 
 							}
+							this.stop();
+							this.animatingObjects = animatingObjects;
+							this.animatingObjects.forEach( function ( object ) {
+								if ( !object.__animationInitialPosition) object.__animationInitialPosition = object.getPosition().clone();
+							} )
+							this.animatingObjects.forEach( function ( object ) {
+								object.setPosition( 0, 0, 0 );
+								object.applyLocRotChange();
+							} )
 							this.action.clampWhenFinished = true;
 							this.action.enable = true;
-							this.action.stop();
-							this.action.reset();
-							this.action.play();
-							console.log( scene.children )
 							var frame = 0,
 								action = this.action,
-								animation = setInterval( function () {
-									if ( action.paused ) {
+								x = this;
+							this.animation = setInterval( function () {
+								if ( action.paused ) {
 
-										action.stop();
-										action.reset();
-										clearInterval( animation );
-										action.paused = true;
-										return;
+									x.stop()
+									return;
+
+								}
+								//update all animating objects
+								mixer.update( frame + ( 1/60 ) );
+								//add the position of all animating objects with its initial position
+								x.animatingObjects.forEach( function ( object ) {
+								//	if ( !object.__animationOldPosition || object.__animationOldPosition.distanceTo( object.getPosition ) > 0.01 ) {
+									
+										object.setPosition( 
+											object.__animationInitialPosition.x + object.position.x,
+											object.__animationInitialPosition.y + object.position.y,
+											object.__animationInitialPosition.z + object.position.z
+										);
+										console.log( object.position, object.__animationInitialPosition )
+										object.applyLocRotChange();
+
+								//	}
+									object.__animationOldPosition = object.getPosition();
+								} );
+							}, 32 )
+						},
+						stop: function() {
+							this.action.stop();
+							this.action.reset();
+							if ( this.animation ) {
+							
+								clearInterval( this.animation );
+								this.action.paused = true;
+								
+							}
+							if ( this.animatingObjects ) {
+								console.log( true )
+								this.animatingObjects.forEach( function ( object ) {
+									if ( !object.__animationOldPosition || object.__animationOldPosition.distanceTo( object.getPosition ) > 0.1 ) {
+									
+										object.setPosition( 
+											object.__animationInitialPosition.x + object.position.x,
+											object.__animationInitialPosition.y + object.position.y,
+											object.__animationInitialPosition.z + object.position.z
+										);
+										object.applyLocRotChange();
 
 									}
-									mixer.update( frame + ( 1/30 ) );
-									scene.children.forEach( function ( object ) {
-										if ( animatingObjects.indexOf( object ) > -1 ) {
+									object.__animationInitialPosition = undefined;
+								} );
 
-										//	object.setPo( extras.starterPos );
-										//	object.applyLocRotChange()
-
-										}
-									} );
-								}, 32 )
+							}
 						}
 					}
 					animation.action.paused = true;
+					animation.name = animation.action._clip.name;
 					x.animations[ i ] = animation;
 				}
 			}
