@@ -733,9 +733,9 @@ class Proton3DScene {
 					} );
 
 				}
+				extras.invisibleParent = undefined;
 
 			}
-
 			//
 			var oldMovement = 0;
 			switch( extras.type ){
@@ -2589,7 +2589,8 @@ const Proton3DInterpreter = {
 					//armature
 					if ( child.name.toLowerCase().includes( "armature" ) && extras.armature ) {
 
-						c = child.children[ child.children.length - 1 ]
+						c = child.children[ child.children.length - 1 ].clone()
+						extras.accountForExtraProperties = true;
 
 					}
 					//kicks out already recorded stuff
@@ -2748,6 +2749,25 @@ const Proton3DInterpreter = {
 						)
 
 					}
+					//armature
+					if ( extras.armature ) {
+
+						//clones the physics object's material
+						physicalObject.material = physicalObject.material.clone();
+
+						//adds the physics object to the object list
+						scene.children.push( physicalObject );
+						objects.push( physicalObject );
+						
+						//adds the armature to the object list
+						child.children[ child.children.length - 1 ].armature = child;
+						child.children[ child.children.length - 1 ].__physicsArmatureParent = physicalObject
+						child.rotation.y += angle( 180, "rad" )
+						objects.push( child.children[ child.children.length - 1 ] );
+						
+						return;
+
+					}
 					//collision box weirdness
 					if ( extras.useCollisionBox ) {
 
@@ -2768,7 +2788,7 @@ const Proton3DInterpreter = {
 
 					}
 					//done
-					if ( extras.fileType != "gltf" && !extras.armature ) {
+					if ( extras.fileType != "gltf" ) {
 
 						physicalObject.add( c );
 						initialObjectList.push( physicalObject );
@@ -2778,17 +2798,11 @@ const Proton3DInterpreter = {
 
 						physicalObject.children = c.children
 						for ( var i in physicalObject ) {
-							if ( i != "position" && i != "rotation" && i != "quaternion" && i != "scale" && i != "uuid" && i != "id" && i != "type" ) {
-
+							if ( i != "position" && i != "rotation" && i != "quaternion" && i != "scale" && i != "uuid" && i != "id" && i != "type" && i  != "parent" && i != "children" ) {
+								
 								c[ i ] = physicalObject[ i ];
 
 							}
-						}
-						if ( extras.armature ) {
-
-							child.add( c );
-							c.armature = child;
-
 						}
 						objects.push( c );
 
@@ -2913,14 +2927,49 @@ const Proton3DInterpreter = {
 
 				//build the 3d object
 				var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } )
-				x.children.push( object );
-				object.armature = mesh.armature;
-				object.skeleton = mesh.skeleton;
+				if ( mesh.__physicsArmatureParent ) {
+
+					//sets the skeleton in the P3DObject to that in the three.js object.
+					object.armature = mesh.armature;
+					object.skeleton = mesh.skeleton;
+					mesh.__physicsArmatureParent.p3dParent.skeleton = mesh.skeleton;
+					mesh.__physicsArmatureParent.p3dParent.object = object;
+
+				} else {
+
+					//adds the object to the output of objects
+					x.children.push( object );
+
+				}
+				
 				if ( extras.objects ) {
 
 					if ( object.armature ) {
 
-						extras.objects.add( object.armature )
+						if ( mesh.__physicsArmatureParent ) {
+						
+							//sets the position of the mesh to be 0, 0, and 0.
+							mesh.position.set( 0, 0, 0 );
+
+							//"hides" the physics object
+							delete mesh.__physicsArmatureParent.material.visible;
+							Object.defineProperty( mesh.__physicsArmatureParent.material, "visible", { configurable: false, writable: false, value: false } );
+							
+							//sets the P3DMaterial in the physics object to be rerouting to the material in the armature
+							mesh.__physicsArmatureParent.p3dParent.material = object.material;
+
+							//adds the armature to the physics object
+							mesh.__physicsArmatureParent.add( object.armature )
+							mesh.armatureObject = true;
+							mesh.__physicsArmatureParent.p3dParent.physicsObject = true;
+							object.armature.add( getMeshByName( object.name ) )
+						
+						} else {
+						
+							extras.objects.add( object.armature )
+							object.armature.add( getMeshByName( object.name ) )
+							
+						}
 						return
 
 					}
