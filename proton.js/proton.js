@@ -2515,14 +2515,15 @@ const Proton3DInterpreter = {
 		}
 	},
 	importObject: function( extras ){
+		//variables
 		var loader,
-			x = this,
-			objects = [],
-			initialObjectList = [],
-			mesh;
-		x.children = [];
-		x.rawObjects = [];
-		x.positions = [];
+			x = this;
+		
+		//output stuff
+		this.objects = [];
+		this.animations = [];
+		this.raw = null;
+
 		//gets the loader and loads the file
 		switch ( extras.fileType.toLowerCase() ) {
 
@@ -2531,6 +2532,7 @@ const Proton3DInterpreter = {
 				loader.setLogging( false, false );
 				if ( typeof extras.mtlPath === "string" ) {
 
+					//loads an mtl + an obj file
 					loader.loadMtl( extras.mtlPath, null, function ( materials ) {
 						loader.setMaterials( materials );
 						loader.load( extras.objPath, function ( object ) {
@@ -2540,6 +2542,7 @@ const Proton3DInterpreter = {
 
 				} else {
 
+					//loads just an obj file
 					loader.load( extras.objPath, function ( object ) {
 						finishLoad( object.detail.loaderRootNode, object )
 					} );
@@ -2556,260 +2559,12 @@ const Proton3DInterpreter = {
 				break;
 
 		}
-		//finishes the loading stuff
-		function getAllMaterials( scene ) {
-			var materials = [];
-			scene.traverse( getMaterial );
-			function getMaterial( object ) {
-				object.children.forEach( getMaterial )
-				object.material? materials.push( object.material ) : undefined;
-			}
-			return materials;
-		}
+		//gets the loaded objects and completes the function
 		function finishLoad( scene, load ) {
-			scene.children.forEach( function( child ) {
-				initialObjectList.push( child )
-			} )
-			//takes out the children from a group and puts them into an object list.
-			initialObjectList.forEach( function ( child ) {
-				if ( child.isGroup ) {
-
-					child.children.forEach( function ( child_child ) {
-						initialObjectList.push( child_child )
-					} )
-					initialObjectList.remove( initialObjectList.indexOf( child ), 1 )
-
-				}
-			} )
-			//registers each object as a physics object.
+			//"registers" each object as a physics object
 			if ( extras.noPhysics != true ) {
 
-				initialObjectList.forEach( function( child, i ) {
-					var m, c = child;
-					//armature
-					if ( child.name.toLowerCase().includes( "armature" ) && extras.armature ) {
-
-						c = child.children[ child.children.length - 1 ].clone()
-						extras.accountForExtraProperties = true;
-
-					}
-					//kicks out already recorded stuff
-					if ( c._physijs ) {
-
-						return;
-
-					}
-					//geometry stuff
-					if ( c.isMesh && c.geometry != undefined ) {
-						
-						//'bakes' the scale into the geometry
-						c.geometry = c.geometry.type.toLowerCase() == "buffergeometry" ? new THREE.Geometry().fromBufferGeometry( c.geometry ) : c.geometry;
-						if ( extras.accountForExtraProperties ) {
-
-							c.geometry.vertices.forEach( function ( vertex ) {
-								vertex.multiply( c.scale );
-							} );
-
-						}
-						//adds the starter position to the object's position.
-						if ( extras.starterPos && extras.fileType.toLowerCase() === "gltf" ) {
-
-							c.position.add( extras.starterPos )
-
-						}
-
-					} else {
-
-						//if the object is not a mesh, forget about it.
-						if ( c.position && extras.starterPos ) {
-
-							c.position.add( extras.starterPos );
-
-						}
-						objects.push( c );
-						return;
-
-					}
-					//if the object has a --noPhysics flag in its name, forget about it.
-					if ( c.name && c.name.includes( " --noPhysics" ) ) {
-
-						objects.push( c );
-						return;
-
-					}
-					//if extras.objectType is an array corrisponding to the objects in the scene, well, make note of that or something.
-					if ( extras.objectType ) {
-
-						switch ( typeof extras.objectType ) {
-
-							case "object":
-
-								extras.objectType[ i ].charAt( 0 ).toUpperCase() + extras.objectType.slice( 1 );
-								break;
-
-							default:
-
-								m = extras.objectType.charAt( 0 ).toUpperCase() + extras.objectType.slice( 1 );
-
-						}
-
-					}
-					//if the object has a --geometry flag in its name, extras.objectType will be overridden with this.
-					if ( c.name && c.name.includes( "--geometry-" ) ) {
-
-						m = c.name.slice( c.name.indexOf( "--geometry-" ) + 11, c.name.length )
-						m = m.charAt( 0 ).toUpperCase() + m.slice( 1 );
-						if ( m.includes( "_" ) ) {
-
-							m = m.slice( 0, m.indexOf( "_" ) );
-
-						}
-
-					}
-					//if the object must have a transparent collision material, so be it.
-					if ( extras.collisionMaterialTransparent ) {
-
-						extras.collisionMaterial = new THREE.MeshBasicMaterial();
-						extras.collisionMaterial.transparent = true;
-						extras.collisionMaterial.opacity = 0.001;
-						extras.collisionMaterial.depthWrite = false;
-
-					}
-					//same as above, but for mass.
-					var mass = 0;
-					if ( extras.mass ) {
-
-						switch ( typeof extras.mass ) {
-
-							case "object":
-
-								mass = extras.mass[ i ]
-								break;
-
-							default:
-
-								mass = extras.mass
-
-						}
-
-					}
-					//same as above, but for mass.
-					if ( c.name && c.name.includes( "--mass" ) ) {
-
-						mass = c.name.slice( c.name.indexOf( "--mass-" ) + 7, c.name.length )
-						if ( mass.includes( "_" ) ) {
-
-							mass = mass.slice( 0, mass.indexOf( "_" ) );
-
-						}
-						mass = parseFloat( mass );
-
-					}
-					//creates a physijs object
-					var physicalObject = eval( `new Physijs.` + ( m || "Box" ) + `Mesh(
-						(  extras.collisionGeometry || c.geometry  ),
-						(  extras.collisionMaterial || c.material  ),
-						mass
-					)` );
-					if( c.name && c.name.replace( /_/ig, " " ).indexOf( " --" ) > -1 ) {
-
-						c.name = c.name.replace( /_/ig, " " ).slice( 0, c.name.indexOf( " --" ) );
-
-					} else if( c.name ) {
-
-						c.name = c.name.replace( /_/ig, " " )
-
-					}
-					physicalObject.material = extras._material? extras._material : physicalObject.material;
-					physicalObject.name = c.name;
-					physicalObject.userData = c.userData;
-					physicalObject.material.transparent = true;
-					if ( extras.starterPos && extras.fileType.toLowerCase() != "gltf" ) {
-
-						physicalObject.position.set(
-							extras.starterPos.x + c.position.x,
-							extras.starterPos.y + c.position.y,
-							extras.starterPos.z + c.position.z,
-						);
-						physicalObject.__dirtyPosition = true;
-						c.position.set( 0, 0, 0 )
-
-					}
-					if ( extras.accountForExtraProperties ) {
-
-						physicalObject.rotation.set(
-							c.rotation.x,
-							c.rotation.y,
-							c.rotation.z
-						)
-						physicalObject.position.set(
-							c.position.x,
-							c.position.y,
-							c.position.z
-						)
-
-					}
-					//armature
-					if ( extras.armature ) {
-
-						//clones the physics object's material
-						physicalObject.material = physicalObject.material.clone();
-
-						//adds the physics object to the object list
-						scene.children.push( physicalObject );
-						objects.push( physicalObject );
-						
-						//adds the armature to the object list
-						child.children[ child.children.length - 1 ].armature = child;
-						child.children[ child.children.length - 1 ].__physicsArmatureParent = physicalObject
-						child.rotation.y += angle( 180, "rad" )
-						objects.push( child.children[ child.children.length - 1 ] );
-						
-						return;
-
-					}
-					//collision box weirdness
-					if ( extras.useCollisionBox ) {
-
-						extras.collisionBoxPosition = ( extras.collisionBoxPosition || new THREE.Vector3( 0, 0, 0 ) );
-						c.position.set( extras.collisionBoxPosition.x, extras.collisionBoxPosition.y, extras.collisionBoxPosition.z );
-						physicalObject.add( c );
-						initialObjectList.push( physicalObject );
-						objects.push( physicalObject );
-						return;
-
-					}
-					//resizing the mesh to account for properties such as scaling
-					if ( extras.accountForExtraProperties ) {
-
-						initialObjectList.push( physicalObject );
-						objects.push( physicalObject );
-						return;
-
-					}
-					//done
-					if ( extras.fileType != "gltf" ) {
-
-						physicalObject.add( c );
-						initialObjectList.push( physicalObject );
-						objects.push( physicalObject );
-
-					} else {
-
-						physicalObject.children = c.children
-						for ( var i in physicalObject ) {
-							if ( i != "position" && i != "rotation" && i != "quaternion" && i != "scale" && i != "uuid" && i != "id" && i != "type" && i  != "parent" && i != "children" ) {
-								
-								c[ i ] = physicalObject[ i ];
-
-							}
-						}
-						objects.push( c );
-
-					}
-					physicalObject.geometry = new THREE.BufferGeometry().fromGeometry( physicalObject.geometry );
-					if ( c.geometry ) c.geometry = c.geometry.type.toLowerCase() === "buffergeometry"? c.geometry : new THREE.BufferGeometry().fromGeometry( c.geometry );
-				} )
+				scene.children.forEach( loadObjectPhysics )
 
 			} else {
 
@@ -2824,6 +2579,7 @@ const Proton3DInterpreter = {
 						child.position.add( extras.starterPos )
 
 					}
+					//armature
 					if ( child.name.toLowerCase().includes( "armature" ) && extras.armature ) {
 
 						child.children[ child.children.length - 1 ].armature = child;
@@ -2839,7 +2595,7 @@ const Proton3DInterpreter = {
 
 			}
 			//shadows
-			initialObjectList.forEach( castShadow );
+			scene.children.forEach( castShadow );
 			function castShadow( c ) {
 				if ( extras.castShadow ) {
 
@@ -2851,7 +2607,7 @@ const Proton3DInterpreter = {
 					c.receiveShadow = true
 
 				}
-				c.children? c.children.forEach( castShadow ) : undefined;
+				if ( c.children ) c.children.forEach( castShadow )
 			}
 			//animations
 			if ( extras.fileType.toLowerCase() === "gltf" && load.animations && load.animations.length ) {
@@ -2860,7 +2616,6 @@ const Proton3DInterpreter = {
 				if ( extras.starterPos ) {
 
 					scene.position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z );
-					load.scene.position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z );
 
 				}
 				for ( var i in load.animations ) {
@@ -3003,6 +2758,144 @@ const Proton3DInterpreter = {
 				x.onload( scene );
 
 			}
+		}
+		function loadObjectPhysics( child, i ) {
+			var m = "Box", c = child;
+			//armature
+			if ( child.name.toLowerCase().includes( "armature" ) && extras.armature ) {
+
+				c = child.children[ child.children.length - 1 ].clone()
+				extras.accountForExtraProperties = true;
+
+			}
+			//geometry stuff
+			if ( c.isMesh && c.geometry != undefined ) {
+				
+				//'bakes' the scale into the geometry
+				c.geometry = c.geometry.type.toLowerCase() == "buffergeometry" ? new THREE.Geometry().fromBufferGeometry( c.geometry ) : c.geometry;
+				if ( extras.accountForExtraProperties ) {
+
+					c.geometry.vertices.forEach( function ( vertex ) {
+						vertex.multiply( c.scale );
+					} );
+
+				}
+				//adds the starter position to the object's position.
+				if ( extras.starterPos && extras.fileType.toLowerCase() === "gltf" ) {
+
+					c.position.add( extras.starterPos )
+
+				}
+
+			} else {
+
+				//if the object is not a mesh, forget about it.
+				if ( c.children ) {
+
+					c.children.forEach( loadObjectPhysics )
+
+				}
+				if ( c.position && extras.starterPos ) {
+
+					c.position.add( extras.starterPos );
+
+				}
+				return;
+
+			}
+			//if the object has a --noPhysics flag in its name, forget about it.
+			if ( c.name && c.name.includes( " --noPhysics" ) ) {
+
+				objects.push( c );
+				return;
+
+			}
+			//makes the geometry type (m) equal extras.objectType
+			if ( extras.objectType ) m = extras.objectType.charAt( 0 ).toUpperCase() + extras.objectType.slice( 1 );
+			//if the object has a --geometry flag in its name, extras.objectType will be overridden with this.
+			if ( c.name && c.name.includes( "--geometry-" ) ) {
+
+				m = c.name.slice( c.name.indexOf( "--geometry-" ) + 11, c.name.length )
+				m = m.charAt( 0 ).toUpperCase() + m.slice( 1 );
+				if ( m.includes( "_" ) ) {
+
+					m = m.slice( 0, m.indexOf( "_" ) );
+
+				}
+
+			}
+			//same as above, but for mass.
+			var mass = extras.mass || 0;
+			//same as above, but with a flag.
+			if ( c.name && c.name.includes( "--mass" ) ) {
+
+				mass = c.name.slice( c.name.indexOf( "--mass-" ) + 7, c.name.length )
+				if ( mass.includes( "_" ) ) {
+
+					mass = mass.slice( 0, mass.indexOf( "_" ) );
+
+				}
+				mass = parseFloat( mass );
+
+			}
+			//creates a physijs object
+			var physicalObject = new Physijs[ m + "Mesh" ](
+				c.geometry,
+				c.material,
+				mass
+			);
+			//armature
+			if ( extras.armature ) {
+
+				//sets the physics object's position and rotation
+				physicalObject.position.copy( c.position );
+				physicalObject.rotation.copy( c.rotation );
+				physicalObject.__dirtyPosition = true;
+				physicalObject.__dirtyRotation = true;
+
+				//clones the physics object's material
+				physicalObject.material = physicalObject.material.clone();
+
+				//adds the physics object to the object list
+				scene.children.push( physicalObject );
+				objects.push( physicalObject );
+				
+				//adds the armature to the object list
+				child.children[ child.children.length - 1 ].armature = child;
+				child.children[ child.children.length - 1 ].__physicsArmatureParent = physicalObject
+				child.rotation.y += angle( 180, "rad" )
+				c = child.children[ child.children.length - 1 ];
+				
+				return;
+
+			}
+			//gives the properties of the physics object to the child
+			physicalObject.children = c.children;
+			var propertiesToOmit = [
+				//the object's position, rotation, and scale
+				"position",
+				"rotation",
+				"quaternion",
+				"scale",
+				//the object's uuid, id, type, and name
+				"uuid",
+				"id",
+				"type",
+				"name",
+				//the object's parent and children
+				"parent",
+				"children"
+			]
+			for ( var i in physicalObject ) {
+				//if the property is not a property we should omit...
+				if ( propertiesToOmit.indexOf( i ) == -1 ) {
+					
+					//...set that property in the child (initial) object.
+					c[ i ] = physicalObject[ i ];
+
+				}
+			}
+			//done
 		}
 	},
 
