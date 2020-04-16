@@ -300,7 +300,7 @@ public_functions.init = function( params ) {
 
 	world = new Ammo.btDiscreteDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration );
 
-	fixedTimeStep = params.fixedTimeStep;
+	fixedTimeStep = 0
 	rateLimit = params.rateLimit;
 
 	transferableMessage({ cmd: 'worldReady' });
