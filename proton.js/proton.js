@@ -1619,6 +1619,9 @@ const Proton3DInterpreter = {
 	addToScene( object, scene ) {
 		this.objects.add( object.name && getMeshByName( object.name )? getMeshByName( object.name ) : object );
 		scene.objectList.push( object );
+		this.initToScene( object, scene )
+	},
+	initToScene( object, scene ) {
 		if ( ( object.name && getMeshByName( object.name )? getMeshByName( object.name ) : object ).type.toLowerCase() == "armature" ) {
 
 			return
@@ -2517,8 +2520,8 @@ const Proton3DInterpreter = {
 	importObject: function( extras ){
 		//variables
 		var loader,
-			x = this;
-		
+			x = this,
+			scene;
 		//output stuff
 		this.objects = [];
 		this.animations = [];
@@ -2544,7 +2547,7 @@ const Proton3DInterpreter = {
 
 					//loads just an obj file
 					loader.load( extras.objPath, function ( object ) {
-						finishLoad( object.detail.loaderRootNode, object )
+						finishLoad( object )
 					} );
 
 				}
@@ -2554,13 +2557,14 @@ const Proton3DInterpreter = {
 
 				loader = new THREE.GLTFLoader( extras.loadManager );
 				loader.load( extras.gltfPath, function ( object ) {
-					finishLoad( object.scene, object )
+					finishLoad( object )
 				} );
 				break;
 
 		}
 		//gets the loaded objects and completes the function
-		function finishLoad( scene, load ) {
+		function finishLoad( load ) {
+			scene = load.scene || load.detail.loaderRootNode;
 			//"registers" each object as a physics object
 			if ( extras.noPhysics != true ) {
 
@@ -2573,7 +2577,7 @@ const Proton3DInterpreter = {
 					scene.position.add( extras.starterPos )
 
 				}
-				initialObjectList.forEach( function ( child ) {
+				scene.children.forEach( function ( child ) {
 					if ( extras.starterPos && child.position ) {
 
 						child.position.add( extras.starterPos )
@@ -2583,12 +2587,7 @@ const Proton3DInterpreter = {
 					if ( child.name.toLowerCase().includes( "armature" ) && extras.armature ) {
 
 						child.children[ child.children.length - 1 ].armature = child;
-						objects.push( child.children[ child.children.length - 1 ] );
 
-					} else {
-						
-						objects.push( child )
-					
 					}
 				} )
 
@@ -2612,34 +2611,27 @@ const Proton3DInterpreter = {
 			//animations
 			if ( extras.fileType.toLowerCase() === "gltf" && load.animations && load.animations.length ) {
 
-				x.animations = [];
 				if ( extras.starterPos ) {
 
 					scene.position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z );
 
 				}
+				var mixer = new THREE.AnimationMixer( scene ),
+					clock = 1/60;
 				for ( var i in load.animations ) {
-					var mixer = new THREE.AnimationMixer( scene ),
-						animation = {
+					var animation = {
 						action: mixer.clipAction( load.animations[ i ] ),
 						repeat: false,
 						play: function ( animatingObjects = [] ) {
-							if ( !this.action.paused ) {
-
-								return
-
-							}
 							this.stop();
 							this.animatingObjects = animatingObjects;
 							this.animatingObjects.forEach( function ( object ) {
-								if ( !object.__animationInitialPosition) object.__animationInitialPosition = object.getPosition().clone();
-							} )
-							this.animatingObjects.forEach( function ( object ) {
-								object.setPosition( 0, 0, 0 );
-								object.applyLocRotChange();
+								if ( !object.__animationInitialPosition ) object.__animationInitialPosition = object.getPosition().clone();
 							} )
 							this.action.clampWhenFinished = true;
-							this.action.enable = true;
+							this.action.enabled = true;
+							this.action.paused = false;
+							this.action.play();
 							var frame = 0,
 								action = this.action,
 								x = this;
@@ -2651,27 +2643,26 @@ const Proton3DInterpreter = {
 
 								}
 								//update all animating objects
-								mixer.update( frame + ( 1/60 ) );
+								mixer.update( clock );
 								//add the position of all animating objects with its initial position
 								x.animatingObjects.forEach( function ( object ) {
-								//	if ( !object.__animationOldPosition || object.__animationOldPosition.distanceTo( object.getPosition ) > 0.01 ) {
-									
-										object.setPosition( 
-											object.__animationInitialPosition.x + object.position.x,
-											object.__animationInitialPosition.y + object.position.y,
-											object.__animationInitialPosition.z + object.position.z
-										);
-										console.log( object.position, object.__animationInitialPosition )
-										object.applyLocRotChange();
-
-								//	}
-									object.__animationOldPosition = object.getPosition();
+									object.setPosition( 
+										object.__animationInitialPosition.x + object.position.x,
+										object.__animationInitialPosition.y + object.position.y,
+										object.__animationInitialPosition.z + object.position.z
+									);
+									console.log( object.position, object.__animationInitialPosition )
+									object.applyLocRotChange();
+									object.__animationLastPosition = object.position.clone();
 								} );
 							}, 32 )
 						},
 						stop: function() {
 							this.action.stop();
 							this.action.reset();
+							this.action.repetitions = 0;
+							this.action.loop = -1;
+							this.action.paused = false;
 							if ( this.animation ) {
 							
 								clearInterval( this.animation );
@@ -2684,110 +2675,48 @@ const Proton3DInterpreter = {
 									if ( !object.__animationOldPosition || object.__animationOldPosition.distanceTo( object.getPosition ) > 0.1 ) {
 									
 										object.setPosition( 
-											object.__animationInitialPosition.x + object.position.x,
-											object.__animationInitialPosition.y + object.position.y,
-											object.__animationInitialPosition.z + object.position.z
+											object.__animationLastPosition.x,
+											object.__animationLastPosition.y,
+											object.__animationLastPosition.z
 										);
 										object.applyLocRotChange();
 
 									}
-									object.__animationInitialPosition = undefined;
+								//	object.__animationInitialPosition = undefined;
 								} );
 
 							}
 						}
 					}
-					animation.action.paused = true;
 					animation.name = animation.action._clip.name;
+					animation.mixer = mixer;
+					animation.action.repetitions = 0
 					x.animations[ i ] = animation;
+				}
+				x.animations.stopAll = function () {
+					x.animations.forEach( function( animation ) {
+						animation.stop()
+					} );
+					mixer.stopAllAction()
 				}
 			}
 			//creating Proton3D objects
-			objects.forEach( function ( mesh, i ) {
-				//if the 3d object has no material nor any geometry, that seems very suspicious (as in, it's probably an empty object)... get its position and chuck that into the "positions" pile.
-				if ( !mesh.material && !mesh.geometry ) {
-
-					x.positions.push( mesh );
-					return;
-
-				}
-
-				//if the 3d object cannot be built into a Proton3DObject, just chuck it into the "raw objects" pile.
-				if ( !mesh.material || !mesh.geometry ) {
-
-					x.rawObjects.push( mesh );
-					return;
-
-				}
-
-				//build the 3d object
-				var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } )
-				if ( mesh.__physicsArmatureParent ) {
-
-					//sets the skeleton in the P3DObject to that in the three.js object.
-					object.armature = mesh.armature;
-					object.skeleton = mesh.skeleton;
-					mesh.__physicsArmatureParent.p3dParent.skeleton = mesh.skeleton;
-					mesh.__physicsArmatureParent.p3dParent.object = object;
-
-				} else {
-
-					//adds the object to the output of objects
-					x.children.push( object );
-
-				}
-				
-				if ( extras.objects ) {
-
-					if ( object.armature ) {
-
-						if ( mesh.__physicsArmatureParent ) {
-						
-							//sets the position of the mesh to be 0, 0, and 0.
-							mesh.position.set( 0, 0, 0 );
-
-							//"hides" the physics object
-							delete mesh.__physicsArmatureParent.material.visible;
-							Object.defineProperty( mesh.__physicsArmatureParent.material, "visible", { configurable: false, writable: false, value: false } );
-							
-							//sets the P3DMaterial in the physics object to be rerouting to the material in the armature
-							mesh.__physicsArmatureParent.p3dParent.material = object.material;
-
-							//adds the armature to the physics object
-							mesh.__physicsArmatureParent.add( object.armature )
-							mesh.armatureObject = true;
-							mesh.__physicsArmatureParent.p3dParent.physicsObject = true;
-							object.armature.add( getMeshByName( object.name ) )
-						
-						} else {
-						
-							extras.objects.add( object.armature )
-							object.armature.add( getMeshByName( object.name ) )
-							
-						}
-						return
-
-					}
-					extras.objects.add( object )
-
-				}
-			} );
+			scene.children.forEach( convertObjectToProton3D );
 			x.getObjectByName = function( name ) {
-				return x.children.find( function( child ) {
+				return x.objects.find( function( child ) {
 					return child.name === name
 				} )
 			}
-			x.getRawObjectByName = function( name ) {
-				return x.rawObjects.find( function( child ) {
-					return child.name === name
-				} )
-			}
-			x.getPositionByName = function( name ) {
-				return x.positions.find( function( child ) {
-					return child.name === name
-				} )
-			}
+			x.raw = scene;
 			//
+			if ( extras.objects ) {
+
+				x.objects.forEach( function( object ) {
+					extras.objects.add( object )
+				} )
+				extras.objects.add( scene )
+
+			}
 			if ( extras.onload ) {
 
 				extras.onload( scene );
@@ -2797,6 +2726,66 @@ const Proton3DInterpreter = {
 
 				x.onload( scene );
 
+			}
+		}
+		function convertObjectToProton3D( mesh ) {
+			if ( mesh.children ) {
+
+				mesh.children.forEach( convertObjectToProton3D )
+
+			}
+			if ( !mesh.material && !mesh.geometry ) {
+
+				return;
+
+			}
+
+			//build the 3d object
+			var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } )
+			if ( mesh.__physicsArmatureParent ) {
+
+				//sets the skeleton in the P3DObject to that in the three.js object.
+				object.armature = mesh.armature;
+				object.skeleton = mesh.skeleton;
+				mesh.__physicsArmatureParent.object = object;
+
+			}
+			
+			if ( object.armature ) {
+
+				if ( mesh.__physicsArmatureParent ) {
+					
+					//sets the position of the mesh to be 0, 0, and 0.
+					mesh.position.set( 0, 0, 0 );
+
+					//"hides" the physics object
+					delete mesh.__physicsArmatureParent.material.visible;
+					Object.defineProperty( mesh.__physicsArmatureParent.material, "visible", { configurable: false, writable: false, value: false } );
+					
+					//sets the P3DMaterial in the physics object to be rerouting to the material in the armature
+					mesh.__physicsArmatureParent.p3dParent.material = object.material;
+
+					//adds the armature to the physics object
+					mesh.__physicsArmatureParent.add( object.armature )
+					mesh.armatureObject = true;
+					mesh.__physicsArmatureParent.p3dParent.physicsObject = true;
+					object.armature.add( getMeshByName( object.name ) )
+				
+				} else {
+				
+					object.armature.add( getMeshByName( object.name ) )
+					
+				}
+			
+			}
+
+			//adds the object to the output of objects
+			x.objects.push( object );
+			meshes.push( mesh )
+			if ( extras.objects ) {
+			
+				Proton3DInterpreter.initToScene( object, extras.objects )
+			
 			}
 		}
 		function loadObjectPhysics( child, i ) {
@@ -2846,7 +2835,6 @@ const Proton3DInterpreter = {
 			//if the object has a --noPhysics flag in its name, forget about it.
 			if ( c.name && c.name.includes( " --noPhysics" ) ) {
 
-				objects.push( c );
 				return;
 
 			}
@@ -2884,21 +2872,21 @@ const Proton3DInterpreter = {
 				c.material,
 				mass
 			);
+			//sets the physics object's position and rotation
+			physicalObject.position.copy( c.position );
+			physicalObject.quaternion.copy( c.quaternion );
+			physicalObject.rotation.copy( c.rotation );
+			physicalObject.__dirtyPosition = true;
+			physicalObject.__dirtyRotation = true;
 			//armature
 			if ( extras.armature ) {
-
-				//sets the physics object's position and rotation
-				physicalObject.position.copy( c.position );
-				physicalObject.rotation.copy( c.rotation );
-				physicalObject.__dirtyPosition = true;
-				physicalObject.__dirtyRotation = true;
 
 				//clones the physics object's material
 				physicalObject.material = physicalObject.material.clone();
 
 				//adds the physics object to the object list
-				scene.children.push( physicalObject );
-				objects.push( physicalObject );
+				scene.add( physicalObject );
+				scene.add( child )
 				
 				//adds the armature to the object list
 				child.children[ child.children.length - 1 ].armature = child;
@@ -2928,13 +2916,14 @@ const Proton3DInterpreter = {
 			]
 			for ( var i in physicalObject ) {
 				//if the property is not a property we should omit...
-				if ( propertiesToOmit.indexOf( i ) == -1 ) {
+				if ( propertiesToOmit.indexOf( i.toLowerCase() ) == -1 ) {
 					
 					//...set that property in the child (initial) object.
 					c[ i ] = physicalObject[ i ];
 
 				}
 			}
+			c.scale.copy( physicalObject.scale )
 			//done
 		}
 	},
