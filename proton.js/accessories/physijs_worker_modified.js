@@ -234,7 +234,6 @@ createShape = function( description ) {
 		default:
 			// Not recognized
 			return;
-			break;
 	}
 
 	return shape;

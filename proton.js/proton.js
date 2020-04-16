@@ -139,7 +139,7 @@ const ProtonJS = {
 		}
 	},
 	paused: false,
-	ammojsURL: "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/examples/js/ammo.js"/*"https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js"*/,
+	ammojsURL: "https://cdn.jsdelivr.net/gh/Mwni/AmmoNext@master/builds/ammo.js"/*physijs version of ammo = "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/examples/js/ammo.js"; latest version of ammo = "https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js"*/,
 	scene: function () {
 		console.warn( "ProtonJS.scene is deprecated. Use new Proton3DScene() instead.");
 		return new Proton3DScene();
@@ -1644,6 +1644,8 @@ const Proton3DInterpreter = {
 			object.updateMatrixWorld();
 			object.geometry.computeBoundingBox();
 			P3DObject.boundingBox = object.geometry.boundingBox.clone();
+			P3DObject.boundingBox.min.y -= 2;
+			P3DObject.boundingBox.max.y += 2;
 			P3DObject.boundingBox.applyMatrix4( object.matrixWorld );
 			
 		}
@@ -2478,33 +2480,19 @@ const Proton3DInterpreter = {
 			return getMeshByName( P3DObject.name ).getWorldQuaternion( new THREE.Euler() );
 		},
 		getCollidingObjects( P3DObject ) {
-			var touches = [];
-			Proton3DInterpreter.objects.children.forEach( function ( obj ) {
-				var child;
-				if ( obj.p3dParent ) {
-
-					child = obj.p3dParent
-
-				} else {
-
-					return
-
-				}
-				//
-				if ( child.boundingBox && child != P3DObject && child.parent != P3DObject ) {
-
-					child.updateBoundingBox();
-					P3DObject.updateBoundingBox();
-					//
-					if ( child.boundingBox.intersectsBox( P3DObject.boundingBox ) ) {
-
-						touches.push( child )
-
-					}
-
-				}
-			} );
-			return touches
+			var touches = [], object = getMeshByName( P3DObject.name );
+			//modified from https://stackoverflow.com/questions/11473755/how-to-detect-collision-in-three-js/
+			for ( var vertexIndex = 0; vertexIndex < object.geometry.vertices.length; vertexIndex ++ ) {       
+				//reduced the vertices needed to find a collision
+				if ( vertexIndex % 2 == 0 || vertexIndex % 3 == 0 ) continue;
+				//reduced variable usage
+				var directionVector = object.geometry.vertices[ vertexIndex ].clone().applyMatrix4( object.matrix ).sub( object.position );
+				( new THREE.Raycaster( object.position, directionVector.clone().normalize() ) ).intersectObjects( Proton3DInterpreter.objects.children ).forEach( function( collision ) {
+					if ( touches.indexOf( collision.object ) != -1 || collision.distance > ( directionVector.length() + .5 ) || ( collision.object.material && collision.object.material.uniforms && collision.object.material.uniforms.sunPosition ) || collision.object == object || collision.object.parent == object || collision.object.parent.parent == object || collision.object.parent.parent == object ) return;
+					touches.push( collision.object.p3dParent || collision.object )
+				} )
+			}
+			return touches;
 		},
 		add( object, P3DObject ) {
 			getMeshByName( P3DObject.name ).add( getMeshByName( object.name ) );
@@ -2622,6 +2610,7 @@ const Proton3DInterpreter = {
 					var animation = {
 						action: mixer.clipAction( load.animations[ i ] ),
 						repeat: false,
+						playing: false,
 						play: function ( animatingObjects = [] ) {
 							this.stop();
 							this.animatingObjects = animatingObjects;
@@ -2631,6 +2620,7 @@ const Proton3DInterpreter = {
 							this.action.clampWhenFinished = true;
 							this.action.enabled = true;
 							this.action.paused = false;
+							this.playing = true;
 							this.action.play();
 							var frame = 0,
 								action = this.action,
@@ -2651,7 +2641,6 @@ const Proton3DInterpreter = {
 										object.__animationInitialPosition.y + object.position.y,
 										object.__animationInitialPosition.z + object.position.z
 									);
-									console.log( object.position, object.__animationInitialPosition )
 									object.applyLocRotChange();
 									object.__animationLastPosition = object.position.clone();
 								} );
@@ -2663,6 +2652,7 @@ const Proton3DInterpreter = {
 							this.action.repetitions = 0;
 							this.action.loop = -1;
 							this.action.paused = false;
+							this.playing = false;
 							if ( this.animation ) {
 							
 								clearInterval( this.animation );
@@ -2670,9 +2660,8 @@ const Proton3DInterpreter = {
 								
 							}
 							if ( this.animatingObjects ) {
-								console.log( true )
 								this.animatingObjects.forEach( function ( object ) {
-									if ( !object.__animationOldPosition || object.__animationOldPosition.distanceTo( object.getPosition ) > 0.1 ) {
+									if ( object.__animationLastPosition ) {
 									
 										object.setPosition( 
 											object.__animationLastPosition.x,
@@ -2682,15 +2671,13 @@ const Proton3DInterpreter = {
 										object.applyLocRotChange();
 
 									}
-								//	object.__animationInitialPosition = undefined;
 								} );
 
 							}
 						}
 					}
 					animation.name = animation.action._clip.name;
-					animation.mixer = mixer;
-					animation.action.repetitions = 0
+					animation.action.repetitions = 0;
 					x.animations[ i ] = animation;
 				}
 				x.animations.stopAll = function () {
@@ -2802,13 +2789,9 @@ const Proton3DInterpreter = {
 				
 				//'bakes' the scale into the geometry
 				c.geometry = c.geometry.type.toLowerCase() == "buffergeometry" ? new THREE.Geometry().fromBufferGeometry( c.geometry ) : c.geometry;
-				if ( extras.accountForExtraProperties ) {
-
-					c.geometry.vertices.forEach( function ( vertex ) {
-						vertex.multiply( c.scale );
-					} );
-
-				}
+				c.geometry.vertices.forEach( function ( vertex ) {
+					vertex.multiply( c.scale );
+				} );
 				//adds the starter position to the object's position.
 				if ( extras.starterPos && extras.fileType.toLowerCase() === "gltf" ) {
 
