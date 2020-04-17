@@ -381,7 +381,7 @@ Object.defineProperty( Object.prototype, "watch", {
 class Proton3DScene {
 	constructor() {
 		//this part requires an internet connection
-		Physijs.scripts.worker = "https://rawcdn.githack.com/pastthepixels/proton/8931578396b73159244d4b7e61422d71f0ddd961/proton.js/accessories/physijs_worker_modified.js";
+		Physijs.scripts.worker = "https://rawcdn.githack.com/pastthepixels/proton/572d322999ea07b7ca09cacda5fcf8260f9b72ab/proton.js/accessories/physijs_worker_modified.js";
 		Physijs.scripts.ammo = ProtonJS.ammojsURL;
 		this.mappedKeys = {
 			forward: 38,
@@ -2488,7 +2488,7 @@ const Proton3DInterpreter = {
 				//reduced variable usage
 				var directionVector = object.geometry.vertices[ vertexIndex ].clone().applyMatrix4( object.matrix ).sub( object.position );
 				( new THREE.Raycaster( object.position, directionVector.clone().normalize() ) ).intersectObjects( Proton3DInterpreter.objects.children ).forEach( function( collision ) {
-					if ( touches.indexOf( collision.object ) != -1 || collision.distance > ( directionVector.length() + .5 ) || ( collision.object.material && collision.object.material.uniforms && collision.object.material.uniforms.sunPosition ) || collision.object == object || collision.object.parent == object || collision.object.parent.parent == object || collision.object.parent.parent == object ) return;
+					if ( touches.find( function( x ) { return x.name === collision.object.name } ) || collision.distance > ( directionVector.distanceTo( new THREE.Vector3() ) + .1 ) || ( collision.object.material && collision.object.material.uniforms && collision.object.material.uniforms.sunPosition ) || collision.object == object || collision.object.parent == object || collision.object.parent.parent == object || collision.object.parent.parent == object ) return;
 					touches.push( collision.object.p3dParent || collision.object )
 				} )
 			}
