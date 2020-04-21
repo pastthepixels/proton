@@ -18,118 +18,63 @@
 //\\//\\//\\//\\//\\//\\//\\ //
 //\\ adding extra scripts \\ // //loc:1
 //\\//\\//\\//\\//\\//\\//\\ //
-//19 lines in total will be added to the HTML of a document using Proton3D.
+var loadedScripts = 0, maxScripts = 19
+function importScript( url, isModule = false, callback ) {
+	if ( !isModule ) {
+		
+		document.writeln( "<script src='" + url + "'></script>");
+		
+		
+	} else {
+
+		import( url ).then( function( value ) {
+			for( var i in value ) {
+				THREE[ i ] = value[ i ]
+			}
+		} )
+
+	}
+	if ( callback ) callback();
+	loadedScripts ++;
+	if ( loadedScripts >= maxScripts ) window.finishedLoadingScripts = true;
+}
 document.writeln( '<meta name="viewport" content="width = device-width, initial-scale = 1.0">' );
 //the part that requires an internet connection:
 	//ui
-		//jquery: required
-		document.writeln( '<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>' );
-		//roboto. all of it.
-		document.writeln( '<link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono|Roboto+Slab" rel="stylesheet">' );
+		//jquery
+		importScript( "https://code.jquery.com/jquery-3.4.1.min.js" );
 	//stuff for the default Proton3DInterpreter
-		var three_revision = { veryMin: "0.99.0", min: "0.105.0", max: "0.106.0" }
 		//three.js
-		document.writeln( '<script src="https://threejs.org/build/three.min.js"></script>' );
-		//proton3d models: three.js
-		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/MTLLoader.js"></script>' );
-		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/loaders/LoaderSupport.js"></script>' );
-		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/OBJLoader2.js"></script>' );
-		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/GLTFLoader.js"></script>' );
-		//hdr: three.js
-		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/EffectComposer.js"></script>' );
-		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/ShaderPass.js"></script>' );
-		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/RenderPass.js"></script>' );
-		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/shaders/CopyShader.js"></script>' );
-		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/postprocessing/UnrealBloomPass.js"></script>' );
-		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/shaders/LuminosityHighPassShader.js"></script>' );
-		//
-		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/shaders/LuminosityShader.js"></script>' );
-		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/shaders/ToneMapShader.js"></script>' );
-		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/postprocessing/AdaptiveToneMappingPass.js"></script>' );
-		//antialiasing: threejs
-		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/postprocessing/SMAAPass.js"></script>' );
-		document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/shaders/SMAAShader.js"></script>' );
-		//proton3d physics: physijs
-		document.writeln( '<script src="https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js"></script>' );
-		//three.js' sky shader, by https://github.com/zz85
-		document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js"></script>' );
+		importScript( "https://threejs.org/build/three.min.js", undefined, function () {
+			//proton3d models: three.js
+			importScript( "https://unpkg.com/three/examples/jsm/loaders/MTLLoader.js", true );
+		//	importScript( "https://unpkg.com/three/examples/jsm/loaders/LoaderSupport.js" );
+			importScript( "https://unpkg.com/three/examples/jsm/loaders/OBJLoader2.js", true );
+			importScript( "https://unpkg.com/three@0.108.0/examples/jsm/loaders/GLTFLoader.js", true );
+			//hdr: three.js
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/EffectComposer.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/ShaderPass.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/RenderPass.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/shaders/CopyShader.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/UnrealBloomPass.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/shaders/LuminosityHighPassShader.js", true );
+			//
+			importScript( "https://unpkg.com/three/examples/jsm/shaders/LuminosityShader.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/shaders/ToneMapShader.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/AdaptiveToneMappingPass.js", true );
+			//antialiasing: threejs
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/SMAAPass.js", true );
+			//proton3d physics: physijs
+			importScript( "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js" );
+			//three.js' sky shader, by https://github.com/zz85
+			importScript( "https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js" );
+			//ssao
+			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/postprocessing/SAOPass.js", true );
+		} );
+//\\//\\//\\//\\// //
 //\\ constants \// //loc:3
 //\\//\\//\\//\\// //
-const CSS = {
-	"html, body": [
-		"width:  100%",
-		"height: 100%",
-		"margin: 0px",
-		"display: block",
-		"border: 0"
-	],
-	"body": [
-		"font-family: 'Roboto Mono', monospace",
-		"margin: 0",
-		"padding: 0",
-		"overflow: hidden"
-	],
-	"canvas": [
-		"margin: 0",
-		"padding: 0"
-	],
-	"watermark": [
-		"position: fixed",
-		"bottom: 5px",
-		"right: 10px",
-		"font-family: 'Roboto Mono', monospace",
-		"user-select: none",
-		"z-index: 2",
-		"display: inline-block"
-	],
-	"scene": [
-		"display: block",
-		"overflow: auto"
-	],
-	"scene::-webkit-scrollbar": [
-		"display: none"
-	],
-	"scene::-moz-scrollbar": [
-		"display: none"
-	],
-	"button.aperturebutton": [
-	  "box-shadow: 15px 0px 1px -7px #ce4b5a",
-	  "border-color: #f1f1f1",
-	  "background: #f1f1f1",
-	  "color: #f2a519",
-	  "border-top-right-radius: 5px",
-	  "border-bottom-right-radius: 5px"
-	],
-	"button.aperturebutton:hover": [
-	  "background: #f1f1f1"
-	],
-	"button": [
-	  "padding: 10px",
-	  "border: 5px solid black",
-	  "outline: none",
-	  "margin: 10px",
-	  "cursor: pointer",
-	  "font-weight: bold",
-	  "font-family: 'Roboto Mono', monospace",
-	  "background: white",
-	  "background-size: 100% 100%",
-	  "transition: all 0.3s ease"
-	],
-	"button:not(.aperturebutton):hover": [
-	  "box-shadow: 5px 0px 1px royalblue"
-	],
-	"button.aperturebutton:focus": [
-	  "color: #5291d8"
-	],
-	"button.aperturebutton:active": [
-	  "box-shadow: 10px 0px 1px -7px #ce4b5a"
-	],
-	"button:not(.aperturebutton):active": [
-	  "background: black",
-	  "color: white"
-	]
-}
-const ProtonJS = {
+let ProtonJS = {
 	version: "beta 1.0",
 	//
 	cache: {
@@ -137,6 +82,82 @@ const ProtonJS = {
 			ProtonJS.threevector = ProtonJS.threevector || new THREE.Vector3( 0, 0, 0 );
 			return ProtonJS.threevector.set( x, y, z )
 		}
+	},
+	css: {
+		"*": [
+			"font-family: monospace !important"
+		],
+		"html, body": [
+			"width:  100%",
+			"height: 100%",
+			"margin: 0px",
+			"display: block",
+			"border: 0"
+		],
+		"body": [
+			"margin: 0",
+			"padding: 0",
+			"overflow: hidden"
+		],
+		"canvas": [
+			"margin: 0",
+			"padding: 0"
+		],
+		"watermark": [
+			"position: fixed",
+			"bottom: 5px",
+			"right: 10px",
+			"font-family: monospace",
+			"user-select: none",
+			"z-index: 2",
+			"display: inline-block"
+		],
+		"scene": [
+			"display: block",
+			"overflow: auto"
+		],
+		"scene::-webkit-scrollbar": [
+			"display: none"
+		],
+		"scene::-moz-scrollbar": [
+			"display: none"
+		],
+		"button.aperturebutton": [
+		"box-shadow: 15px 0px 1px -7px #ce4b5a",
+		"border-color: #f1f1f1",
+		"background: #f1f1f1",
+		"color: #f2a519",
+		"border-top-right-radius: 5px",
+		"border-bottom-right-radius: 5px"
+		],
+		"button.aperturebutton:hover": [
+		"background: #f1f1f1"
+		],
+		"button": [
+		"padding: 10px",
+		"border: 5px solid black",
+		"outline: none",
+		"margin: 10px",
+		"cursor: pointer",
+		"font-weight: bold",
+		"font-family: monospace",
+		"background: white",
+		"background-size: 100% 100%",
+		"transition: all 0.3s ease"
+		],
+		"button:not(.aperturebutton):hover": [
+		"box-shadow: 5px 0px 1px royalblue"
+		],
+		"button.aperturebutton:focus": [
+		"color: #5291d8"
+		],
+		"button.aperturebutton:active": [
+		"box-shadow: 10px 0px 1px -7px #ce4b5a"
+		],
+		"button:not(.aperturebutton):active": [
+		"background: black",
+		"color: white"
+		]
 	},
 	paused: false,
 	ammojsURL: "https://cdn.jsdelivr.net/gh/Mwni/AmmoNext@master/builds/ammo.js"/*physijs version of ammo = "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/examples/js/ammo.js"; latest version of ammo = "https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js"*/,
@@ -146,13 +167,13 @@ const ProtonJS = {
 	},
 	compileCSS: function ( exclude = [] ) {
 		this.style = document.createElement( "style" );
-		for ( var i in CSS ) {
+		for ( var i in ProtonJS.css ) {
 			if ( exclude.indexOf( i ) > -1 ) {
 
 				continue;
 
 			}
-			this.style.innerHTML += i + "  {\n\t" + CSS[i].join( ";\n\t" ) + "\n}";
+			this.style.innerHTML += i + "  {\n\t" + ProtonJS.css[i].join( ";\n\t" ) + "\n}";
 		}
 		document.head.appendChild( this.style );
 	},
@@ -301,15 +322,6 @@ window.setInterval = function ( code, delay ) {
 ////////////// //
 //   misc   // //loc:4
 ////////////// //
-//get a radian from an angle in degrees
-const radian = function ( angle ) {
-	return THREE.Math.degToRad( angle );
-}
-//get an angle from a radian (or the other way around)
-const angle = function ( converto, degOrRad ) {
-	//This assumes that the variable converto is in the opposite measurement that you want to convert it to.
-	return degOrRad == "rad"? THREE.Math.degToRad( converto ) : THREE.Math.radToDeg( converto )
-}
 //creating elements
 const Element = function ( elementType = "div", innerHTML = "", properties = null) {
 	var elem = document.createElement( elementType );
@@ -335,6 +347,15 @@ const Element = function ( elementType = "div", innerHTML = "", properties = nul
 
 	}
 	return elem;
+}
+//get a radian from an angle in degrees
+const radian = function ( angle ) {
+	return THREE.Math.degToRad( angle );
+}
+//get an angle from a radian (or the other way around)
+const angle = function ( converto, degOrRad ) {
+	//This assumes that the variable converto is in the opposite measurement that you want to convert it to.
+	return degOrRad == "rad"? THREE.Math.degToRad( converto ) : THREE.Math.radToDeg( converto )
 }
 //toggling
 const toggle = function ( boolean ) {
@@ -441,7 +462,7 @@ class Proton3DScene {
 		//objectList
 		this.objectList = []
 	}
-	update( scene ) {
+	update( scene, time ) {
 		//pausing
 		if ( ProtonJS.paused ) {
 
@@ -452,14 +473,14 @@ class Proton3DScene {
 
 		}
 		//rendering using Proton3DInterpreter.render
-		Proton3DInterpreter.render( this )
+		Proton3DInterpreter.render( this, time )
 		//extraFunctions
 		this.priorityExtraFunctions.forEach( function ( e ) {
 			e();
 		} );
 		//looping
-		requestAnimationFrame( function() {
-			scene.update( scene )
+		requestAnimationFrame( function( time ) {
+			scene.update( scene, time )
 		} );
 	}
 	updateExtraFunctions( scene ) {
@@ -1481,7 +1502,7 @@ const Proton3DInterpreter = {
 		extras.scene.usePBR = extras.pbr;
 		this.canvas = document.createElement( "canvas" );
 		this.context = this.canvas.getContext( "webgl2", { alpha: false } );
-		this.renderer = new THREE.WebGLRenderer( {
+		this.renderer = new THREE[ "WebGLRenderer" ]( {
 			antialias: false,
 			canvas: this.canvas,
 			context: this.context,
@@ -1531,7 +1552,7 @@ const Proton3DInterpreter = {
 		//antialising
 		if ( extras.antialias ) {
 
-			var smaaPass = new THREE.SMAAPass( window.innerWidth * this.renderer.getPixelRatio(), window.innerHeight * this.renderer.getPixelRatio() );
+			var smaaPass = new THREE.SMAAPass( window.innerWidth * Proton3DInterpreter.renderer.getPixelRatio(), window.innerHeight * Proton3DInterpreter.renderer.getPixelRatio() );
 			this.composer.addPass( smaaPass );
 
 		}
@@ -1649,12 +1670,14 @@ const Proton3DInterpreter = {
 			P3DObject.boundingBox.applyMatrix4( object.matrixWorld );
 			
 		}
-		P3DObject.updateBoundingBox()
+		P3DObject.updateBoundingBox();
+		//geometry
+	//	if ( object.geometry && object.geometry.isGeometry ) object.geometry = ( new THREE.BufferGeometry() ).fromGeometry( object.geometry )
 		//physically based rendering
 		if ( scene.usePBR != false && !skipPBRReplacement && !skipPBRReplacement_light && object.material ) {
 
 			object.pbr = function ( scene = Proton3DInterpreter, PBRCamera = object.pbrCam ) {
-				object.visible = false
+				object.visible = false;
 				PBRCamera.update( scene.renderer, scene.objects );
 				object.visible = true;
 				if ( object.material[0] != null ) {
@@ -1793,6 +1816,139 @@ const Proton3DInterpreter = {
 					}
 
 				}
+				//box projected cubemaps ==> slightly modifed from https://github.com/mrdoob/three.js/blob/master/examples/webgl_materials_envmaps_parallax.html
+				var worldposReplace = `
+				#define BOX_PROJECTED_ENV_MAP
+				#if defined( USE_ENVMAP ) || defined( DISTANCE ) || defined ( USE_SHADOWMAP )
+					vec4 worldPosition = modelMatrix * vec4( transformed, 1.0 );
+					#ifdef BOX_PROJECTED_ENV_MAP
+						vWorldPosition = worldPosition.xyz;
+					#endif
+				#endif
+				`;
+
+				var envmapPhysicalParsReplace = `
+				#if defined( USE_ENVMAP )
+					#define BOX_PROJECTED_ENV_MAP
+					#ifdef BOX_PROJECTED_ENV_MAP
+						uniform vec3 cubeMapSize;
+						uniform vec3 cubeMapPos;
+						uniform vec4 cubeMapRotation;
+						varying vec3 vWorldPosition;
+						vec3 parallaxCorrectNormal( vec3 v, vec3 cubeSize, vec3 cubePos, vec4 q ) {
+							vec3 nDir = normalize( v );
+
+							vec3 rbmax = ( .5 * cubeSize + cubePos - vWorldPosition ) / nDir;
+							vec3 rbmin = ( -.5 * cubeSize + cubePos - vWorldPosition ) / nDir;
+							vec3 rbminmax;
+							rbminmax.x = ( nDir.x > 0. ) ? rbmax.x : rbmin.x;
+							rbminmax.y = ( nDir.y > 0. ) ? rbmax.y : rbmin.y;
+							rbminmax.z = ( nDir.z > 0. ) ? rbmax.z : rbmin.z;
+
+							float correction = min( min( rbminmax.x, rbminmax.y ), rbminmax.z );
+							vec3 boxIntersection = vWorldPosition + nDir * correction;
+							return boxIntersection - cubePos;
+						}
+					#endif
+					#ifdef ENVMAP_MODE_REFRACTION
+						uniform float refractionRatio;
+					#endif
+					vec3 getLightProbeIndirectIrradiance( /*const in SpecularLightProbe specularLightProbe,*/ const in GeometricContext geometry, const in int maxMIPLevel ) {
+						vec3 worldNormal = inverseTransformDirection( geometry.normal, viewMatrix );
+						#ifdef ENVMAP_TYPE_CUBE
+							#ifdef BOX_PROJECTED_ENV_MAP
+								worldNormal = parallaxCorrectNormal( worldNormal, cubeMapSize, cubeMapPos, cubeMapRotation );
+							#endif
+							vec3 queryVec = vec3( flipEnvMap * worldNormal.x, worldNormal.yz );
+							// TODO: replace with properly filtered cubemaps and access the irradiance LOD level, be it the last LOD level
+							// of a specular cubemap, or just the default level of a specially created irradiance cubemap.
+							#ifdef TEXTURE_LOD_EXT
+								vec4 envMapColor = textureCubeLodEXT( envMap, queryVec, float( maxMIPLevel ) );
+							#else
+								// force the bias high to get the last LOD level as it is the most blurred.
+								vec4 envMapColor = textureCube( envMap, queryVec, float( maxMIPLevel ) );
+							#endif
+							envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
+						#elif defined( ENVMAP_TYPE_CUBE_UV )
+							vec4 envMapColor = textureCubeUV( envMap, worldNormal, 1.0 );
+						#else
+							vec4 envMapColor = vec4( 0.0 );
+						#endif
+						return PI * envMapColor.rgb * envMapIntensity;
+					}
+					// Trowbridge-Reitz distribution to Mip level, following the logic of http://casual-effects.blogspot.ca/2011/08/plausible-environment-lighting-in-two.html
+					float getSpecularMIPLevel( const in float roughness, const in int maxMIPLevel ) {
+						float maxMIPLevelScalar = float( maxMIPLevel );
+						float sigma = PI * roughness * roughness / ( 1.0 + roughness );
+						float desiredMIPLevel = maxMIPLevelScalar + log2( sigma );
+						// clamp to allowable LOD ranges.
+						return clamp( desiredMIPLevel, 0.0, maxMIPLevelScalar );
+					}
+					vec3 getLightProbeIndirectRadiance( /*const in SpecularLightProbe specularLightProbe,*/ const in vec3 viewDir, const in vec3 normal, const in float roughness, const in int maxMIPLevel ) {
+						#ifdef ENVMAP_MODE_REFLECTION
+							vec3 reflectVec = reflect( -viewDir, normal );
+							// Mixing the reflection with the normal is more accurate and keeps rough objects from gathering light from behind their tangent plane.
+							reflectVec = normalize( mix( reflectVec, normal, roughness * roughness) );
+						#else
+							vec3 reflectVec = refract( -viewDir, normal, refractionRatio );
+						#endif
+						reflectVec = inverseTransformDirection( reflectVec, viewMatrix );
+						float specularMIPLevel = getSpecularMIPLevel( roughness, maxMIPLevel );
+						#ifdef ENVMAP_TYPE_CUBE
+							#ifdef BOX_PROJECTED_ENV_MAP
+								reflectVec = parallaxCorrectNormal( reflectVec, cubeMapSize, cubeMapPos, cubeMapRotation );
+							#endif
+							vec3 queryReflectVec = vec3( flipEnvMap * reflectVec.x, reflectVec.yz );
+							#ifdef TEXTURE_LOD_EXT
+								vec4 envMapColor = textureCubeLodEXT( envMap, queryReflectVec, specularMIPLevel );
+							#else
+								vec4 envMapColor = textureCube( envMap, queryReflectVec, specularMIPLevel );
+							#endif
+							envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
+						#elif defined( ENVMAP_TYPE_CUBE_UV )
+							vec4 envMapColor = textureCubeUV( envMap, reflectVec, roughness );
+						#elif defined( ENVMAP_TYPE_EQUIREC )
+							vec2 sampleUV;
+							sampleUV.y = asin( clamp( reflectVec.y, - 1.0, 1.0 ) ) * RECIPROCAL_PI + 0.5;
+							sampleUV.x = atan( reflectVec.z, reflectVec.x ) * RECIPROCAL_PI2 + 0.5;
+							#ifdef TEXTURE_LOD_EXT
+								vec4 envMapColor = texture2DLodEXT( envMap, sampleUV, specularMIPLevel );
+							#else
+								vec4 envMapColor = texture2D( envMap, sampleUV, specularMIPLevel );
+							#endif
+							envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
+						#elif defined( ENVMAP_TYPE_SPHERE )
+							vec3 reflectView = normalize( ( viewMatrix * vec4( reflectVec, 0.0 ) ).xyz + vec3( 0.0,0.0,1.0 ) );
+							#ifdef TEXTURE_LOD_EXT
+								vec4 envMapColor = texture2DLodEXT( envMap, reflectView.xy * 0.5 + 0.5, specularMIPLevel );
+							#else
+								vec4 envMapColor = texture2D( envMap, reflectView.xy * 0.5 + 0.5, specularMIPLevel );
+							#endif
+							envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
+						#endif
+						return envMapColor.rgb * envMapIntensity;
+					}
+				#endif
+				`;
+				newMaterial.onBeforeCompile = function ( shader ) {
+
+					shader.uniforms.cubeMapSize = { value: object.p3dParent.boundingBox.getSize( new THREE.Vector3() ) };
+					shader.uniforms.cubeMapPos = { value: object.position };
+					shader.uniforms.cubeMapRotation = { value: object.quaternion };
+					
+
+					shader.vertexShader = 'varying vec3 vWorldPosition;\n' + shader.vertexShader;
+
+					shader.vertexShader = shader.vertexShader.replace(
+						'#include <worldpos_vertex>',
+						worldposReplace
+					);
+					shader.fragmentShader = shader.fragmentShader.replace(
+						'#include <envmap_physical_pars_fragment>',
+						envmapPhysicalParsReplace
+					);
+
+				};
 
 			} else {
 
@@ -1837,7 +1993,7 @@ const Proton3DInterpreter = {
 	removeFromScene( object, scene ) {
 		this.objects.remove( getMeshByName( object.name ) || object )
 	},
-	render( scene ) {
+	render( scene, time ) {
 		//physics -- physijs
 		this.objects.simulate()
 		//rendering -- three.js
@@ -3256,12 +3412,6 @@ const Proton3DInterpreter = {
 			bump.wrapS = THREE.RepeatWrapping;
 			bump.wrapT = THREE.RepeatWrapping;
 			bump.repeat.set( ( extras.bumpMapRepeat || 1 ), ( extras.bumpMapRepeat || 1 ) );
-			if ( extras.pixelatedBumpMap ) {
-
-				bump.magFilter = THREE.NearestFilter;
-				bump.minFilter = THREE.LinearMipMapLinearFilter;
-
-			}
 			materialParameters.bumpMap = bump
 
 		}
@@ -3271,12 +3421,6 @@ const Proton3DInterpreter = {
 			normal.wrapS = THREE.RepeatWrapping;
 			normal.wrapT = THREE.RepeatWrapping;
 			normal.repeat.set( ( extras.normalMapRepeat || 1 ), ( extras.normalMapRepeat || 1 ) );
-			if ( extras.pixelatedNormalMap ) {
-
-				normal.magFilter = THREE.NearestFilter;
-				normal.minFilter = THREE.LinearMipMapLinearFilter;
-
-			}
 			materialParameters.normalMap = normal
 
 		}
@@ -3286,10 +3430,6 @@ const Proton3DInterpreter = {
 			rough.wrapS = THREE.RepeatWrapping;
 			rough.wrapT = THREE.RepeatWrapping;
 			rough.repeat.set( ( extras.roughMapRepeat || 1 ), ( extras.roughMapRepeat || 1 ) );
-			if ( extras.pixelatedRoughMap ) {
-				rough.magFilter = THREE.NearestFilter;
-				rough.minFilter = THREE.LinearMipMapLinearFilter;
-			}
 			materialParameters.roughnessMap = rough;
 
 		}
@@ -3299,12 +3439,6 @@ const Proton3DInterpreter = {
 			displacement.wrapS = THREE.RepeatWrapping;
 			displacement.wrapT = THREE.RepeatWrapping;
 			displacement.repeat.set( ( extras.displacementMapRepeat || 1 ), ( extras.displacementMapRepeat || 1 ) );
-			if ( extras.pixelatedDisplacementMap ) {
-
-				displacement.magFilter = THREE.NearestFilter;
-				displacement.minFilter = THREE.LinearMipMapLinearFilter;
-
-			}
 			materialParameters.displacementMap = displacement;
 
 		}
