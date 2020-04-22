@@ -407,6 +407,11 @@ var docs_data = {
 			use: "new GameCode( code (function) )",
 			
 			properties: [
+				{
+					name: "code",
+					type: "function",
+					description: "Your code."
+				},
 			],
 			functions: [
 				{
