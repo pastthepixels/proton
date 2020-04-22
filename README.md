@@ -14,7 +14,7 @@ C:\Program Files (x86)\Google\Chrome\Application\chrome.exe --disable-web-securi
 If you do not have the best processor in the world, it is a good idea to disable v-sync. You can do that with these two flags: `--disable-gpu-vsync` and `--disable-frame-rate-limit`. With every flag, it would look like this:
 ```
 C:\Program Files (x86)\Google\Chrome\Application\chrome.exe --disable-web-security --user-data-dir=./temp --disable-gpu-vsync --disable-frame-rate-limit
-```\
+```  
 Make sure no other windows of the browser are open!
 
 ## Alright! How do I contribute?
