@@ -14,12 +14,12 @@ C:\Program Files (x86)\Google\Chrome\Application\chrome.exe --disable-web-securi
 If you do not have the best processor in the world, it is a good idea to disable v-sync. You can do that with these two flags: `--disable-gpu-vsync` and `--disable-frame-rate-limit`. With every flag, it would look like this:
 ```
 C:\Program Files (x86)\Google\Chrome\Application\chrome.exe --disable-web-security --user-data-dir=./temp --disable-gpu-vsync --disable-frame-rate-limit
-```\
+```  
 Make sure no other windows of the browser are open!
 
 ## Alright! How do I contribute?
 Well, you're in luck because I don't really know what to put here.
-Everything is (at leased supposed to be) written in [Mr.doob's Code Style](https://github.com/mrdoob/three.js/wiki/Mr.doob's-Code-Style%E2%84%A2) (with an exclaimer in proton.js for the constant `proton`), and make sure to make your own branch(es) before changing this git.
+Everything is (at leased supposed to be) written in [Mr.doob's Code Style](https://github.com/mrdoob/three.js/wiki/Mr.doob's-Code-Style%E2%84%A2), and make sure to make your own branch(es) before changing this git.
 
 ## What are the goals/disclaimers for the Proton engine?
 - The Proton engine is designed to be cross-platform (or more specifically, cross-programming-language) so that developers can use the same code across different platforms and "base-engines".
@@ -27,4 +27,3 @@ Everything is (at leased supposed to be) written in [Mr.doob's Code Style](https
 
 ## What's your current roadmap for the Proton engine?
 1) Source-ifying proton.js (ex: getting a Source-like console with Source-like commands). DISCLAIMER: I really don't know how to use Source. At all.
-2) Polishing proton.js so that it can run smoothly on low performance devices.
