@@ -27,4 +27,3 @@ Everything is (at leased supposed to be) written in [Mr.doob's Code Style](https
 
 ## What's your current roadmap for the Proton engine?
 1) Source-ifying proton.js (ex: getting a Source-like console with Source-like commands). DISCLAIMER: I really don't know how to use Source. At all.
-2) Polishing proton.js so that it can run smoothly on low performance devices.
