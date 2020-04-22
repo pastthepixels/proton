@@ -400,6 +400,24 @@ var docs_data = {
 					description: "Sets controls for object interactions. It is automatically called by setCameraControls()."
 				}
 			],
+		},
+		{
+			name: "GameCode",
+			description: "All the code in your game. Calling [GameCode].autoStart() will start your code once all scripts have loaded. If you don't use GameCode to store all of your code with the default Proton3DInterpreter, you'll get an error for a missing three.js variable.",
+			use: "new GameCode( code (function) )",
+			
+			properties: [
+			],
+			functions: [
+				{
+					name: "run()",
+					description: "Runs your code."
+				},
+				{
+					name: "autoStart()",
+					description: "Runs your code once all scripts have loaded. It will periodically update and create the property loadingPercentage."
+				}
+			]
 		}
 	]
 }

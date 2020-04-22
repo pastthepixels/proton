@@ -18,7 +18,7 @@
 //\\//\\//\\//\\//\\//\\//\\ //
 //\\ adding extra scripts \\ // //loc:1
 //\\//\\//\\//\\//\\//\\//\\ //
-var loadedScripts = 0, maxScripts = 19
+var loadedScripts = 0, maxScripts = 18
 function importScript( url, isModule = false, callback ) {
 	if ( !isModule ) {
 		
@@ -322,6 +322,27 @@ window.setInterval = function ( code, delay ) {
 ////////////// //
 //   misc   // //loc:4
 ////////////// //
+//starting games when all scripts have been loaded
+class GameCode {
+	constructor( code ) {
+		this.code = code
+	}
+	run() {
+		this.code();
+	}
+	autoStart() {
+		var code = this,
+			interval = oldSetInterval( function() {
+				code.loadingPercentage = ( loadedScripts / maxScripts ) * 100
+				if ( code.loadingPercentage == 100 ) {
+
+					clearInterval( interval );
+					code.run();
+
+				}
+			}, 1000 )
+	}
+}
 //creating elements
 const Element = function ( elementType = "div", innerHTML = "", properties = null) {
 	var elem = document.createElement( elementType );
