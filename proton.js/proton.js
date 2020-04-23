@@ -18,8 +18,9 @@
 //\\//\\//\\//\\//\\//\\//\\ //
 //\\ adding extra scripts \\ // //loc:1
 //\\//\\//\\//\\//\\//\\//\\ //
-var loadedScripts = 0, maxScripts = 18
+var loadedScripts = 0, maxScripts = 0
 function importScript( url, isModule = false, callback ) {
+	maxScripts ++;
 	if ( !isModule ) {
 		
 		document.writeln( "<script src='" + url + "'></script>");
@@ -48,7 +49,6 @@ document.writeln( '<meta name="viewport" content="width = device-width, initial-
 		importScript( "https://threejs.org/build/three.min.js", undefined, function () {
 			//proton3d models: three.js
 			importScript( "https://unpkg.com/three/examples/jsm/loaders/MTLLoader.js", true );
-		//	importScript( "https://unpkg.com/three/examples/jsm/loaders/LoaderSupport.js" );
 			importScript( "https://unpkg.com/three/examples/jsm/loaders/OBJLoader2.js", true );
 			importScript( "https://unpkg.com/three@0.108.0/examples/jsm/loaders/GLTFLoader.js", true );
 			//hdr: three.js
@@ -70,6 +70,8 @@ document.writeln( '<meta name="viewport" content="width = device-width, initial-
 			importScript( "https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js" );
 			//ssao
 			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/postprocessing/SAOPass.js", true );
+			//shadowmap helpers
+			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/utils/ShadowMapViewer.js", true );
 		} );
 //\\//\\//\\//\\// //
 //\\ constants \// //loc:3
@@ -530,7 +532,7 @@ class Proton3DScene {
 	dynamicResize() {
 		Proton3DInterpreter.dynamicResize( this )
 	}
-	setKeyControls( obj, speed = 2.5, jumpHeight = 4, extras = {} ) {
+	setKeyControls( obj, movementSpeed = 2.5, jumpHeight = 4, extras = {} ) {
 		var x = this, gunMoveFrame = 0;
 		window.addEventListener( "keydown", function ( e ) {
 			e = e || event;
@@ -560,29 +562,29 @@ class Proton3DScene {
 		x.priorityExtraFunctions.push( checkKeys );
 
 		function checkKeys() {
-			speed = x.playerSpeed || speed;
+			var speed = x.playerSpeed || movementSpeed;
 			//
 			if ( x.skipCheckingKeys ) {
 
 				return;
 
 			}
-			//
+			//extra (user set) key controls
 			x.extraKeyControls.forEach( function ( f ) {
 				f( x.keys )
 			} )
-			//
+			//sprinting
+			if ( x.keys[ x.mappedKeys.sprint ] ) {
+
+				speed += 10
+
+			}
+			//moving
 			if ( x.keys[ x.mappedKeys.forward ] ) {
 
 				var y = obj.getWorldDirection();
 				//
 				move( y, speed, false, true )
-				//sprinting
-				if ( x.keys[ x.mappedKeys.sprint ] ) {
-
-					move( y, speed + 3.5 )
-
-				}
 				//moving left and right
 				if ( x.keys[ x.mappedKeys.left ] ) {
 
@@ -703,7 +705,7 @@ class Proton3DScene {
 				if ( window.gunWalkingAnimation == undefined ) {
 
 					window.gunWalkingAnimation = setInterval( function() {
-						var movement = ( ( Math.sin( gunMoveFrame += 0.2 ) * speed ) / 4000 )
+						var movement = Math.sin( gunMoveFrame += ( ( 0.03 * speed ) + ( x.keys[ x.mappedKeys.sprint ]? 0.1 : 0 ) ) ) / 500
 						x.gun.movePosition? $( x.gun.movePosition ).stop() : undefined;
 						x.gun.setPosition( x.gun.position.x + ( ( 2 * movement ) ), x.gun.position.y + ( movement / 2 ), undefined );
 						x.gun.movePosition = x.gun.position.clone();
@@ -1522,19 +1524,20 @@ const Proton3DInterpreter = {
 		//variables
 		extras.scene.usePBR = extras.pbr;
 		this.canvas = document.createElement( "canvas" );
-		this.context = this.canvas.getContext( "webgl2", { alpha: false } );
+		this.context = this.canvas.getContext( "webgl2", { /*alpha: false*/ } );
 		this.renderer = new THREE[ "WebGLRenderer" ]( {
 			antialias: false,
 			canvas: this.canvas,
 			context: this.context,
-			precision: extras.shaderQuality.toLowerCase() + "p"
+			precision: extras.shaderQuality.toLowerCase() + "p",
+			logarithmicDepthBuffer: true
 		} );
 		this.renderer.setPixelRatio( window.devicePixelRatio );
 		this.frame = 0;
 		this.fpsMeasurements = [];
 		this.renderer.setSize( extras.width, extras.height );
 		this.renderer.shadowMap.enabled = true;
-		this.renderer.shadowMap.type = THREE.VSMShadowMap;
+		this.renderer.shadowMap.type = extras.pcfSoftShadows? THREE.PCFSoftShadowMap : THREE.VSMShadowMap;
 		//physics
 		this.objects = new Physijs.Scene();
 		this.objects.setGravity( new THREE.Vector3( 0, ( extras.gravity || -9.81 ), 0 ) );
@@ -1589,11 +1592,6 @@ const Proton3DInterpreter = {
 		this.livePBR = extras.livePBR;
 		this.pbrInterval = function () {
 			Proton3DInterpreter.livePBRArray.forEach( function ( object ) {
-				if ( object.position.distanceTo( extras.scene.camera.parent.position ) > 5 ) {
-
-					return
-
-				}
 				getMeshByName( object.name ).pbr? getMeshByName( object.name ).pbr() : undefined;
 			} );
 		}
@@ -1607,7 +1605,11 @@ const Proton3DInterpreter = {
 						return
 
 					}
-					if ( getMeshByName( object.name ) == undefined || object.position.distanceTo( extras.scene.camera.parent.position ) > 100 || ( object.material != undefined && object.material.roughness > 0.3 ) ) {
+					//
+					var frustum = new THREE.Frustum();
+					frustum.setFromProjectionMatrix( new THREE.Matrix4().multiplyMatrices( getMeshByName( extras.scene.camera.name ).projectionMatrix, getMeshByName( extras.scene.camera.name ).matrixWorldInverse ) );
+					//
+					if ( getMeshByName( object.name ) == undefined || !frustum.intersectsObject( getMeshByName( object.name ) ) || ( object.material != undefined && object.material.roughness > 0.3 ) ) {
 
 						return
 
@@ -2115,7 +2117,7 @@ const Proton3DInterpreter = {
 				spotlight.name = object.name;
 				spotlight.shadow.camera.near = 8;
 				spotlight.shadow.camera.far = 200;
-				spotlight.shadow.bias = -0.002;
+				spotlight.shadow.bias = 0.0002;
 				spotlight.shadow.radius = 5;
 				//
 				meshes.push( spotlight );
@@ -2139,6 +2141,7 @@ const Proton3DInterpreter = {
 			case "directionallight":
 				var directionallight = new THREE.DirectionalLight( new THREE.Color( extras.color || "#fff" ), extras.intensity == null? 15 : extras.intensity )
 				directionallight.shadow.camera = new THREE.OrthographicCamera( -100, 100, 100, -100, 0.25, 1000 );
+				
 				directionallight.shadow.radius = 1.5;
 				directionallight.shadow.bias = -0.0008;
 				directionallight.name = object.name;
