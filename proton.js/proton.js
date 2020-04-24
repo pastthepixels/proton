@@ -434,7 +434,8 @@ class Proton3DScene {
 			left: 37,
 			right: 39,
 			jump: 32,
-			use: 13
+			use: 13,
+			flashlight: 70
 		}
 		this.keys = {};
 		this.extraFunctions = [];
@@ -538,10 +539,17 @@ class Proton3DScene {
 			e = e || event;
 			x.keys[ e.keyCode ] = e.type;
 			x.keys[ e.keyCode ] = true;
+			//flashlight
+			if ( x.keys[ x.mappedKeys.flashlight ] && x.camera.flashlight.canBeEnabled ) {
+
+				x.camera.flashlight.enabled? x.camera.flashlight.disable() : x.camera.flashlight.enable();
+
+			}
 		} );
 		window.addEventListener( "keyup", function ( e ) {
 			e = e || event;
 			x.keys[ e.keyCode ] = false;
+			//gun animations
 			if ( extras.gunAnimations && x.gun && x.gun.movePosition ) {
 
 				clearInterval( window.gunWalkingAnimation );
@@ -560,7 +568,31 @@ class Proton3DScene {
 			}
 		} );
 		x.priorityExtraFunctions.push( checkKeys );
-
+		/*
+			a flashlight!
+		*/
+		x.camera.flashlight = new Proton3DObject( {
+			x: 0,
+			y: 0,
+			z: 1,
+			intensity: 0,
+			type: "spotlight"
+		} );
+		x.camera.add( x.camera.flashlight );
+		x.camera.flashlight.setTargetPosition( 0, 0, 1 );
+		x.camera.flashlight.canBeEnabled = true;
+		x.camera.flashlight.changeAngle( 0.45 );
+		x.camera.flashlight.enable = function() {
+			x.camera.flashlight.setTargetPosition( 0, 0, -1 );
+			x.camera.flashlight.changeIntensity( 30 )
+			x.camera.flashlight.enabled = true;
+		}
+		x.camera.flashlight.disable = function() {
+			x.camera.flashlight.changeIntensity( 0 )
+			x.camera.flashlight.enabled = false;
+		}
+		x.camera.flashlight.disable();
+		//movement
 		function checkKeys() {
 			var speed = x.playerSpeed || movementSpeed;
 			//
@@ -2125,15 +2157,27 @@ const Proton3DInterpreter = {
 				object.changeColor = function ( hexString ) {
 					spotlight.color = new THREE.Color( hexString )
 				}
+				object.getColor = function ( hexString ) {
+					return spotlight.color
+				}
+				object.changeAngle = function ( value ) {
+					spotlight.angle = value;
+				}
+				object.getAngle = function () {
+					return spotlight.angle;
+				}
 				object.changeIntensity = function ( value ) {
 					spotlight.intensity = value
 				}
-				object.getIntensity = function ( value ) {
+				object.getIntensity = function () {
 					return spotlight.intensity
 				}
 				object.setTargetPosition = function ( x, y, z ) {
 					spotlight.parent.add( spotlight.target );
 					spotlight.target.position.set( x, y, z );
+				}
+				object.getTargetPosition = function () {
+					return spotlight.target.position;
 				}
 				//
 				break;
@@ -2788,27 +2832,125 @@ const Proton3DInterpreter = {
 					clock = 1/60;
 				for ( var i in load.animations ) {
 					var animation = {
-						action: mixer.clipAction( load.animations[ i ] ),
+						rootAction: mixer.clipAction( load.animations[ i ] ),
 						repeat: false,
 						playing: false,
-						play: function ( animatingObjects = [] ) {
-							this.stop();
+						play: function ( animatingObjects = [], presetPosition = undefined, presetRotation = undefined ) {
+						//	presetPosition = new THREE.Vector3( 0, 0, 0 )
+							if ( this.playing ) {
+
+								console.error( "An animation is currently in progress. Stop the current animation before playing it again." )
+								return;
+
+							}
+							//variables
+							var x = this,
+								tracks = [];
 							this.animatingObjects = animatingObjects;
-							this.animatingObjects.forEach( function ( object ) {
-								if ( !object.__animationInitialPosition ) object.__animationInitialPosition = object.getPosition().clone();
-							} )
+							//creating a new action and making its values relative to an object
+							this.action = { ...this.rootAction };
+							console.log( this.action )
+							this.animatingObjects.forEach( function ( P3DObject ) {
+								var object = getMeshByName( P3DObject.name );
+								x.action._clip.tracks.forEach( function( track, i ) {
+									if ( track.name.includes( object.name ) ) {
+
+										if ( track.name.includes( "position" ) ) {
+
+											var xyz = 0, values = [], position = presetPosition || object.position;
+											track.values.forEach( function( value ) {
+												var result = value;
+												if ( xyz == 0 ) {
+
+													result = value + position.x
+	
+												}
+												if ( xyz == 1 ) {
+
+													result = value + position.y
+
+												}
+												if ( xyz == 2 ) {
+
+													result = value + position.z
+
+												}
+												values.push( result )
+												//
+												xyz ++;
+												if ( xyz == 3 ) xyz = 0
+											} )
+											tracks[ i ] = new THREE.KeyframeTrack( track.name, track.times, values )
+										}
+
+										if ( track.name.includes( "quaternion" ) ) {
+
+											var wxyz = 0, values = [], quaternion = presetRotation || object.quaternion;
+											track.values.forEach( function( value ) {
+												var result = value;
+												if ( wxyz == 0 ) {
+
+													result = value + ( quaternion.x / 2 )
+												
+												}
+												if ( wxyz == 1 ) {
+
+													result = value + ( quaternion.y / 2 )
+												
+												}
+												if ( wxyz == 2 ) {
+
+													result = value + ( quaternion.z / 2 )
+
+												}
+												if ( wxyz == 3 ) {
+
+													result = value + ( quaternion.w / 2 )
+
+												}
+												values.push( result )
+												//
+												wxyz ++;
+												if ( wxyz == 4 ) wxyz = 0
+											} )
+											tracks[ i ] = new THREE.KeyframeTrack( track.name, track.times, values )
+										}
+
+									}
+								} )
+							} );
+							this.action._clip = new THREE.AnimationClip( x.action._clip.name, x.action._clip.duration, tracks )
+							this.action = mixer.clipAction( this.action._clip )
+							//
+							var x = this,
+								actionMatches = [
+									"clampwhenfinished",
+									"enabled",
+									"loop",
+									"paused",
+									"repetitions",
+									"time",
+									"timescale",
+									"weight",
+									"zeroslopeatend",
+									"zeroslopeatstart"
+								]
+							for( var i in action ) {
+								if ( actionMatches.indexOf( i.toLowerCase() ) != -1 ) x.action[ i ] = action[ i ];
+							}
+							//
 							this.action.clampWhenFinished = true;
+							this.action.repetitions = this.repeat? Infinity : 0;
 							this.action.enabled = true;
 							this.action.paused = false;
 							this.playing = true;
+							console.log( this.action._clip.tracks )
 							this.action.play();
-							var frame = 0,
-								action = this.action,
-								x = this;
+							var action = this.action;
 							this.animation = setInterval( function () {
 								if ( action.paused ) {
 
-									x.stop()
+									x.stop();
 									return;
 
 								}
@@ -2816,27 +2958,23 @@ const Proton3DInterpreter = {
 								mixer.update( clock );
 								//add the position of all animating objects with its initial position
 								x.animatingObjects.forEach( function ( object ) {
-									object.setPosition( 
-										object.__animationInitialPosition.x + object.position.x,
-										object.__animationInitialPosition.y + object.position.y,
-										object.__animationInitialPosition.z + object.position.z
-									);
+									console.log( object.position )
 									object.applyLocRotChange();
 									object.__animationLastPosition = object.position.clone();
+									object.__animationLastRotation = object.rotation.clone();
 								} );
 							}, 32 )
 						},
 						stop: function() {
 							this.action.stop();
 							this.action.reset();
-							this.action.repetitions = 0;
-							this.action.loop = -1;
-							this.action.paused = false;
+							this.rootAction.stop();
+							this.rootAction.reset();
+							this.action.paused = true;
 							this.playing = false;
 							if ( this.animation ) {
 							
 								clearInterval( this.animation );
-								this.action.paused = true;
 								
 							}
 							if ( this.animatingObjects ) {
@@ -2848,16 +2986,29 @@ const Proton3DInterpreter = {
 											object.__animationLastPosition.y,
 											object.__animationLastPosition.z
 										);
+										console.log( object.__animationLastPosition )
 										object.applyLocRotChange();
 
 									}
+									if ( object.__animationLastRotation ) {
+									
+										object.setRotation( 
+											object.__animationLastRotation.x,
+											object.__animationLastRotation.y,
+											object.__animationLastRotation.z
+										);
+										object.applyLocRotChange();
+
+									}
+									object.__animationLastPosition = undefined;
+									object.__animationLastRotation = undefined;
 								} );
 
 							}
 						}
 					}
-					animation.name = animation.action._clip.name;
-					animation.action.repetitions = 0;
+					animation.name = animation.rootAction._clip.name;
+					animation.rootAction.paused = true;
 					x.animations[ i ] = animation;
 				}
 				x.animations.stopAll = function () {

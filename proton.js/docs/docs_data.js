@@ -284,8 +284,8 @@ var docs_data = {
 		},
 		{
 			name: "Proton3DObject (light)",
-			description: "An light in Proton3D. It can be a point light or a directional light.",
-			use: "new Proton3DObject( { type: ['pointlight', 'directionallight' ] } )",
+			description: "An light in Proton3D. It can be a spotlight or a directional light.",
+			use: "new Proton3DObject( { type: ['spotlight', 'directionallight' ] } )",
 			
 			properties: [
 				{
@@ -298,6 +298,18 @@ var docs_data = {
 				{
 					name: "changeColor( hexString (string) )",
 					description: "Changes the color of the light with a CSS color string."
+				},
+				{
+					name: "changeAngle( value (float) ) (spotlight)",
+					description: "Changes the spot light's angle."
+				},
+				{
+					name: "changeIntensity( value (float) ) ",
+					description: "Changes the light's intensity."
+				},
+				{
+					name: "setTargetPosition( position (vector3) ) (spotlight)",
+					description: "Changes the position of the spotlight's target."
 				}
 			],
 		},
