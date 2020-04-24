@@ -1002,7 +1002,7 @@ class Proton3DScene {
 	}
 	resetPickingUp( child, scene, callback = function(){} ) {
 		this.pickingUpObject = undefined;
-		child.__movePosition? $( child.__movePosition ).stop( true, true) : undefined;
+		child.__movePosition? $( child.__movePosition ).stop( true, true ) : undefined;
 		//
 		var position = child.getWorldPosition(),
 			rotation = child.getWorldRotation();
@@ -1303,7 +1303,7 @@ class Proton3DObject {
 	setPosition( x, y, z ) {
 		return Proton3DInterpreter.Proton3DObject.setPosition( x, y, z, this )
 	}
-	animatePosition( x, y, z, time = 1500, step = undefined ) {
+	animatePosition( x, y, z, time = 1500, step = undefined, callback = undefined ) {
 		var pobject = this, target = new THREE.Vector3( x, y, z );
 		//this.__movePosition? $( this.__movePosition ).stop( true, true ) : undefined;
 		if ( this.__movePosition === undefined ) {
@@ -1319,19 +1319,20 @@ class Proton3DObject {
 
 						return
 
-					}
-					if ( pobject.__movePosition.distanceTo( target ) < 1 ) {
+					}/*
+					if ( pobject.__movePosition.distanceTo( target ) < .1 ) {
 
 						$( pobject.__movePosition ).stop( true, true );
 						return
 
-					}
+					}*/
 					pobject.setPosition( pobject.__movePosition.x, pobject.__movePosition.y, pobject.__movePosition.z );
 					pobject.applyLocRotChange();
-					step? step() : step;
+					if ( step ) step()
 				},
 				done: function() {
 					pobject.__movePosition = undefined;
+					if( callback ) callback()
 				},
 				duration: time
 			} )
@@ -2144,12 +2145,12 @@ const Proton3DInterpreter = {
 				spotlight.angle = Math.PI / 5;
 				spotlight.penumbra = 0.3;
 				spotlight.castShadow = true;
-				spotlight.shadow.mapSize.width = 1024;
-				spotlight.shadow.mapSize.height = 1024;
+				spotlight.shadow.mapSize.width = 2048;
+				spotlight.shadow.mapSize.height = 2048;
 				spotlight.name = object.name;
 				spotlight.shadow.camera.near = 8;
 				spotlight.shadow.camera.far = 200;
-				spotlight.shadow.bias = 0.0002;
+				spotlight.shadow.bias = -0.0002;
 				spotlight.shadow.radius = 5;
 				//
 				meshes.push( spotlight );
@@ -2181,12 +2182,39 @@ const Proton3DInterpreter = {
 				}
 				//
 				break;
+			
+			case "pointlight":
+				var pointlight = new THREE.PointLight( new THREE.Color( extras.color || "#fff" ), extras.intensity || 15, extras.decay || 0 )
+				pointlight.castShadow = true;
+				pointlight.shadow.mapSize.width = 1024;
+				pointlight.shadow.mapSize.height = 1024;
+				pointlight.name = object.name;
+				pointlight.shadow.radius = 5;
+				//
+				meshes.push( pointlight );
+				//
+				object.changeColor = function ( hexString ) {
+					pointlight.color = new THREE.Color( hexString )
+				}
+				object.getColor = function ( hexString ) {
+					return pointlight.color
+				}
+				object.changeIntensity = function ( value ) {
+					pointlight.intensity = value
+				}
+				object.getIntensity = function () {
+					return pointlight.intensity
+				}
+				//
+				break;
 
 			case "directionallight":
 				var directionallight = new THREE.DirectionalLight( new THREE.Color( extras.color || "#fff" ), extras.intensity == null? 15 : extras.intensity )
 				directionallight.shadow.camera = new THREE.OrthographicCamera( -100, 100, 100, -100, 0.25, 1000 );
 				
 				directionallight.shadow.radius = 1.5;
+				directionallight.shadow.mapSize.width = 1024;
+				directionallight.shadow.mapSize.height = 1024;
 				directionallight.shadow.bias = -0.0008;
 				directionallight.name = object.name;
 				meshes.push( directionallight );
@@ -2849,11 +2877,10 @@ const Proton3DInterpreter = {
 							this.animatingObjects = animatingObjects;
 							//creating a new action and making its values relative to an object
 							this.action = { ...this.rootAction };
-							console.log( this.action )
 							this.animatingObjects.forEach( function ( P3DObject ) {
 								var object = getMeshByName( P3DObject.name );
 								x.action._clip.tracks.forEach( function( track, i ) {
-									if ( track.name.includes( object.name ) ) {
+									if ( track.name.includes( object.name.replace( /_copy/ig, "" ) ) ) {
 
 										if ( track.name.includes( "position" ) ) {
 
@@ -2890,22 +2917,22 @@ const Proton3DInterpreter = {
 												var result = value;
 												if ( wxyz == 0 ) {
 
-													result = value + ( quaternion.x / 2 )
+													result = value + quaternion.x
 												
 												}
 												if ( wxyz == 1 ) {
 
-													result = value + ( quaternion.y / 2 )
+													result = value + quaternion.y
 												
 												}
 												if ( wxyz == 2 ) {
 
-													result = value + ( quaternion.z / 2 )
+													result = value + quaternion.z
 
 												}
 												if ( wxyz == 3 ) {
 
-													result = value + ( quaternion.w / 2 )
+												//	result = value + quaternion.w
 
 												}
 												values.push( result )
@@ -2944,7 +2971,7 @@ const Proton3DInterpreter = {
 							this.action.enabled = true;
 							this.action.paused = false;
 							this.playing = true;
-							console.log( this.action._clip.tracks )
+							console.log( tracks )
 							this.action.play();
 							var action = this.action;
 							this.animation = setInterval( function () {
@@ -2958,12 +2985,11 @@ const Proton3DInterpreter = {
 								mixer.update( clock );
 								//add the position of all animating objects with its initial position
 								x.animatingObjects.forEach( function ( object ) {
-									console.log( object.position )
 									object.applyLocRotChange();
 									object.__animationLastPosition = object.position.clone();
-									object.__animationLastRotation = object.rotation.clone();
+									object.__animationLastRotation = getMeshByName( object.name ).quaternion.clone();
 								} );
-							}, 32 )
+							}, 30 )
 						},
 						stop: function() {
 							this.action.stop();
@@ -2986,22 +3012,18 @@ const Proton3DInterpreter = {
 											object.__animationLastPosition.y,
 											object.__animationLastPosition.z
 										);
-										console.log( object.__animationLastPosition )
 										object.applyLocRotChange();
 
 									}
 									if ( object.__animationLastRotation ) {
 									
-										object.setRotation( 
-											object.__animationLastRotation.x,
-											object.__animationLastRotation.y,
-											object.__animationLastRotation.z
-										);
+										getMeshByName( object.name ).quaternion.copy( object.__animationLastRotation );
 										object.applyLocRotChange();
 
 									}
 									object.__animationLastPosition = undefined;
 									object.__animationLastRotation = undefined;
+									console.log( object.rotation )
 								} );
 
 							}
@@ -3022,7 +3044,7 @@ const Proton3DInterpreter = {
 			scene.children.forEach( convertObjectToProton3D );
 			x.getObjectByName = function( name ) {
 				return x.objects.find( function( child ) {
-					return child.name === name
+					return child.name.includes( name )
 				} )
 			}
 			x.raw = scene;

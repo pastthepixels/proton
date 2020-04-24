@@ -284,8 +284,8 @@ var docs_data = {
 		},
 		{
 			name: "Proton3DObject (light)",
-			description: "An light in Proton3D. It can be a spotlight or a directional light.",
-			use: "new Proton3DObject( { type: ['spotlight', 'directionallight' ] } )",
+			description: "An light in Proton3D. It can be a spotlight, a directional light, or a point light.",
+			use: "new Proton3DObject( { type: ['spotlight', 'directionallight', 'pointlight' ] } )",
 			
 			properties: [
 				{
