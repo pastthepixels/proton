@@ -72,6 +72,8 @@ document.writeln( '<meta name="viewport" content="width = device-width, initial-
 			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/postprocessing/SAOPass.js", true );
 			//shadowmap helpers
 			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/utils/ShadowMapViewer.js", true );
+			//csm
+			importScript( "https://unpkg.com/three/examples/jsm/csm/CSM.js", true );
 		} );
 //\\//\\//\\//\\// //
 //\\ constants \// //loc:3
@@ -1584,6 +1586,48 @@ const Proton3DInterpreter = {
 		var scenePass = new THREE.RenderPass( Proton3DInterpreter.objects, getMeshByName( extras.scene.camera.name ) );
 		this.composer = new THREE.EffectComposer( Proton3DInterpreter.renderer, hdrRenderTarget );
 		this.composer.addPass( scenePass );
+		//cascaded shadow maps
+		if ( extras.shadowLOD ) {
+
+			this.shadowLODInterval = function() {
+				Proton3DInterpreter.objects.children.forEach( getLights )
+			}
+			extras.scene.extraFunctions.push( this.shadowLODInterval );
+			function getLights( child ) {
+				child.children.forEach( getLights )
+				if ( child.shadow ) {
+				
+					var originalWidth = child.shadow.mapSize.width;
+					child.shadow.mapSize.width = child.shadow.mapSize.height = getShadowLOD( scene.camera.getWorldPosition().distanceTo( child.position ) )
+					if ( child.shadow.mapSize.width != originalWidth ) {
+					
+						child.shadow.map.dispose();
+						child.shadow.map = null;
+					
+					}
+
+				}
+			}
+			function getShadowLOD( distance ) {
+				if ( distance < 100 ) {
+
+					return extras.shadowLOD;
+
+				}
+				if ( distance < 500 ) {
+
+					return extras.shadowLOD / 2;
+
+				}
+				if ( distance < 1000 ) {
+
+					return extras.shadowLOD / 4;
+
+				}
+				return extras.shadowLOD / 8;
+			}
+
+		}
 		//bloom + adaptive tone mapping
 		if ( extras.hdr ) {
 
@@ -2145,8 +2189,8 @@ const Proton3DInterpreter = {
 				spotlight.angle = Math.PI / 5;
 				spotlight.penumbra = 0.3;
 				spotlight.castShadow = true;
-				spotlight.shadow.mapSize.width = 2048;
-				spotlight.shadow.mapSize.height = 2048;
+				spotlight.shadow.mapSize.width = 1024;
+				spotlight.shadow.mapSize.height = 1024;
 				spotlight.name = object.name;
 				spotlight.shadow.camera.near = 8;
 				spotlight.shadow.camera.far = 200;

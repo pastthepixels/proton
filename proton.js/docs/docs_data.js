@@ -372,7 +372,7 @@ var docs_data = {
 			],
 			functions: [
 				{
-					name: "init( { antialias: boolean, shaderQuality: [ 'low', 'medium', 'high' ], pbr: boolean, gravity: float, bloom: boolean, hdr: boolean, dynamicToneMapping: boolean, pixelatedScene: boolean, pbrTexture: string (url), livePBR: boolean, dynamicResolution: boolean, pcfSoftShadows: boolean, anisotropicFiltering: boolean (requires pbr to be true) } )",
+					name: "init( { antialias: boolean, shaderQuality: [ 'low', 'medium', 'high' ], pbr: boolean, gravity: float, bloom: boolean, hdr: boolean, dynamicToneMapping: boolean, pixelatedScene: boolean, pbrTexture: string (url), livePBR: boolean, dynamicResolution: boolean, pcfSoftShadows: boolean, anisotropicFiltering: boolean (requires pbr to be true), shadowLOD: float (max shadow map width/height) } )",
 					description: "Perhaps the most important Proton3D function. It initializes a scene."
 				},
 				{
