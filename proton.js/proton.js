@@ -87,6 +87,7 @@ let ProtonJS = {
 			return ProtonJS.threevector.set( x, y, z )
 		}
 	},
+	playingAudio: [],
 	css: {
 		"*": [
 			"font-family: monospace !important"
@@ -211,6 +212,10 @@ let ProtonJS = {
 	},
 	pause: function () {
 		this.paused = true;
+		this.playingAudio.forEach( function( audio ) {
+			audio.lastPlayState = !audio.paused || audio.isPlaying;
+			audio.pause();
+		} )
 		if ( window.onpause ) {
 
 			window.onpause();
@@ -220,6 +225,13 @@ let ProtonJS = {
 	resume: function () {
 		this.paused = false;
 		Proton3DInterpreter.resume();
+		this.playingAudio.forEach( function( audio ) {
+			if ( audio.lastPlayState == true) {
+
+				audio.play();
+
+			}
+		} )
 		if ( window.onresume ) {
 
 			window.onresume();
@@ -345,6 +357,166 @@ class GameCode {
 
 				}
 			}, 1000 )
+	}
+}
+//creating audio that repeats
+class RepeatingAudio {
+	constructor( beginning, middle, end = undefined ) {
+		this.audio = new Audio( beginning );
+		ProtonJS.playingAudio.push( this )
+		//urls
+		this.beginning = beginning;
+		this.middle = middle;
+		this.end = end;
+		//repeating
+		this.repeatingTimes = Infinity;
+		this.loops = 0;
+	}
+	play() {
+		var x = this;
+		this.audio.play();
+		if ( this.audio.onended == undefined ) {
+
+			this.audio.onended = function() {
+				x.beginningOnEnded( x )
+			}
+		
+		}
+	}
+	pause() {
+		this.audio.pause();
+	}
+	reset() {
+		this.pause();
+		this.audio.src = this.beginning;
+		this.audio.onended = undefined;
+		this.loops = 0;
+	}
+	//
+	beginningOnEnded( x ) {
+		this.audio.src = this.middle;
+		this.audio.play();
+		this.audio.onended = function() {
+			x.middleOnEnded( x )
+		}
+	}
+	middleOnEnded( x ) {
+		this.loops ++;
+		if ( this.loops >= this.repeatingTimes ) {
+		
+			if ( this.end ) {
+			
+				this.audio.src = this.end;
+				this.audio.play();
+				this.audio.onended = function() {
+					x.reset()
+				}
+				
+			} else {
+			
+				this.reset();
+			
+			}
+			
+		} else {
+
+			this.audio.play();
+
+		}
+	}
+}
+class RepeatingPositionalAudio {
+	constructor( beginning, middle, end = undefined, listener ) {
+		var x = this;
+		//
+		this.audio = new THREE.PositionalAudio( listener );
+		this.audioLoader = new THREE.AudioLoader();
+		this.audioLoader.load( beginning, function( buffer ) {
+			x.audio.setBuffer( buffer );
+			x.audio.setRefDistance( 20 );
+		} );
+		ProtonJS.playingAudio.push( this )
+		//urls
+		this.beginning = beginning;
+		this.middle = middle;
+		this.end = end;
+		//repeating
+		this.repeatingTimes = Infinity;
+		this.loops = 0;
+		this.paused = true;
+	}
+	play() {
+		var x = this;
+		if ( !this.audio.source ) {
+
+			this.audioLoader.load( this.beginning, function( buffer ) {
+				x.audio.setBuffer( buffer );
+				x.audio.setRefDistance( 20 );
+				//
+				x.audio.play();
+				x.audio.stop()
+				x.audio.source.onended = function() {
+					x.beginningOnEnded( x );
+					x.audio.isPlaying = false;
+				}
+			} );
+		
+		} else {
+		
+			this.audio.play();
+			this.paused = false;
+		
+		}
+	}
+	pause() {
+		this.audio.pause();
+		this.paused = true;
+	}
+	reset() {
+		this.pause();
+		this.audio.src = this.beginning;
+		this.audio.source = undefined;
+		this.audio.setLoop( false );
+		this.loops = 0;
+	}
+	//
+	beginningOnEnded( x ) {
+		console.log( true )
+		this.audioLoader.load( x.middle, function( buffer ) {
+			x.audio.setBuffer( buffer );
+			x.audio.setRefDistance( 20 );
+			//
+			x.audio.pause();
+			x.audio.setLoop( true );
+			x.audio.play();
+			x.audio.source.stop( x.audio.context.currentTime + x.audio.buffer.duration * x.repeatingTimes )
+			x.audio.source.onended = function() {
+				x.middleOnEnded( x );
+				x.audio.isPlaying = false;
+			}
+		} );
+	}
+	middleOnEnded( x ) {
+		if ( this.end ) {
+			
+			this.audioLoader.load( x.end, function( buffer ) {
+				x.audio.setBuffer( buffer );
+				x.audio.setRefDistance( 20 );
+				x.audio.pause();
+				//
+				x.audio.setLoop( false );
+				x.audio.play();
+				x.audio.source.onended = function() {
+					x.reset();
+					x.audio.isPlaying = false;
+				}
+			} );
+			
+		} else {
+		
+			this.reset();
+		
+		}
 	}
 }
 //creating elements
