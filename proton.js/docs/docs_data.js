@@ -380,7 +380,7 @@ var docs_data = {
 			],
 			functions: [
 				{
-					name: "init( { antialias: boolean, shaderQuality: [ 'low', 'medium', 'high' ], pbr: boolean, gravity: float, bloom: boolean, hdr: boolean, dynamicToneMapping: boolean, pixelatedScene: boolean, pbrTexture: string (url), livePBR: boolean, dynamicResolution: boolean, pcfSoftShadows: boolean, anisotropicFiltering: boolean (requires pbr to be true) } )",
+					name: "init( { antialias: boolean, shaderQuality: [ 'low', 'medium', 'high' ], pbr: boolean, gravity: float, bloom: boolean, hdr: boolean, dynamicToneMapping: boolean, pixelatedScene: boolean, pbrTexture: string (url), livePBR: boolean, dynamicResolution: boolean, pcfSoftShadows: boolean, anisotropicFiltering: boolean (requires pbr to be true), shadowLOD: float (max shadow map width/height) } )",
 					description: "Perhaps the most important Proton3D function. It initializes a scene."
 				},
 				{
@@ -442,6 +442,58 @@ var docs_data = {
 					name: "autoStart()",
 					description: "Runs your code once all scripts have loaded. It will periodically update and create the property loadingPercentage."
 				}
+			]
+		},
+		{
+			name: "RepeatingAudio",
+			description: "Audio that repeats as long as requried and can have beginning and end parts. The class RepeatingPositionalAudio is just like this, except it uses three.js PositionalAudio. It requires an extra argument for a THREE.AudioListener.",
+			use: "new RepeatingAudio( beginning (url), middle (url, looping part) )",
+			
+			properties: [
+				{
+					name: "audio",
+					type: "audioelement",
+					description: "An HTML element that'll be used by the object."
+				},
+				{
+					name: "repeatingTimes",
+					type: "float",
+					description: "The max number of times the middle section of the audio will repeat."
+				},
+				{
+					name: "loops",
+					type: "float",
+					description: "The current number of loops the audio has undergone."
+				},
+				{
+					name: "beginning",
+					type: "url",
+					description: "The first section of the audio."
+				},
+				{
+					name: "middle",
+					type: "url",
+					description: "The middle section of the audio."
+				},
+				{
+					name: "end",
+					type: "url",
+					description: "The last section of the audio (optional)."
+				},
+			],
+			functions: [
+				{
+					name: "play",
+					description: "Plays the audio."
+				},
+				{
+					name: "pause",
+					description: "Pauses the audio."
+				},
+				{
+					name: "reset",
+					description: "Pauses and resets the audio."
+				},
 			]
 		}
 	]

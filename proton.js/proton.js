@@ -77,6 +77,8 @@ document.writeln( '<meta name="viewport" content="width = device-width, initial-
 			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/postprocessing/SAOPass.js", true );
 			//shadowmap helpers
 			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/utils/ShadowMapViewer.js", true );
+			//csm
+			importScript( "https://unpkg.com/three/examples/jsm/csm/CSM.js", true );
 		} );
 //\\//\\//\\//\\//\\  //
 //\\ pausing stuff \  // loc:2
@@ -192,6 +194,166 @@ class GameCode {
 
 				}
 			}, 1000 )
+	}
+}
+//creating audio that repeats
+class RepeatingAudio {
+	constructor( beginning, middle, end = undefined ) {
+		this.audio = new Audio( beginning );
+		ProtonJS.playingAudio.push( this )
+		//urls
+		this.beginning = beginning;
+		this.middle = middle;
+		this.end = end;
+		//repeating
+		this.repeatingTimes = Infinity;
+		this.loops = 0;
+	}
+	play() {
+		var x = this;
+		this.audio.play();
+		if ( this.audio.onended == undefined ) {
+
+			this.audio.onended = function() {
+				x.beginningOnEnded( x )
+			}
+		
+		}
+	}
+	pause() {
+		this.audio.pause();
+	}
+	reset() {
+		this.pause();
+		this.audio.src = this.beginning;
+		this.audio.onended = undefined;
+		this.loops = 0;
+	}
+	//
+	beginningOnEnded( x ) {
+		this.audio.src = this.middle;
+		this.audio.play();
+		this.audio.onended = function() {
+			x.middleOnEnded( x )
+		}
+	}
+	middleOnEnded( x ) {
+		this.loops ++;
+		if ( this.loops >= this.repeatingTimes ) {
+		
+			if ( this.end ) {
+			
+				this.audio.src = this.end;
+				this.audio.play();
+				this.audio.onended = function() {
+					x.reset()
+				}
+				
+			} else {
+			
+				this.reset();
+			
+			}
+			
+		} else {
+
+			this.audio.play();
+
+		}
+	}
+}
+class RepeatingPositionalAudio {
+	constructor( beginning, middle, end = undefined, listener ) {
+		var x = this;
+		//
+		this.audio = new THREE.PositionalAudio( listener );
+		this.audioLoader = new THREE.AudioLoader();
+		this.audioLoader.load( beginning, function( buffer ) {
+			x.audio.setBuffer( buffer );
+			x.audio.setRefDistance( 20 );
+		} );
+		ProtonJS.playingAudio.push( this )
+		//urls
+		this.beginning = beginning;
+		this.middle = middle;
+		this.end = end;
+		//repeating
+		this.repeatingTimes = Infinity;
+		this.loops = 0;
+		this.paused = true;
+	}
+	play() {
+		var x = this;
+		if ( !this.audio.source ) {
+
+			this.audioLoader.load( this.beginning, function( buffer ) {
+				x.audio.setBuffer( buffer );
+				x.audio.setRefDistance( 20 );
+				//
+				x.audio.play();
+				x.audio.stop()
+				x.audio.source.onended = function() {
+					x.beginningOnEnded( x );
+					x.audio.isPlaying = false;
+				}
+			} );
+		
+		} else {
+		
+			this.audio.play();
+			this.paused = false;
+		
+		}
+	}
+	pause() {
+		this.audio.pause();
+		this.paused = true;
+	}
+	reset() {
+		this.pause();
+		this.audio.src = this.beginning;
+		this.audio.source = undefined;
+		this.audio.setLoop( false );
+		this.loops = 0;
+	}
+	//
+	beginningOnEnded( x ) {
+		console.log( true )
+		this.audioLoader.load( x.middle, function( buffer ) {
+			x.audio.setBuffer( buffer );
+			x.audio.setRefDistance( 20 );
+			//
+			x.audio.pause();
+			x.audio.setLoop( true );
+			x.audio.play();
+			x.audio.source.stop( x.audio.context.currentTime + x.audio.buffer.duration * x.repeatingTimes )
+			x.audio.source.onended = function() {
+				x.middleOnEnded( x );
+				x.audio.isPlaying = false;
+			}
+		} );
+	}
+	middleOnEnded( x ) {
+		if ( this.end ) {
+			
+			this.audioLoader.load( x.end, function( buffer ) {
+				x.audio.setBuffer( buffer );
+				x.audio.setRefDistance( 20 );
+				x.audio.pause();
+				//
+				x.audio.setLoop( false );
+				x.audio.play();
+				x.audio.source.onended = function() {
+					x.reset();
+					x.audio.isPlaying = false;
+				}
+			} );
+			
+		} else {
+		
+			this.reset();
+		
+		}
 	}
 }
 //creating elements
@@ -1430,6 +1592,48 @@ const Proton3DInterpreter = {
 		var scenePass = new THREE.RenderPass( Proton3DInterpreter.objects, getMeshByName( extras.scene.camera.name ) );
 		this.composer = new THREE.EffectComposer( Proton3DInterpreter.renderer, hdrRenderTarget );
 		this.composer.addPass( scenePass );
+		//cascaded shadow maps
+		if ( extras.shadowLOD ) {
+
+			this.shadowLODInterval = function() {
+				Proton3DInterpreter.objects.children.forEach( getLights )
+			}
+			extras.scene.extraFunctions.push( this.shadowLODInterval );
+			function getLights( child ) {
+				child.children.forEach( getLights )
+				if ( child.shadow ) {
+				
+					var originalWidth = child.shadow.mapSize.width;
+					child.shadow.mapSize.width = child.shadow.mapSize.height = getShadowLOD( scene.camera.getWorldPosition().distanceTo( child.position ) )
+					if ( child.shadow.mapSize.width != originalWidth ) {
+					
+						child.shadow.map.dispose();
+						child.shadow.map = null;
+					
+					}
+
+				}
+			}
+			function getShadowLOD( distance ) {
+				if ( distance < 100 ) {
+
+					return extras.shadowLOD;
+
+				}
+				if ( distance < 500 ) {
+
+					return extras.shadowLOD / 2;
+
+				}
+				if ( distance < 1000 ) {
+
+					return extras.shadowLOD / 4;
+
+				}
+				return extras.shadowLOD / 8;
+			}
+
+		}
 		//bloom + adaptive tone mapping
 		if ( extras.hdr ) {
 
@@ -1991,8 +2195,8 @@ const Proton3DInterpreter = {
 				spotlight.angle = Math.PI / 5;
 				spotlight.penumbra = 0.3;
 				spotlight.castShadow = true;
-				spotlight.shadow.mapSize.width = 2048;
-				spotlight.shadow.mapSize.height = 2048;
+				spotlight.shadow.mapSize.width = 1024;
+				spotlight.shadow.mapSize.height = 1024;
 				spotlight.name = object.name;
 				spotlight.shadow.camera.near = 8;
 				spotlight.shadow.camera.far = 200;
