@@ -19,7 +19,7 @@ Make sure no other windows of the browser are open!
 
 ## Alright! How do I contribute?
 Well, you're in luck because I don't really know what to put here.
-Everything is (at leased supposed to be) written in [Mr.doob's Code Style](https://github.com/mrdoob/three.js/wiki/Mr.doob's-Code-Style%E2%84%A2), and make sure to make your own branch(es) before changing this git.
+Everything is (at leased supposed to be) written in [Mr.doob's Code Style](https://github.com/mrdoob/three.js/wiki/Mr.doob's-Code-Style%E2%84%A2), and make sure to make your own branch(es) before changing this repository.
 
 ## What are the goals/disclaimers for the Proton engine?
 - The Proton engine is designed to be cross-platform (or more specifically, cross-programming-language) so that developers can use the same code across different platforms and "base-engines".
