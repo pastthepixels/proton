@@ -45,7 +45,7 @@ var docs_data = {
 					name: "mass",
 					type: "float",
 					description: "Gets the object's mass."
-				},
+				}
 			],
 			functions: [
 				{
@@ -53,7 +53,15 @@ var docs_data = {
 					description: "Plays audio. You need a three.js AudioListener to do this. It is that simple."
 				},
 				{
-					name: "applyImpulse( force (float), offset (three.js Vector3) )",
+					name: "makeInvisible()",
+					description: "Makes the object completely invisible."
+				},
+				{
+					name: "makePlayer( { type: 'firstperson' or 'thirdperson', head: Vector3 (the position of the player's head, relative to its position), invisible: boolean, gun: Proton3DObject, gunRotation: THREE.Vector3 (measurements are in radians), movementSpeed: float, jumpHeight: float } )",
+					description: "Treats the object as a player, and initializes it as such."
+				},
+				{
+					name: "applyImpulse( force (Vector3), offset (three.js Vector3) )",
 					description: "Physijs' applyImpulse, if you have the default Proton3DInterpreter."
 				},
 				{
@@ -101,6 +109,14 @@ var docs_data = {
 					description: "Sets the angular velocity of an object."
 				},
 				{
+					name: "addLinearVelocity( x (float), y (float), z (float) )",
+					description: "Adds a vector to the linear velocity of an object."
+				},
+				{
+					name: "addAngularVelocity( x (float), y (float), z (float) )",
+					description: "Adds a vector to the angular velocity of an object."
+				},
+				{
 					name: "setLinearFactor( x (float), y (float), z (float) )",
 					description: "Sets the linear dampening of an object. With the default Proton3DInterpreter, see Physijs' docs for more info."
 				},
@@ -123,6 +139,10 @@ var docs_data = {
 				{
 					name: "setPosition( x (float), y (float), z (float) )",
 					description: "Sets the object's position. If it has physics, make sure to call applyLocRotChange()."
+				},
+				{
+					name: "animatePosition( x (float), y (float), z (float), time (float), step (function) )",
+					description: "Sets the object's position through an easing animation."
 				},
 				{
 					name: "getRotation()",
@@ -219,7 +239,7 @@ var docs_data = {
 		{
 			name: "Proton3DObject (imported)",
 			description: "An object in Proton3D. It can either be imported via a '.obj' file or a glTF file.",
-			use: "ProtonJS.importObject( { type: ['gltf', 'obj'], objPath: url (obj files only), mtlPath: url (obj files only) }, gltfPath: url (gltf files only), onload: function, objectType: ['box', 'sphere', 'cylinder', 'concave', 'convex'] (Physijs mesh types), mass: float, objects: Proton3DScene )",
+			use: "ProtonJS.importObject( { type: ['gltf', 'obj'], objPath: url (obj files only), mtlPath: url (obj files only) }, gltfPath: url (gltf files only), onload: function, armature: boolean, objectType: ['box', 'sphere', 'cylinder', 'concave', 'convex'] (Physijs mesh types), mass: float, armature: boolean (whether or not an imported object is just armature; the object in question must be the last child of the armature) } )",
 			properties: [
 				"Proton3DObject (universal)"
 			],
@@ -272,8 +292,8 @@ var docs_data = {
 		},
 		{
 			name: "Proton3DObject (light)",
-			description: "An light in Proton3D. It can be a point light or a directional light.",
-			use: "new Proton3DObject( { type: ['pointlight', 'directionallight' ] } )",
+			description: "An light in Proton3D. It can be a spotlight, a directional light, or a point light.",
+			use: "new Proton3DObject( { type: ['spotlight', 'directionallight', 'pointlight' ] } )",
 			
 			properties: [
 				{
@@ -286,12 +306,24 @@ var docs_data = {
 				{
 					name: "changeColor( hexString (string) )",
 					description: "Changes the color of the light with a CSS color string."
+				},
+				{
+					name: "changeAngle( value (float) ) (spotlight)",
+					description: "Changes the spot light's angle."
+				},
+				{
+					name: "changeIntensity( value (float) ) ",
+					description: "Changes the light's intensity."
+				},
+				{
+					name: "setTargetPosition( position (vector3) ) (spotlight)",
+					description: "Changes the position of the spotlight's target."
 				}
 			],
 		},
 		{
 			name: "Proton3DScene",
-			description: "An scene in Proton3D.",
+			description: "An scene in Proton3D. Since Proton.JS can handle at most one scene, a scene is pre-made when all scripts are loaded. It can be accessed via ProtonJS.scene and is not pre-initialized.",
 			use: "new Proton3DScene()",
 			
 			properties: [
@@ -348,7 +380,7 @@ var docs_data = {
 			],
 			functions: [
 				{
-					name: "init( { antialias: boolean, shaderQuality: [ 'low', 'medium', 'high' ], pbr: boolean, gravity: float, pixelatedScene: boolean, pbrTexture: string (url), livePBR: boolean, dynamicResolution: boolean } )",
+					name: "init( { antialias: boolean, shaderQuality: [ 'low', 'medium', 'high' ], pbr: boolean, gravity: float, bloom: boolean, hdr: boolean, dynamicToneMapping: boolean, pixelatedScene: boolean, pbrTexture: string (url), livePBR: boolean, dynamicResolution: boolean, pcfSoftShadows: boolean, anisotropicFiltering: boolean (requires pbr to be true), shadowLOD: float (max shadow map width/height) } )",
 					description: "Perhaps the most important Proton3D function. It initializes a scene."
 				},
 				{
@@ -388,6 +420,81 @@ var docs_data = {
 					description: "Sets controls for object interactions. It is automatically called by setCameraControls()."
 				}
 			],
+		},
+		{
+			name: "GameCode",
+			description: "All the code in your game. Calling [GameCode].autoStart() will start your code once all scripts have loaded. If you don't use GameCode to store all of your code with the default Proton3DInterpreter, you'll get an error for a missing three.js variable.",
+			use: "new GameCode( code (function) )",
+			
+			properties: [
+				{
+					name: "code",
+					type: "function",
+					description: "Your code."
+				},
+			],
+			functions: [
+				{
+					name: "run()",
+					description: "Runs your code."
+				},
+				{
+					name: "autoStart()",
+					description: "Runs your code once all scripts have loaded. It will periodically update and create the property loadingPercentage."
+				}
+			]
+		},
+		{
+			name: "RepeatingAudio",
+			description: "Audio that repeats as long as requried and can have beginning and end parts. The class RepeatingPositionalAudio is just like this, except it uses three.js PositionalAudio. It requires an extra argument for a THREE.AudioListener.",
+			use: "new RepeatingAudio( beginning (url), middle (url, looping part) )",
+			
+			properties: [
+				{
+					name: "audio",
+					type: "audioelement",
+					description: "An HTML element that'll be used by the object."
+				},
+				{
+					name: "repeatingTimes",
+					type: "float",
+					description: "The max number of times the middle section of the audio will repeat."
+				},
+				{
+					name: "loops",
+					type: "float",
+					description: "The current number of loops the audio has undergone."
+				},
+				{
+					name: "beginning",
+					type: "url",
+					description: "The first section of the audio."
+				},
+				{
+					name: "middle",
+					type: "url",
+					description: "The middle section of the audio."
+				},
+				{
+					name: "end",
+					type: "url",
+					description: "The last section of the audio (optional)."
+				},
+			],
+			functions: [
+				{
+					name: "play",
+					description: "Plays the audio."
+				},
+				{
+					name: "pause",
+					description: "Pauses the audio."
+				},
+				{
+					name: "reset",
+					description: "Pauses and resets the audio."
+				},
+			]
 		}
 	]
 }

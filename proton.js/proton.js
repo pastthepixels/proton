@@ -9,208 +9,79 @@
 	and type
 	"loc:[location number]"
 	Locations of sections:
+		[Scripts must load first.]
 		adding extra scripts | 1
-		constants | 2
-		pausing stuff | 3
-		misc (which includes some content from some other places on the web) | 4
-		proton3d | 9
+		
+		[Every class, variable, and function.]
+		pausing stuff | 2
+		misc (which includes some content from some other places on the web) | 3
+		proton3d | 4
+
+		[ProtonJS]
+		protonjs (variable) | 5
 */
 //\\//\\//\\//\\//\\//\\//\\ //
 //\\ adding extra scripts \\ // //loc:1
 //\\//\\//\\//\\//\\//\\//\\ //
-//25 lines in total will be added to the HTML of a document using Proton3D.
-var three_revision = { veryMin: "0.99.0", min: "0.105.0", max: "0.106.0" }
-//do not forget to use the tag below
-document.writeln( '<meta name="viewport" content="width = device-width, initial-scale = 1.0">' );
-//jquery: required
-document.writeln( '<script src="https://code.jquery.com/jquery-3.4.1.js"></script>' );
-document.writeln( '<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>' );
-//roboto. all of it (for some reason).
-document.writeln( '<link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed|Roboto+Mono|Roboto+Slab" rel="stylesheet">' );
-//proton3d: threejs
-document.writeln( '<script src="https://threejs.org/build/three.js"></script>' );
-//proton3d models: threejs
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/MTLLoader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/loaders/LoaderSupport.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/OBJLoader2.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/loaders/GLTFLoader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.min + '/examples/js/utils/BufferGeometryUtils.js"></script>' );
-//threejs effects
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/EffectComposer.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/ShaderPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/RenderPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/MaskPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/math/SimplexNoise.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/shaders/CopyShader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/postprocessing/SSAOPass.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.max + '/examples/js/shaders/SSAOShader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/shaders/FXAAShader.js"></script>' );
-document.writeln( '<script src="https://unpkg.com/three@' + three_revision.veryMin + '/examples/js/modifiers/SubdivisionModifier.js"></script>' );
-//proton3d physics: physijs | ammo.js
-document.writeln( '<script src="https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js"></script>' );
-document.writeln( '<script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js"></script>' );
-//proton3d controls: threejs
-document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/js/controls/PointerLockControls.js"></script>' )
-document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/js/controls/OrbitControls.js"></script>' )
-document.writeln( '<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/js/controls/TrackballControls.js"></script>' )
-//three.js' sky shader, by https://github.com/zz85
-document.writeln( '<script src="https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js"></script>' );
+var loadedScripts = 0, maxScripts = 0
+function importScript( url, isModule = false, callback ) {
+	maxScripts ++;
+	if ( !isModule ) {
+		
+		document.writeln( "<script src='" + url + "'></script>");
+		
+		
+	} else {
 
-//\\//\\//\\//\\// //
-//\\ constants \// //loc:3
-//\\//\\//\\//\\// //
-const CSS = {
-	"html, body": [
-		"width:  100%",
-		"height: 100%",
-		"margin: 0px",
-		"display: block",
-		"border: 0"
-	],
-	"body": [
-		"font-family: 'Roboto Mono', monospace",
-		"margin: 0",
-		"padding: 0",
-		"overflow: hidden"
-	],
-	"canvas": [
-		"margin: 0",
-		"padding: 0"
-	],
-	"watermark": [
-		"position: fixed",
-		"bottom: 5px",
-		"right: 10px",
-		"font-family: 'Roboto Mono', monospace",
-		"user-select: none",
-		"z-index: 2",
-		"display: inline-block"
-	],
-	"scene": [
-		"display: block",
-		"overflow: auto"
-	],
-	"scene::-webkit-scrollbar": [
-		"display: none"
-	],
-	"scene::-moz-scrollbar": [
-		"display: none"
-	],
-	"button.aperturebutton": [
-	  "box-shadow: 15px 0px 1px -7px #ce4b5a",
-	  "border-color: #f1f1f1",
-	  "background: #f1f1f1",
-	  "color: #f2a519",
-	  "border-top-right-radius: 5px",
-	  "border-bottom-right-radius: 5px"
-	],
-	"button.aperturebutton:hover": [
-	  "background: #f1f1f1"
-	],
-	"button": [
-	  "padding: 10px",
-	  "border: 5px solid black",
-	  "outline: none",
-	  "margin: 10px",
-	  "cursor: pointer",
-	  "font-weight: bold",
-	  "font-family: 'Roboto Mono', monospace",
-	  "background: white",
-	  "background-size: 100% 100%",
-	  "transition: all 0.3s ease"
-	],
-	"button:not(.aperturebutton):hover": [
-	  "box-shadow: 5px 0px 1px royalblue"
-	],
-	"button.aperturebutton:focus": [
-	  "color: #5291d8"
-	],
-	"button.aperturebutton:active": [
-	  "box-shadow: 10px 0px 1px -7px #ce4b5a"
-	],
-	"button:not(.aperturebutton):active": [
-	  "background: black",
-	  "color: white"
-	]
-}
-const ProtonJS = {
-	version: "beta 1.0",
-	//
-	cache: {
-		vector3: function ( x, y, z ) {
-			ProtonJS.threevector = ProtonJS.threevector || new THREE.Vector3( 0, 0, 0 );
-			return ProtonJS.threevector.set( x, y, z )
-		}
-	},
-	paused: false,
-	scene: function () {
-		console.warn( "ProtonJS.scene is deprecated. Use new Proton3DScene() instead.");
-		return new Proton3DScene();
-	},
-	compileCSS: function ( exclude = [] ) {
-		this.style = document.createElement( "style" );
-		for ( var i in CSS ) {
-			if ( exclude.indexOf( i ) > -1 ) {
-
-				continue;
-
+		import( url ).then( function( value ) {
+			for( var i in value ) {
+				THREE[ i ] = value[ i ]
 			}
-			this.style.innerHTML += i + "  {\n\t" + CSS[i].join( ";\n\t" ) + "\n}";
-		}
-		document.head.appendChild( this.style );
-	},
-	watermark: function ( parent = document.body ) {
-		parent.appendChild( Element( "watermark", "proton.js " + this.display_version ) );
-	},
-	loadingManager: function ( extras = {} ) {
-		this.value = 0;
-		this.min = 0;
-		this.max = 0;
-		this.onLoad = null;
-		this.onStart = null;
-		this.onProgress = null;
-		this._onProgress = function ( url, itemsLoaded, itemsTotal ) {
-			this.value += itemsLoaded;
-			if ( this.onProgress ) {
+		} )
 
-				this.onProgress( url, itemsLoaded, itemsTotal );
-
-			}
-			if ( this.value >= this.max && this.onLoad ) {
-
-				this.loaded = true;
-				this.onLoad();
-
-			}
-		}
-		for ( var i in extras ) {
-			this[i] = extras[i];
-		}
-	},
-	pause: function () {
-		this.paused = true;
-		if ( window.onpause ) {
-
-			window.onpause();
-
-		}
-	},
-	resume: function () {
-		this.paused = false;
-		Proton3DInterpreter.resume();
-		if ( window.onresume ) {
-
-			window.onresume();
-
-		}
 	}
+	if ( callback ) callback();
+	loadedScripts ++;
+	if ( loadedScripts >= maxScripts ) window.finishedLoadingScripts = true;
 }
-//For code that has "ProtonJS" and not "protonjs"
-Object.defineProperty( window, "protonjs", {
-	get: function() { return ProtonJS }
-} );	
+document.writeln( '<meta name="viewport" content="width = device-width, initial-scale = 1.0">' );
+//the part that requires an internet connection:
+	//ui
+		//jquery
+		importScript( "https://code.jquery.com/jquery-3.4.1.min.js" );
+	//stuff for the default Proton3DInterpreter
+		//three.js
+		importScript( "https://threejs.org/build/three.min.js", undefined, function () {
+			//proton3d models: three.js
+			importScript( "https://unpkg.com/three/examples/jsm/loaders/MTLLoader.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/loaders/OBJLoader2.js", true );
+			importScript( "https://unpkg.com/three@0.108.0/examples/jsm/loaders/GLTFLoader.js", true );
+			//hdr: three.js
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/EffectComposer.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/ShaderPass.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/RenderPass.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/shaders/CopyShader.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/UnrealBloomPass.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/shaders/LuminosityHighPassShader.js", true );
+			//
+			importScript( "https://unpkg.com/three/examples/jsm/shaders/LuminosityShader.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/shaders/ToneMapShader.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/AdaptiveToneMappingPass.js", true );
+			//antialiasing: threejs
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/SMAAPass.js", true );
+			//proton3d physics: physijs
+			importScript( "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js" );
+			//three.js' sky shader, by https://github.com/zz85
+			importScript( "https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js" );
+			//ssao
+			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/postprocessing/SAOPass.js", true );
+			//shadowmap helpers
+			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/utils/ShadowMapViewer.js", true );
+			//csm
+			importScript( "https://unpkg.com/three/examples/jsm/csm/CSM.js", true );
+		} );
 //\\//\\//\\//\\//\\  //
-//\\ pausing stuff \  // loc:3
+//\\ pausing stuff \  // loc:2
 //\\//\\//\\//\\//\\  //
 window.timeoutList = [];
 window.intervalList = [];
@@ -302,16 +173,188 @@ window.setInterval = function ( code, delay ) {
 	return window.oldOldSetInterval( newCode, delay );
 }
 ////////////// //
-//   misc   // //loc:4
+//   misc   // //loc:3
 ////////////// //
-//get a radian from an angle in degrees
-const radian = function ( angle ) {
-	return THREE.Math.degToRad( angle );
+//starting games when all scripts have been loaded
+class GameCode {
+	constructor( code ) {
+		this.code = code
+	}
+	run() {
+		this.code();
+	}
+	autoStart() {
+		var code = this,
+			interval = oldSetInterval( function() {
+				code.loadingPercentage = ( loadedScripts / maxScripts ) * 100
+				if ( code.loadingPercentage == 100 ) {
+
+					clearInterval( interval );
+					code.run();
+
+				}
+			}, 1000 )
+	}
 }
-//get an angle from a radian (or the other way around)
-const angle = function ( converto, degOrRad ) {
-	//This assumes that the variable converto is in the opposite measurement that you want to convert it to.
-	return degOrRad == "rad"? THREE.Math.degToRad( converto ) : THREE.Math.radToDeg( converto )
+//creating audio that repeats
+class RepeatingAudio {
+	constructor( beginning, middle, end = undefined ) {
+		this.audio = new Audio( beginning );
+		ProtonJS.playingAudio.push( this )
+		//urls
+		this.beginning = beginning;
+		this.middle = middle;
+		this.end = end;
+		//repeating
+		this.repeatingTimes = Infinity;
+		this.loops = 0;
+	}
+	play() {
+		var x = this;
+		this.audio.play();
+		if ( this.audio.onended == undefined ) {
+
+			this.audio.onended = function() {
+				x.beginningOnEnded( x )
+			}
+		
+		}
+	}
+	pause() {
+		this.audio.pause();
+	}
+	reset() {
+		this.pause();
+		this.audio.src = this.beginning;
+		this.audio.onended = undefined;
+		this.loops = 0;
+	}
+	//
+	beginningOnEnded( x ) {
+		this.audio.src = this.middle;
+		this.audio.play();
+		this.audio.onended = function() {
+			x.middleOnEnded( x )
+		}
+	}
+	middleOnEnded( x ) {
+		this.loops ++;
+		if ( this.loops >= this.repeatingTimes ) {
+		
+			if ( this.end ) {
+			
+				this.audio.src = this.end;
+				this.audio.play();
+				this.audio.onended = function() {
+					x.reset()
+				}
+				
+			} else {
+			
+				this.reset();
+			
+			}
+			
+		} else {
+
+			this.audio.play();
+
+		}
+	}
+}
+class RepeatingPositionalAudio {
+	constructor( beginning, middle, end = undefined, listener ) {
+		var x = this;
+		//
+		this.audio = new THREE.PositionalAudio( listener );
+		this.audioLoader = new THREE.AudioLoader();
+		this.audioLoader.load( beginning, function( buffer ) {
+			x.audio.setBuffer( buffer );
+			x.audio.setRefDistance( 20 );
+		} );
+		ProtonJS.playingAudio.push( this )
+		//urls
+		this.beginning = beginning;
+		this.middle = middle;
+		this.end = end;
+		//repeating
+		this.repeatingTimes = Infinity;
+		this.loops = 0;
+		this.paused = true;
+	}
+	play() {
+		var x = this;
+		if ( !this.audio.source ) {
+
+			this.audioLoader.load( this.beginning, function( buffer ) {
+				x.audio.setBuffer( buffer );
+				x.audio.setRefDistance( 20 );
+				//
+				x.audio.play();
+				x.audio.stop()
+				x.audio.source.onended = function() {
+					x.beginningOnEnded( x );
+					x.audio.isPlaying = false;
+				}
+			} );
+		
+		} else {
+		
+			this.audio.play();
+			this.paused = false;
+		
+		}
+	}
+	pause() {
+		this.audio.pause();
+		this.paused = true;
+	}
+	reset() {
+		this.pause();
+		this.audio.src = this.beginning;
+		this.audio.source = undefined;
+		this.audio.setLoop( false );
+		this.loops = 0;
+	}
+	//
+	beginningOnEnded( x ) {
+		console.log( true )
+		this.audioLoader.load( x.middle, function( buffer ) {
+			x.audio.setBuffer( buffer );
+			x.audio.setRefDistance( 20 );
+			//
+			x.audio.pause();
+			x.audio.setLoop( true );
+			x.audio.play();
+			x.audio.source.stop( x.audio.context.currentTime + x.audio.buffer.duration * x.repeatingTimes )
+			x.audio.source.onended = function() {
+				x.middleOnEnded( x );
+				x.audio.isPlaying = false;
+			}
+		} );
+	}
+	middleOnEnded( x ) {
+		if ( this.end ) {
+			
+			this.audioLoader.load( x.end, function( buffer ) {
+				x.audio.setBuffer( buffer );
+				x.audio.setRefDistance( 20 );
+				x.audio.pause();
+				//
+				x.audio.setLoop( false );
+				x.audio.play();
+				x.audio.source.onended = function() {
+					x.reset();
+					x.audio.isPlaying = false;
+				}
+			} );
+			
+		} else {
+		
+			this.reset();
+		
+		}
+	}
 }
 //creating elements
 const Element = function ( elementType = "div", innerHTML = "", properties = null) {
@@ -338,6 +381,15 @@ const Element = function ( elementType = "div", innerHTML = "", properties = nul
 
 	}
 	return elem;
+}
+//get a radian from an angle in degrees
+const radian = function ( angle ) {
+	return THREE.Math.degToRad( angle );
+}
+//get an angle from a radian (or the other way around)
+const angle = function ( converto, degOrRad ) {
+	//This assumes that the variable converto is in the opposite measurement that you want to convert it to.
+	return degOrRad == "rad"? THREE.Math.degToRad( converto ) : THREE.Math.radToDeg( converto )
 }
 //toggling
 const toggle = function ( boolean ) {
@@ -377,14 +429,14 @@ Object.defineProperty( Object.prototype, "watch", {
 	}
 } );
 /*
-	~> loc:9
-		~> there are locations 9.1 - 10.0 in this section.
+	~> loc:4
 	proton3d
 */
 class Proton3DScene {
 	constructor() {
-		Physijs.scripts.worker = "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physijs_worker.js";
-		Physijs.scripts.ammo = "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/examples/js/ammo.js";
+		//this part requires an internet connection
+		Physijs.scripts.worker = "https://rawcdn.githack.com/pastthepixels/proton/fe138b6f451cdc648fc1a0fe845c68484a808fda/proton.js/accessories/physijs_worker_modified.js";
+		Physijs.scripts.ammo = ProtonJS.ammojsURL;
 		this.mappedKeys = {
 			forward: 38,
 			sprint: 16,
@@ -392,12 +444,14 @@ class Proton3DScene {
 			left: 37,
 			right: 39,
 			jump: 32,
-			use: 13
+			use: 13,
+			flashlight: 70
 		}
 		this.keys = {};
 		this.extraFunctions = [];
 		this.priorityExtraFunctions = [];
 		this.extraKeyControls = [];
+		ProtonJS.scenes.push( this )
 	}
 	//this is the same as the 2d init function,
 	//except with an object rather than
@@ -443,21 +497,25 @@ class Proton3DScene {
 		//objectList
 		this.objectList = []
 	}
-	update( scene ) {
-		requestAnimationFrame( function() {
-			scene.update( scene )
-		} );
+	update( scene, time ) {
 		//pausing
-		if ( ProtonJS.paused ) {
+		if ( ProtonJS && ProtonJS.paused ) {
 
+			requestAnimationFrame( function() {
+				scene.update( scene )
+			} );
 			return
 
 		}
 		//rendering using Proton3DInterpreter.render
-		Proton3DInterpreter.render( this )
+		Proton3DInterpreter.render( this, time )
 		//extraFunctions
 		this.priorityExtraFunctions.forEach( function ( e ) {
 			e();
+		} );
+		//looping
+		requestAnimationFrame( function( time ) {
+			scene.update( scene, time )
 		} );
 	}
 	updateExtraFunctions( scene ) {
@@ -486,16 +544,23 @@ class Proton3DScene {
 	dynamicResize() {
 		Proton3DInterpreter.dynamicResize( this )
 	}
-	setKeyControls( obj, speed = 2.5, jumpHeight = 4, extras = {} ) {
+	setKeyControls( obj, movementSpeed = 2.5, jumpHeight = 4, extras = {} ) {
 		var x = this, gunMoveFrame = 0;
 		window.addEventListener( "keydown", function ( e ) {
 			e = e || event;
 			x.keys[ e.keyCode ] = e.type;
 			x.keys[ e.keyCode ] = true;
+			//flashlight
+			if ( x.keys[ x.mappedKeys.flashlight ] && x.camera.flashlight.canBeEnabled ) {
+
+				x.camera.flashlight.enabled? x.camera.flashlight.disable() : x.camera.flashlight.enable();
+
+			}
 		} );
 		window.addEventListener( "keyup", function ( e ) {
 			e = e || event;
 			x.keys[ e.keyCode ] = false;
+			//gun animations
 			if ( extras.gunAnimations && x.gun && x.gun.movePosition ) {
 
 				clearInterval( window.gunWalkingAnimation );
@@ -514,32 +579,55 @@ class Proton3DScene {
 			}
 		} );
 		x.priorityExtraFunctions.push( checkKeys );
-
+		/*
+			a flashlight!
+		*/
+		x.camera.flashlight = new Proton3DObject( {
+			x: 0,
+			y: 0,
+			z: 1,
+			intensity: 0,
+			type: "spotlight"
+		} );
+		x.camera.add( x.camera.flashlight );
+		x.camera.flashlight.setTargetPosition( 0, 0, 1 );
+		x.camera.flashlight.canBeEnabled = true;
+		x.camera.flashlight.changeAngle( 0.45 );
+		x.camera.flashlight.enable = function() {
+			x.camera.flashlight.setTargetPosition( 0, 0, -1 );
+			x.camera.flashlight.changeIntensity( 30 )
+			x.camera.flashlight.enabled = true;
+		}
+		x.camera.flashlight.disable = function() {
+			x.camera.flashlight.changeIntensity( 0 )
+			x.camera.flashlight.enabled = false;
+		}
+		x.camera.flashlight.disable();
+		//movement
 		function checkKeys() {
-			speed = x.playerSpeed || speed;
+			var speed = x.playerSpeed || movementSpeed;
 			//
 			if ( x.skipCheckingKeys ) {
 
 				return;
 
 			}
-			//
+			//extra (user set) key controls
 			x.extraKeyControls.forEach( function ( f ) {
 				f( x.keys )
 			} )
-			//
+			//sprinting
+			if ( x.keys[ x.mappedKeys.sprint ] ) {
+
+				speed += 10
+
+			}
+			//moving
 			if ( x.keys[ x.mappedKeys.forward ] ) {
 
-				var y = obj.getWorldDirection(),
-					z = obj.getLinearVelocity();
+				var y = obj.getWorldDirection();
 				//
-				move( y, z, speed, false, true )
-				//sprinting
-				if ( x.keys[ x.mappedKeys.sprint ] ) {
-
-					move( y, z, speed + 3.5 )
-
-				}
+				move( y, speed, false, true )
 				//moving left and right
 				if ( x.keys[ x.mappedKeys.left ] ) {
 
@@ -550,7 +638,7 @@ class Proton3DScene {
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move( y, z, speed - 0.5, undefined, undefined, false )
+					move( y, speed - 0.5, undefined, undefined, false )
 					return
 
 				}
@@ -563,7 +651,7 @@ class Proton3DScene {
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move( y, z, speed - 0.5, undefined, undefined, false )
+					move( y, speed - 0.5, undefined, undefined, false )
 					return
 
 				}
@@ -571,10 +659,9 @@ class Proton3DScene {
 			}
 			if ( x.keys[ x.mappedKeys.backward ] ) {
 
-				var y = obj.getWorldDirection(),
-					z = obj.getLinearVelocity();
+				var y = obj.getWorldDirection();
 				//
-				move( y, z, speed, true, true )
+				move( y, speed, true, true )
 				//moving left and right
 				if ( x.keys[ x.mappedKeys.left ] ) {
 
@@ -585,7 +672,7 @@ class Proton3DScene {
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move( y, z, speed - 0.5, true, undefined, false )
+					move( y, speed - 0.5, true, undefined, false )
 					return
 
 				}
@@ -598,7 +685,7 @@ class Proton3DScene {
 						true
 					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 					//
-					move( y, z, speed - 0.5, true, undefined, false )
+					move( y, speed - 0.5, true, undefined, false )
 					return
 
 				}
@@ -606,7 +693,6 @@ class Proton3DScene {
 			}
 			if ( x.keys[ x.mappedKeys.left ] ) {
 
-				var z = obj.getLinearVelocity();
 				var y = ProtonJS.rotateVector3(
 					new THREE.Vector3( 0, 1, 0 ),
 					90,
@@ -614,12 +700,11 @@ class Proton3DScene {
 					true
 				).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 				//
-				move( y, z, speed - 0.5 )
+				move( y, speed - 0.5 )
 
 			}
 			if ( x.keys[ x.mappedKeys.right ] ) {
 
-				var z = obj.getLinearVelocity();
 				var y = ProtonJS.rotateVector3(
 					new THREE.Vector3( 0, 1, 0 ),
 					-90,
@@ -627,18 +712,20 @@ class Proton3DScene {
 					true
 				).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
 				//
-				move( y, z, speed - 0.5 )
+				move( y, speed - 0.5 )
 
 			}
-			if ( x.keys[ x.mappedKeys.jump ] && obj.getCollidingObjects().length > 0 ) {
+			if ( x.keys[ x.mappedKeys.jump ] && obj.getLinearVelocity().y <= 0.5 && obj.getCollidingObjects().length > 0 ) {
 
-				var rotation = x.camera.getRotation(),
-					z = obj.getLinearVelocity();
-				obj.setLinearVelocity( z.x, jumpHeight, z.z );
+				obj.setLinearVelocity( 
+					undefined,
+					jumpHeight,
+					undefined
+				);
 
 			}
 		}
-		function move ( y, z, speed, negatise = false, forward = false, gunAnimation = true) {
+		function move ( y, speed, negatise = false, forward = false, gunAnimation = true) {
 			if ( x.noclip ) {
 
 				var pos = obj.position.clone().add( new THREE.Vector3( y.x * ( speed / 500 ) * ( negatise? -1 : 1 ) , forward? ( x.camera.getWorldDirection().y * (speed / 500) * ( negatise? -1 : 1 ) ) : 0, y.z * (speed / 500) * ( negatise? -1 : 1 )  ) )
@@ -647,7 +734,13 @@ class Proton3DScene {
 
 			} else {
 
-				obj.setLinearVelocity( y.x * speed * ( negatise? -1 : 1 ), z.y, y.z * speed * ( negatise? -1 : 1 ) );
+				if ( ( x.keys[ x.mappedKeys.forward ] || x.keys[ x.mappedKeys.backward ] ) &&x.keys[ x.mappedKeys.jump ] && obj.getLinearVelocity().y <= 0.5 && obj.getCollidingObjects().length > 0 ) {
+
+					y.x *= 1.2;
+					y.z *= 1.2;
+
+				}
+				obj.setLinearVelocity( y.x * speed * ( negatise? -1 : 1 ), obj.getLinearVelocity().y, y.z * speed * ( negatise? -1 : 1 ) );
 
 			}
 			if ( x.gun && extras.gunAnimations && gunAnimation == true ) {
@@ -655,7 +748,7 @@ class Proton3DScene {
 				if ( window.gunWalkingAnimation == undefined ) {
 
 					window.gunWalkingAnimation = setInterval( function() {
-						var movement = ( ( Math.sin( gunMoveFrame += 0.2 ) * speed ) / 4000 )
+						var movement = Math.sin( gunMoveFrame += ( ( 0.03 * speed ) + ( x.keys[ x.mappedKeys.sprint ]? 0.1 : 0 ) ) ) / 500
 						x.gun.movePosition? $( x.gun.movePosition ).stop() : undefined;
 						x.gun.setPosition( x.gun.position.x + ( ( 2 * movement ) ), x.gun.position.y + ( movement / 2 ), undefined );
 						x.gun.movePosition = x.gun.position.clone();
@@ -727,9 +820,9 @@ class Proton3DScene {
 					} );
 
 				}
+				extras.invisibleParent = undefined;
 
 			}
-
 			//
 			var oldMovement = 0;
 			switch( extras.type ){
@@ -778,7 +871,7 @@ class Proton3DScene {
 					//
 					var crosshairPos = ( e.movementY / ( extras.ySensivity * 40 ) ) * ( x.crosshair.__localPosition.distanceTo( x.camera.getPosition() ) );
 					if ( 
-						//If it's third person and [???]
+						//If it's third person and the camera is within a certain range
 						(
 							(x.cameraType === "thirdperson" || extras.type === "thirdperson" ) &&
 							(
@@ -791,8 +884,8 @@ class Proton3DScene {
 						(
 							x.cameraType != "thirdperson" &&
 							(
-								( x.crosshair.__localPosition.y - crosshairPos ) > -4.5 &&
-								( x.crosshair.__localPosition.y - crosshairPos ) < 4.5
+								( x.crosshair.__localPosition.y - crosshairPos ) > -8 &&
+								( x.crosshair.__localPosition.y - crosshairPos ) < 8
 							) 
 						)
 						) {
@@ -838,62 +931,52 @@ class Proton3DScene {
 		return returningObject;
 	}
 	setPickingUpControls() {
-		var x = this;
+		var x = this, objectCollision = false;
 		this.priorityExtraFunctions.push( function () {
-			x.getObjectList().forEach( function ( child ) {
-				checkObjects( child )
-			} );
+			if ( x.pickingUpObject && x.pickingUpObject.boundingBox ) {
+
+				objectCollision = false
+				x.getObjectList().forEach( function ( child ) {
+					if ( child.boundingBox && child != x.camera.parent && child != x.pickingUpObject && child.parent != x.camera.parent && child.parent != x.camera ) {
+
+						var pos = x.pickingUpObject.position.z
+						child.updateBoundingBox();
+						
+						//with the object in an extended position
+						x.pickingUpObject.setPosition( 0, 0, -5 );
+						x.pickingUpObject.updateBoundingBox();
+						x.pickingUpObject.setPosition( 0, 0, pos );
+						//
+						if ( child.boundingBox.intersectsBox( x.pickingUpObject.boundingBox ) ) {
+
+							objectCollision = true
+	
+						}
+
+						//with the object in its original position
+						x.pickingUpObject.updateBoundingBox();
+						//
+						if ( child.boundingBox.intersectsBox( x.pickingUpObject.boundingBox ) ) {
+
+							objectCollision = true
+	
+						}
+
+					}
+				} );
+				if ( objectCollision ) {
+
+					x.pickingUpObject.animatePosition( 0, 0, -1, 500 )
+
+				} else {
+
+					x.pickingUpObject.animatePosition( 0, 0, -5, 500 )
+
+				}
+
+			}
 		} );
 
-		function checkObjects( child ) {
-			if ( child.children ) {
-
-				child.children.forEach( function ( child ) {
-					checkObjects( child )
-				} );
-
-			}
-			if ( child.__pickupable != true ) {
-
-				return;
-
-			}
-			if( child.__alreadyNeared && x.crosshair.position.distanceTo( child.position ) > ( child.nearDistance || 2 ) ) {
-
-				child.__alreadyNeared = false
-				return
-
-			}
-			if ( x.crosshair.position.distanceTo( child.position ) <= ( child.nearDistance || 2 ) && child.__onNear && !child.__alreadyNeared ) {
-
-				child.onNear();
-				child.__alreadyNeared = true;
-
-			}
-			if ( child.pickingUp ) {
-
-				var pos = x.crosshair.__localPosition.clone()
-				pos.y = pos.y > 2? 2 : pos.y;
-				pos.y = pos.y < -2? -2 : pos.y;
-				pos.multiply( new THREE.Vector3( 2.5, 1.5, 2.5 ) ).add( x.camera.parent.getPosition() );
-				child.setPosition(
-					pos.x,
-					pos.y,
-					pos.z
-				);
-
-			}
-			if ( child.pickingUp === "wrapping" ) {
-
-				child.mass = child.oldMass;
-				child.setLinearVelocity( 0, 0, 0 );
-				child.setLinearFactor( 1, 1, 1 );
-				child.setAngularVelocity( 0, 0, 0 );
-				child.setAngularFactor( 1, 1, 1 );
-				child.pickingUp = null;
-
-			}
-		}
 		window.addEventListener( "keypress", function () {
 			x.getObjectList().forEach( function ( child ) {
 				checkKeypress( child );
@@ -928,20 +1011,33 @@ class Proton3DScene {
 		
 		var resetPickingUp = function ( child ) { x.resetPickingUp( child, x ) }
 	}
-	resetPickingUp( child, scene ) {
-		child.pickingUp = false;
-		child.pickingUp = "wrapping";
-		scene.crosshair.show()
+	resetPickingUp( child, scene, callback = function(){} ) {
+		this.pickingUpObject = undefined;
+		child.__movePosition? $( child.__movePosition ).stop( true, true ) : undefined;
+		//
+		var position = child.getWorldPosition(),
+			rotation = child.getWorldRotation();
+		scene.crosshair.show();
+		scene.add( child );
+		child.setLinearVelocity( 0, 0, 0 );
+		child.setAngularVelocity( 0, 0, 0 );
+		child.setPosition( position.x, position.y, position.z );
+		child.setRotation( rotation.x, rotation.y, rotation.z );
+		child.applyLocRotChange();
+		child.pickingUp = undefined;
 		//
 		window.keyErrorCheck = true;
-		setInterval( function () {
+		setTimeout( function () {
+			callback();
+		}, 50 );
+		setTimeout( function () {
 			window.keyErrorCheck = false;
 		}, 500 )
 	}
 	pickUpObject( child ) {
 		var x = this, resetPickingUp = function ( child ) { x.resetPickingUp( child, x ) };
 		window.keyErrorCheck = true
-		setInterval( function () { window.keyErrorCheck = false }, 250 )
+		setTimeout( function () { window.keyErrorCheck = false }, 250 )
 		//
 
 		if ( child.onUse ) {
@@ -956,72 +1052,16 @@ class Proton3DScene {
 		}
 		
 		child.pickingUp = true;
-		if ( child.oldMass != 0 ) {
-
-			child.oldMass = child.mass;
-
-		}
-		child.addEventListener( "collision", function( otherobj ) {
-			if ( child.pickingUp && otherobj != this && otherobj.p3dParent != x.camera.parent && otherobj.p3dParent != x.gun ) {
-
-				resetPickingUp( child )
-
-			}
-		} )
+		x.pickingUpObject = child;
 		child.oldPos = child.position.clone();
 		child.distance = this.crosshair.position.distanceTo( child.position );
-		child.setLinearVelocity( 0, 0, 0 );
-		child.setLinearFactor( 0, 0, 0 );
-		child.setAngularVelocity( 0, 0, 0 );
-		child.setAngularFactor( 0, 0, 0 );
+		child.position.set( 0, 0, -5 );
+		this.camera.add( child );
 		this.crosshair.hide();
 	}
 }
 /*
-	loc:9.1
-	tools
-*/
-ProtonJS.crosshair = function ( crosshair ) {
-	var crosshairElement = document.createElement( "div" );
-	crosshairElement.style.cssText = `
-		position: fixed;
-		top: 50%;
-		left: 50%;
-		transform: translate(  -50%, -50%  );
-		height: 21px;
-		width: 21px;
-		image-rendering: auto !important;
-		background: url(  "data:image / png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAKXnpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjarZhpliMrDoX / s4peArNgOYzn9A56 + f0JIp1DDa + yuu2qjDAmQOheSVc26z//3uZfvILzxcQkJdecLa9YY / WNm2Lv616djefv / ZCe79zncfP6wjMUuIb7Ma9nfmM8vT8g8Rnvn8eNjGed8izkXgufV9Cd9X4 + Rj4LBX / H3fPZ1OeBlj8c5 / nvx7Pss / jXz1FwxkysF7zxK7hg79 + 7U8CKUEPjms9f8Xe0hXT + hpB + 9J95ue4nDnzdffGffbMsvLvjLvR2rPzFT / mF1Ofx8NrGf7LI + dfO / hPU23b78fXBf3vPsve6p2sxG9yVn0O9HeXcMZFFYjiPZd7C / 8S9nHflXWyzA9QmR + 2GPYerzuPr7aKbrrnt1rkONzAx + uVxt / d ++HDGCu6vfhxQor7d9mLAZ4YCKgPkAsP + ZYs7 + 1bdj80KO0 / HTO9YzPHEp7f5OvC3708L7a00d86Wl6 + wyytlMUOR07 / MigeI69N0 / OvMvdivLwU2gGA6bi4csNl + l + jJvXMrHJyDTYap0d54cTKfBXAReyeMcQEEbHYhueyseC / O4ccCPg3LfYi + g4BLJvmJlT6GkAGneN2bZ8SduT75O0x6AYhE0AjQEECAFWOKmXgrUKiZFFJMKeUkqaSaWg455pRzlqx5qkmQKEmyiBSp0koosaSSi5RSamnV10AaS6bmKrXUWltj0xYbazXmNwa676HHnnru0kuvvQ3oM + JIIw8ZZdTRpp9hkgLMzFNmmXW25RZUWnGllZessupqG67tsONOO2 / ZZdfdXqg9qH5G7Styv0fNPaj5A5TOk3fUGBZ5W8JpOkmKGYj56EBcFAEI7RUzW1yMXpFTzGz1wZClPFYmBWc6RQwE43I + bffC7h25X + Jm8O53cfM / Q84odP8P5IxC9wG5H3H7CWqznXQbDkAahfiUDBkIPyas0nxpWpe + ee2rj12Mr5uFfCw9Br3rQgYlanzCbkmrz2XrLivxZcFLkQORybZWOJE1Zee0Q9hG9s4T + yWv6rBr7ZoBa87CGq3YwNQVkuwBxlPCXrMwUli7rxjbTnO7tocRf1fHcT4Ip4d1PvSd4 + 4JkHY / duZda5c8Ci4SGd3VsebA4p0WHKCKkJ59ybu3XHuHXdlXCb3jaL4d4OZ2L7J6HJg9GQ1Sc3BlbMFBNfW13G4pmdxqHDzIl1OKPjDr2iyCcZKcVho74bw + 5StHhioiXVlfA9NqZFJSNfLc / C / X5P02c1KZnFNblpJ4TpKhKg + BZ03mctBqdzDlK8ySGbN6TfpGeOjDFg6XhhqBzappxsbqHpMvu4 / Ausds6Oo6vgEB5vRfm2W + eY4Fo + 0gdJWL4rKNoKPrGzbe76YnbtuDYrE + tMNfa3G / 8me2qggkz6KEvcJgly24ZBvic6p67EP6BNYVp0968nTM + OOr + fUEUrElHFpO5J + rDWdxS0UHZGhx4ra5wlxFwTJLtcMcdaeWSF8SojKRIkUlurGp34WodYkzXnL10tT4 / Fp7ZgM80PEHfn1wM2u6f84C5qdfVNInt1HvNuS + wwJHyPDiDu / ZqGrmqnd70ohaplhabsiLScUNsfvYR7YKk1R6n / Z1qp2KfrpO6LUl21I3DORK + dJgCqOHNSOhuvDmN3Jbjc5gt + Ih1MKYJ2acWNHStigcVJ96uJf1uz7VopkP7V1QXpLuDwbB9HmcGrqA6Hg4pPaeaScN6BnafNAsGZoCIVxc2g34RTaHjIbPM + Cd + h0OvsjBmg60YYYZCm0Q1 / jPyljRjiV3VEd8nEQryctTfiU1XXAqCrkwLdsFBLuagwbiDvs1ZpyrLR + mASd7wrpaS6AeMeeMS / ZbofVs1yljuQU1xqDC9tC8N3uUU3URt7VRC9zxqRImkZg1Bw1osKm2eh + pF5sSSOLe241m9i0t1EPbtt2CiN7d6n / M0LTvqId9TbcoPrvFGuRUnbznzqEMzKeO9oisWRycCrCWZrPv + VxLRE2bAjdos3ZJ9BRLxccIdfqe0kzohk2 + WmNjSa0UkJZznLOjLRKCvVPxivaTTcv0WNXkvkrfhapj0QaOHD1xQ2pttd4SwHC8TKoqgSzgNX3HMXYXidQ42mG6i21jWQbLQmUvcAMlJxX1KzR6SvdciybySwNClqJ1JgZSIFWsaZPkWLdiFqpWp / JNEe7KODFWSb / wvJ402 + Qjx1EDGBn2cAFct6N + ZyDNZjNn5747bqgUeMCI1a0558rM6GXAhknFgTzSlhZ0UkuhGm0YoAe / HDB6Cw3w22XKmi + m0HjBlJoOUzpKyW6VTCFvoCnjRZNkd89GZpWHJSvHgp3rYUk6QkFZwnkQW78vV7 + oa3Ajc4ilcCo1 + HepQRpQrbk7SX + 4Qw1aGMIKizo1DO07Gl2K0IzgZ5jRyEMK5DjUAEqlBjUeTKAGmjVlSJ9Lv571ZnlWB6De80Baolmipl0L7ZUY2vMwsDRmmytlKvkLQQm2iSaEzeqRAGjIre2p8FHrjEr3gBrv8OnJl8Qb4c + 5oMCTHcGNiM9J5zvd0UYTBtyGEFYuIeDxzhzmKraHEXDO5zX7w4im2nAoI + ZhhKJNXbukOHDLJ7grPu + qF2gutjZBQXNqxJfaEZzcQJ + NxiS9RdMG7QSmU3bn96q9TbE0qk1pyi4W0qquIeQ7Ny3e8TEs4QIKNxXTnUTX67g1zuaqQPXij9djBwsjDaWpWrG5RLsvaEoZU6U + gs3XVOhRIyFzpOkVOZ5exo5eKVWnlkXOWQz7 + u1FS5YktF7VZxzZbiJO26kWS0OXaH4rBl5LGWDtkCWMGbpmce1pbUljadLWVM6G / k1efedq3m7Sk4OQLeQNdDRF8MiWQ79zj + hxjyDolN / ocZaWm1O4zQXhKbBRG7SqBVS5iaRiIh7 / E4Fpfq88pTwSeHlu4xUKiA + HD45mmFWrFvQ05BcNFtimSJJlZVIwkx5Ig0BDykXXbub9Ex996yraUmsCRuOrBIhefXTsKZrFtd / Q39OSxrAmb3K5b9rJC5inWpg59EHyHyoSBXPDWw9nItFij1PnUh2tima2ez6VUtR79J4qGaWT / uYCIED5jtcVXOavus + XUjtuA / hG0FI3K6RZ800lxkJ8Hf3ZyKlr0Q + jYtCd4vXnTe2BfNfmh6gvJKmVEW9iVGQrXFWtR8nQ2MDxGxBhPMJTlANFW4aL4k + Sgfl2r / C6to6CJWuSzPGaNjWTHkYlYjtB + jCyHV5p66haBRD0UZ1wFNpdarcciKjDUmP / JkJ / cmUhlWOWbG7nh347k5Fp0X1Mb / 02Qo9yhsq43TaZTTpp73TbNGFG2 + 2g2k6GpuHKo6T + jb9Pd6 + pBxIKJQLp0PdyWi4Laq3rvlodEfmjL4PIQqqNRFeBcvCnjd3BruA61TSoLY7SkSkZS39JODWD5Hh / S5hHRkQB / rS99sJhUG / UThS5BoBmOhikQXVaYQVef1dCEECYhoJVpiUfSA / ZtxgQ7PX0N9PfTBTakfNTmxOCA0HV5vwaD3rFllkRWP8FPvsaKYhf9VwAAAGFaUNDUElDQyBQUk9GSUxFAAB4nH2RPUjDQBzFX1O1RSoOdlBxyFCdLIqKOEoVi2ChtBVadTC59ENo0pCkuDgKrgUHPxarDi7Oujq4CoLgB4iLq5Oii5T4v6TQIsaD4368u / e4ewcI9TJTzY5xQNUsIxWPidncihh4RReCEDCGAYmZeiK9kIHn + LqHj693UZ7lfe7P0aPkTQb4ROJZphsW8Trx9Kalc94nDrOSpBCfE48adEHiR67LLr9xLjos8MywkUnNEYeJxWIby23MSoZKPEUcUVSN8oWsywrnLc5qucqa9 + QvDOW15TTXaQ4hjkUkkIQIGVVsoAwLUVo1UkykaD / m4R90 / ElyyeTaACPHPCpQITl + 8D / 43a1ZmJxwk0IxoPPFtj + GgcAu0KjZ9vexbTdOAP8zcKW1 / JU6MPNJeq2lRY6A3m3g4rqlyXvA5Q7Q / 6RLhuRIfppCoQC8n9E35YC + W6B71e2tuY / TByBDXS3dAAeHwEiRstc83h1s7 + 3fM83 + fgBjZ3KhWgKGVwAAAAZiS0dEADcASwDADel / eAAAAAlwSFlzAAAuIwAALiMBeKU / dgAAAAd0SU1FB + MGCAIyI1pj764AAAAqSURBVDjL7dUxEQAADMJA / EuGgUpoh455D7lIR0kqAIu2 / SzKNuUBr48az6wTuvSPBCoAAAAASUVORK5CYII="  )
-	`;
-	crosshair.hide = function () {
-		crosshairElement.style.display = "none"
-	}
-	crosshair.show = function () {
-		crosshairElement.style.display = null
-	}
-	crosshair.remove = function(){
-		crosshairElement.remove()
-	}
-	document.body.appendChild( crosshairElement );
-	return crosshair;
-}
-ProtonJS.rotateVector3 = function ( axis, angle, vector, normalize, cancelAutoAngle ) {
-	if ( !cancelAutoAngle ) {
-
-		angle = radian( angle );
-
-	}
-	var rotationMatrix = new THREE.Matrix4();
-	if ( normalize ) {
-
-		vector.normalize();
-
-	}
-	vector.applyAxisAngle( axis, angle )
-	return vector;
-}
-/*
-	loc:9.2
+	loc:4.1
 	Proton3DObject
 */
 var genericMeshNameInstances = 0
@@ -1150,7 +1190,48 @@ class Proton3DObject {
 			}
 		} )
 	}
+	//making the object the player
+	makePlayer( extras ) {
+		var defaultExtras = {
+				//camera
+				type: "firstperson",
+				head: new THREE.Vector3( 0, 0.3, 0 ),
+				invisible: false,
+				//key controls
+				movementSpeed: undefined,
+				jumpHeight: undefined
+			},
+			object = this;
+		for( var i in defaultExtras ) {
+			if ( extras[ i ] == undefined ) extras[ i ] = defaultExtras[ i ];
+		}
+		//controls
+		ProtonJS.scene.controls = {
+			camera: ProtonJS.scene.setCameraControls( {
+				type: extras.type,
+				distance: extras.type == "firstperson"? extras.head : extras.head.clone().add( new THREE.Vector3( 5, 0, 5 ) ),
+				invisibleParent: extras.invisible,
+				cameraParent: object,
+				gun: extras.gun
+			} ),
+			key: ProtonJS.scene.setKeyControls( 
+				object,
+				extras.movementSpeed,
+				extras.jumpHeight,
+				{ gunAnimations: true }
+			)
+		}
+		//crosshair
+		ProtonJS.crosshair( ProtonJS.scene.crosshair );
+		//gun rotation
+		if ( extras.gunRotation ) extras.gun.setRotation( extras.gunRotation.x, extras.gunRotation.y, extras.gunRotation.z )
+		//making an invisible player
+		if ( extras.invisible ) object.makeInvisible();
+	}
 	//the accessors' corresponding functions
+	makeInvisible() {
+		return Proton3DInterpreter.Proton3DObject.makeInvisible( this )
+	}
 	getShadowOptions() {
 		return Proton3DInterpreter.Proton3DObject.getShadowOptions( this )
 	}
@@ -1208,6 +1289,14 @@ class Proton3DObject {
 	setLinearFactor( x = 0, y = 0, z = 0 ) {
 		return Proton3DInterpreter.Proton3DObject.setLinearFactor( x, y, z, this )
 	}
+	addLinearVelocity( x = 0, y = 0, z = 0 ) {
+		var velocity = this.getLinearVelocity();
+		return Proton3DInterpreter.Proton3DObject.setLinearVelocity( x + velocity.x, y + velocity.y, z + velocity.z, this )
+	}
+	addAngularVelocity( x = 0, y = 0, z = 0 ) {
+		var velocity = this.getAngularVelocity();
+		return Proton3DInterpreter.Proton3DObject.setAngularVelocity( x + velocity.x, y + velocity.y, z + velocity.z, this )
+	}
 	setAngularFactor( x = 0, y = 0, z = 0 ) {
 		return Proton3DInterpreter.Proton3DObject.setAngularFactor( x, y, z, this )
 	}
@@ -1222,6 +1311,42 @@ class Proton3DObject {
 	}
 	setPosition( x, y, z ) {
 		return Proton3DInterpreter.Proton3DObject.setPosition( x, y, z, this )
+	}
+	animatePosition( x, y, z, time = 1500, step = undefined, callback = undefined ) {
+		var pobject = this, target = new THREE.Vector3( x, y, z );
+		//this.__movePosition? $( this.__movePosition ).stop( true, true ) : undefined;
+		if ( this.__movePosition === undefined ) {
+			
+			this.__movePosition = this.position.clone();
+			$( pobject.__movePosition ).animate( {
+				x: target.x,
+				y: target.y,
+				z: target.z
+			}, {
+				step: function() {
+					if ( pobject.__movePosition === undefined ) {
+
+						return
+
+					}/*
+					if ( pobject.__movePosition.distanceTo( target ) < .1 ) {
+
+						$( pobject.__movePosition ).stop( true, true );
+						return
+
+					}*/
+					pobject.setPosition( pobject.__movePosition.x, pobject.__movePosition.y, pobject.__movePosition.z );
+					pobject.applyLocRotChange();
+					if ( step ) step()
+				},
+				done: function() {
+					pobject.__movePosition = undefined;
+					if( callback ) callback()
+				},
+				duration: time
+			} )
+
+		}
 	}
 	getRotation() {
 		return Proton3DInterpreter.Proton3DObject.getRotation( this )
@@ -1250,6 +1375,9 @@ class Proton3DObject {
 	getWorldPosition() {
 		return Proton3DInterpreter.Proton3DObject.getWorldPosition( this )
 	}
+	getWorldRotation() {
+		return Proton3DInterpreter.Proton3DObject.getWorldRotation( this )
+	}
 	getCollidingObjects() {
 		return Proton3DInterpreter.Proton3DObject.getCollidingObjects( this )
 	}
@@ -1261,7 +1389,7 @@ class Proton3DObject {
 	}
 }
 /*
-	loc:9.3
+	loc:4.2
 	Proton3DMaterial
 */
 class Proton3DMaterial {
@@ -1392,7 +1520,7 @@ class Proton3DMaterial {
 	}
 }
 /*
-	loc:9.4
+	loc:4.3
 	Proton3DInterpreter
 */
 var meshes = []
@@ -1407,10 +1535,9 @@ function getMaterialByName ( name ) {
 		return x.name === name
 	} )
 }
-//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//  //
-//\\ Proton3DInterpreter		    	//  //
-//\\ (the star of the Proton3D show)    //  // loc:10 - 10.11
-//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//  //
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//
+//\\ Proton3DInterpreter		    //
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //	README
 //		[!] All functions shown below that have parameters and that
 //				are not called by other functions in the Interpreter
@@ -1430,7 +1557,7 @@ function getMaterialByName ( name ) {
 //
 const Proton3DInterpreter = {
 
-	//creating and modifing Proton3DScenes -- loc:10.1
+	//creating and modifing Proton3DScenes
 	create3DScene( extras ) {
 		extras.refreshRate = extras.refreshRate || this.refreshRate || 10
 		extras.antialias = extras.antialias || false;
@@ -1438,19 +1565,20 @@ const Proton3DInterpreter = {
 		//variables
 		extras.scene.usePBR = extras.pbr;
 		this.canvas = document.createElement( "canvas" );
-		this.context = this.canvas.getContext( "webgl2", { alpha: false } );
-		this.renderer = new THREE.WebGLRenderer( {
-			antialias: extras.antialias,
+		this.context = this.canvas.getContext( "webgl2", { /*alpha: false*/ } );
+		this.renderer = new THREE[ "WebGLRenderer" ]( {
+			antialias: false,
 			canvas: this.canvas,
 			context: this.context,
-			precision: extras.shaderQuality.toLowerCase() + "p"
+			precision: extras.shaderQuality.toLowerCase() + "p",
+			logarithmicDepthBuffer: true
 		} );
+		this.renderer.setPixelRatio( window.devicePixelRatio );
 		this.frame = 0;
-		this.renderThing = this.renderer;
 		this.fpsMeasurements = [];
 		this.renderer.setSize( extras.width, extras.height );
 		this.renderer.shadowMap.enabled = true;
-		this.renderer.shadowMap.type = THREE.VSMShadowMap;
+		this.renderer.shadowMap.type = extras.pcfSoftShadows? THREE.PCFSoftShadowMap : THREE.VSMShadowMap;
 		//physics
 		this.objects = new Physijs.Scene();
 		this.objects.setGravity( new THREE.Vector3( 0, ( extras.gravity || -9.81 ), 0 ) );
@@ -1458,18 +1586,95 @@ const Proton3DInterpreter = {
 		extras.element.appendChild( this.canvas );
 		extras.scene.element.style.imageRendering = extras.pixelatedScene? "pixelated": "";
 		//updating a scene
-		Proton3DInterpreter.render( extras.scene )
+		Proton3DInterpreter.render( extras.scene );
+		//renderization
+		var hdrRenderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, stencilBuffer: false } );
+		var scenePass = new THREE.RenderPass( Proton3DInterpreter.objects, getMeshByName( extras.scene.camera.name ) );
+		this.composer = new THREE.EffectComposer( Proton3DInterpreter.renderer, hdrRenderTarget );
+		this.composer.addPass( scenePass );
+		//cascaded shadow maps
+		if ( extras.shadowLOD ) {
+
+			this.shadowLODInterval = function() {
+				Proton3DInterpreter.objects.children.forEach( getLights )
+			}
+			extras.scene.extraFunctions.push( this.shadowLODInterval );
+			function getLights( child ) {
+				child.children.forEach( getLights )
+				if ( child.shadow ) {
+				
+					var originalWidth = child.shadow.mapSize.width;
+					child.shadow.mapSize.width = child.shadow.mapSize.height = getShadowLOD( scene.camera.getWorldPosition().distanceTo( child.position ) )
+					if ( child.shadow.mapSize.width != originalWidth ) {
+					
+						child.shadow.map.dispose();
+						child.shadow.map = null;
+					
+					}
+
+				}
+			}
+			function getShadowLOD( distance ) {
+				if ( distance < 100 ) {
+
+					return extras.shadowLOD;
+
+				}
+				if ( distance < 500 ) {
+
+					return extras.shadowLOD / 2;
+
+				}
+				if ( distance < 1000 ) {
+
+					return extras.shadowLOD / 4;
+
+				}
+				return extras.shadowLOD / 8;
+			}
+
+		}
+		//bloom + adaptive tone mapping
+		if ( extras.hdr ) {
+
+			extras.bloom = true;
+			extras.dynamicToneMapping = true;
+
+		}
+		if ( extras.bloom ) {
+
+			var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 0.3, 1, 0.985 );
+			//
+			this.composer.addPass( bloomPass );
+
+		}
+		if ( extras.dynamicToneMapping ) {
+
+			var adaptToneMappingPass = new THREE.AdaptiveToneMappingPass( true, 512 );
+			adaptToneMappingPass.needsSwap = true;
+			//
+			this.composer.addPass( adaptToneMappingPass );
+
+		}
+		//antialising
+		if ( extras.antialias ) {
+
+			var smaaPass = new THREE.SMAAPass( window.innerWidth * Proton3DInterpreter.renderer.getPixelRatio(), window.innerHeight * Proton3DInterpreter.renderer.getPixelRatio() );
+			this.composer.addPass( smaaPass );
+
+		}
+		//anisotropic filtering
+		if ( extras.anisotropicFiltering ) {
+
+			Proton3DInterpreter.anisotropicFiltering = Proton3DInterpreter.renderer.capabilities.getMaxAnisotropy();
+
+		}
 		//PBR
 		this.pbrTexture = extras.pbrTexture;
 		this.livePBRArray = [];
-		this.livePBR = true;
+		this.livePBR = extras.livePBR;
 		this.pbrInterval = function () {
 			Proton3DInterpreter.livePBRArray.forEach( function ( object ) {
-				if ( object.position.distanceTo( extras.scene.camera.parent.position ) > 5 ) {
-
-					return
-
-				}
 				getMeshByName( object.name ).pbr? getMeshByName( object.name ).pbr() : undefined;
 			} );
 		}
@@ -1483,7 +1688,11 @@ const Proton3DInterpreter = {
 						return
 
 					}
-					if ( getMeshByName( object.name ) == undefined || object.position.distanceTo( extras.scene.camera.parent.position ) > 100 || ( object.material != undefined && object.material.roughness > 0.3 ) ) {
+					//
+					var frustum = new THREE.Frustum();
+					frustum.setFromProjectionMatrix( new THREE.Matrix4().multiplyMatrices( getMeshByName( extras.scene.camera.name ).projectionMatrix, getMeshByName( extras.scene.camera.name ).matrixWorldInverse ) );
+					//
+					if ( getMeshByName( object.name ) == undefined || !frustum.intersectsObject( getMeshByName( object.name ) ) || ( object.material != undefined && object.material.roughness > 0.3 ) ) {
 
 						return
 
@@ -1498,30 +1707,12 @@ const Proton3DInterpreter = {
 			setInterval( this.pbrInterval, 64 );
 			setInterval( this.pbrArrayInterval, 4000 );
 
-		} else {
-
-			ProtonJS.oldResume = ProtonJS.resume;
-			ProtonJS.resume = function() {
-				ProtonJS.oldResume();
-				extras.scene.getObjectList().forEach( function ( object ) {
-					if ( object == undefined ) {
-
-						return
-
-					}
-					if ( getMeshByName( object.name ) != undefined && getMeshByName( object.name ).pbr ) {
-
-						getMeshByName( object.name ).pbr()
-
-					}
-				} )
-			}
-
 		}
 		//dynamic resolution
 		if ( extras.dynamicResolution ) {
 
 			setInterval( function() {
+				Proton3DInterpreter.composer.setPixelRatio( ( Proton3DInterpreter.fps / 60 ) / ( extras.dynamicResolutionFactor || 4 ) )
 				Proton3DInterpreter.renderer.setPixelRatio( ( Proton3DInterpreter.fps / 60 ) / ( extras.dynamicResolutionFactor || 4 ) ) 
 			}, 500 );
 			extras.scene.priorityExtraFunctions.push( function() {
@@ -1553,17 +1744,46 @@ const Proton3DInterpreter = {
 		} );
 	},
 	addToScene( object, scene ) {
-		this.objects.add( object.name? getMeshByName( object.name ) : object );
-		scene.objectList.push( object )
-		//physically based rendering
+		this.objects.add( object.name && getMeshByName( object.name )? getMeshByName( object.name ) : object );
+		scene.objectList.push( object );
+		this.initToScene( object, scene )
+	},
+	initToScene( object, scene ) {
+		if ( ( object.name && getMeshByName( object.name )? getMeshByName( object.name ) : object ).type.toLowerCase() == "armature" ) {
+
+			return
+
+		}
+		//vars
 		var skipPBRReplacement = object.skipPBRReplacement,
 			skipPBRReplacement_light = object.skipPBRReplacement_light,
-			object = object.name? getMeshByName( object.name ) : object,
-			oldMaterial = object.material;
+			P3DObject = object,
+			object = object.name && getMeshByName( object.name )? getMeshByName( object.name ) : object;
+		//bounding box
+		P3DObject.updateBoundingBox = function() {
+		
+			var object = P3DObject.name && getMeshByName( P3DObject.name )? getMeshByName( P3DObject.name ) : P3DObject;
+			if ( !object || P3DObject.sunPosition || !object.geometry ) {
+
+				return
+
+			}
+			object.updateMatrixWorld();
+			object.geometry.computeBoundingBox();
+			P3DObject.boundingBox = object.geometry.boundingBox.clone();
+			P3DObject.boundingBox.min.y -= 2;
+			P3DObject.boundingBox.max.y += 2;
+			P3DObject.boundingBox.applyMatrix4( object.matrixWorld );
+			
+		}
+		P3DObject.updateBoundingBox();
+		//geometry
+	//	if ( object.geometry && object.geometry.isGeometry ) object.geometry = ( new THREE.BufferGeometry() ).fromGeometry( object.geometry )
+		//physically based rendering
 		if ( scene.usePBR != false && !skipPBRReplacement && !skipPBRReplacement_light && object.material ) {
 
 			object.pbr = function ( scene = Proton3DInterpreter, PBRCamera = object.pbrCam ) {
-				object.visible = false
+				object.visible = false;
 				PBRCamera.update( scene.renderer, scene.objects );
 				object.visible = true;
 				if ( object.material[0] != null ) {
@@ -1647,7 +1867,6 @@ const Proton3DInterpreter = {
 
 				object.pbrCam = new THREE.CubeCamera( 1, 100, 128 );
 				object.pbrTexture = Proton3DInterpreter.pbrTexture? new THREE.TextureLoader().load( Proton3DInterpreter.pbrTexture ) : undefined;
-				console.log( object.pbrTexture )
 				object.add( object.pbrCam );
 				//
 				hasProto = material.__proto__.type != null;
@@ -1664,9 +1883,9 @@ const Proton3DInterpreter = {
 						continue
 
 					}
-					if ( newMaterial[i] != null ) {
+					if ( newMaterial[ i ] != null ) {
 
-						newMaterial[i] = oldMaterial[i]
+						newMaterial[ i ] = oldMaterial[ i ];
 
 					}
 
@@ -1689,6 +1908,153 @@ const Proton3DInterpreter = {
 				newMaterial.envMap = object.pbrCam.renderTarget.texture;
 				newMaterial.shadowSide = THREE.BackSide;
 				newMaterial.color = oldMaterial.color;
+				//anisotropic filtering
+				if ( Proton3DInterpreter.anisotropicFiltering ) {
+					
+					for ( var i in newMaterial ) {
+
+						if ( newMaterial[ i ] && newMaterial[ i ].anisotropy ) {
+
+							newMaterial[ i ].anisotropy = Proton3DInterpreter.anisotropicFiltering;
+		
+						}
+
+					}
+
+				}
+				//box projected cubemaps ==> slightly modifed from https://github.com/mrdoob/three.js/blob/master/examples/webgl_materials_envmaps_parallax.html
+				var worldposReplace = `
+				#define BOX_PROJECTED_ENV_MAP
+				#if defined( USE_ENVMAP ) || defined( DISTANCE ) || defined ( USE_SHADOWMAP )
+					vec4 worldPosition = modelMatrix * vec4( transformed, 1.0 );
+					#ifdef BOX_PROJECTED_ENV_MAP
+						vWorldPosition = worldPosition.xyz;
+					#endif
+				#endif
+				`;
+
+				var envmapPhysicalParsReplace = `
+				#if defined( USE_ENVMAP )
+					#define BOX_PROJECTED_ENV_MAP
+					#ifdef BOX_PROJECTED_ENV_MAP
+						uniform vec3 cubeMapSize;
+						uniform vec3 cubeMapPos;
+						uniform vec4 cubeMapRotation;
+						varying vec3 vWorldPosition;
+						vec3 parallaxCorrectNormal( vec3 v, vec3 cubeSize, vec3 cubePos, vec4 q ) {
+							vec3 nDir = normalize( v );
+
+							vec3 rbmax = ( .5 * cubeSize + cubePos - vWorldPosition ) / nDir;
+							vec3 rbmin = ( -.5 * cubeSize + cubePos - vWorldPosition ) / nDir;
+							vec3 rbminmax;
+							rbminmax.x = ( nDir.x > 0. ) ? rbmax.x : rbmin.x;
+							rbminmax.y = ( nDir.y > 0. ) ? rbmax.y : rbmin.y;
+							rbminmax.z = ( nDir.z > 0. ) ? rbmax.z : rbmin.z;
+
+							float correction = min( min( rbminmax.x, rbminmax.y ), rbminmax.z );
+							vec3 boxIntersection = vWorldPosition + nDir * correction;
+							return boxIntersection - cubePos;
+						}
+					#endif
+					#ifdef ENVMAP_MODE_REFRACTION
+						uniform float refractionRatio;
+					#endif
+					vec3 getLightProbeIndirectIrradiance( /*const in SpecularLightProbe specularLightProbe,*/ const in GeometricContext geometry, const in int maxMIPLevel ) {
+						vec3 worldNormal = inverseTransformDirection( geometry.normal, viewMatrix );
+						#ifdef ENVMAP_TYPE_CUBE
+							#ifdef BOX_PROJECTED_ENV_MAP
+								worldNormal = parallaxCorrectNormal( worldNormal, cubeMapSize, cubeMapPos, cubeMapRotation );
+							#endif
+							vec3 queryVec = vec3( flipEnvMap * worldNormal.x, worldNormal.yz );
+							// TODO: replace with properly filtered cubemaps and access the irradiance LOD level, be it the last LOD level
+							// of a specular cubemap, or just the default level of a specially created irradiance cubemap.
+							#ifdef TEXTURE_LOD_EXT
+								vec4 envMapColor = textureCubeLodEXT( envMap, queryVec, float( maxMIPLevel ) );
+							#else
+								// force the bias high to get the last LOD level as it is the most blurred.
+								vec4 envMapColor = textureCube( envMap, queryVec, float( maxMIPLevel ) );
+							#endif
+							envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
+						#elif defined( ENVMAP_TYPE_CUBE_UV )
+							vec4 envMapColor = textureCubeUV( envMap, worldNormal, 1.0 );
+						#else
+							vec4 envMapColor = vec4( 0.0 );
+						#endif
+						return PI * envMapColor.rgb * envMapIntensity;
+					}
+					// Trowbridge-Reitz distribution to Mip level, following the logic of http://casual-effects.blogspot.ca/2011/08/plausible-environment-lighting-in-two.html
+					float getSpecularMIPLevel( const in float roughness, const in int maxMIPLevel ) {
+						float maxMIPLevelScalar = float( maxMIPLevel );
+						float sigma = PI * roughness * roughness / ( 1.0 + roughness );
+						float desiredMIPLevel = maxMIPLevelScalar + log2( sigma );
+						// clamp to allowable LOD ranges.
+						return clamp( desiredMIPLevel, 0.0, maxMIPLevelScalar );
+					}
+					vec3 getLightProbeIndirectRadiance( /*const in SpecularLightProbe specularLightProbe,*/ const in vec3 viewDir, const in vec3 normal, const in float roughness, const in int maxMIPLevel ) {
+						#ifdef ENVMAP_MODE_REFLECTION
+							vec3 reflectVec = reflect( -viewDir, normal );
+							// Mixing the reflection with the normal is more accurate and keeps rough objects from gathering light from behind their tangent plane.
+							reflectVec = normalize( mix( reflectVec, normal, roughness * roughness) );
+						#else
+							vec3 reflectVec = refract( -viewDir, normal, refractionRatio );
+						#endif
+						reflectVec = inverseTransformDirection( reflectVec, viewMatrix );
+						float specularMIPLevel = getSpecularMIPLevel( roughness, maxMIPLevel );
+						#ifdef ENVMAP_TYPE_CUBE
+							#ifdef BOX_PROJECTED_ENV_MAP
+								reflectVec = parallaxCorrectNormal( reflectVec, cubeMapSize, cubeMapPos, cubeMapRotation );
+							#endif
+							vec3 queryReflectVec = vec3( flipEnvMap * reflectVec.x, reflectVec.yz );
+							#ifdef TEXTURE_LOD_EXT
+								vec4 envMapColor = textureCubeLodEXT( envMap, queryReflectVec, specularMIPLevel );
+							#else
+								vec4 envMapColor = textureCube( envMap, queryReflectVec, specularMIPLevel );
+							#endif
+							envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
+						#elif defined( ENVMAP_TYPE_CUBE_UV )
+							vec4 envMapColor = textureCubeUV( envMap, reflectVec, roughness );
+						#elif defined( ENVMAP_TYPE_EQUIREC )
+							vec2 sampleUV;
+							sampleUV.y = asin( clamp( reflectVec.y, - 1.0, 1.0 ) ) * RECIPROCAL_PI + 0.5;
+							sampleUV.x = atan( reflectVec.z, reflectVec.x ) * RECIPROCAL_PI2 + 0.5;
+							#ifdef TEXTURE_LOD_EXT
+								vec4 envMapColor = texture2DLodEXT( envMap, sampleUV, specularMIPLevel );
+							#else
+								vec4 envMapColor = texture2D( envMap, sampleUV, specularMIPLevel );
+							#endif
+							envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
+						#elif defined( ENVMAP_TYPE_SPHERE )
+							vec3 reflectView = normalize( ( viewMatrix * vec4( reflectVec, 0.0 ) ).xyz + vec3( 0.0,0.0,1.0 ) );
+							#ifdef TEXTURE_LOD_EXT
+								vec4 envMapColor = texture2DLodEXT( envMap, reflectView.xy * 0.5 + 0.5, specularMIPLevel );
+							#else
+								vec4 envMapColor = texture2D( envMap, reflectView.xy * 0.5 + 0.5, specularMIPLevel );
+							#endif
+							envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
+						#endif
+						return envMapColor.rgb * envMapIntensity;
+					}
+				#endif
+				`;
+				newMaterial.onBeforeCompile = function ( shader ) {
+
+					shader.uniforms.cubeMapSize = { value: object.p3dParent.boundingBox.getSize( new THREE.Vector3() ) };
+					shader.uniforms.cubeMapPos = { value: object.position };
+					shader.uniforms.cubeMapRotation = { value: object.quaternion };
+					
+
+					shader.vertexShader = 'varying vec3 vWorldPosition;\n' + shader.vertexShader;
+
+					shader.vertexShader = shader.vertexShader.replace(
+						'#include <worldpos_vertex>',
+						worldposReplace
+					);
+					shader.fragmentShader = shader.fragmentShader.replace(
+						'#include <envmap_physical_pars_fragment>',
+						envmapPhysicalParsReplace
+					);
+
+				};
 
 			} else {
 
@@ -1733,18 +2099,18 @@ const Proton3DInterpreter = {
 	removeFromScene( object, scene ) {
 		this.objects.remove( getMeshByName( object.name ) || object )
 	},
-	render( scene ) {
-		//rendering using three.js
-		this.renderThing.render( this.objects, getMeshByName( scene.camera.name ) );
-		//physics
+	render( scene, time ) {
+		//physics -- physijs
 		this.objects.simulate()
+		//rendering -- three.js
+		this.composer? this.composer.render() : this.renderer.render( this.objects, getMeshByName( scene.camera.name ) );
 	},
 	resume() {
 		this.objects.onSimulationResume();
 	},
 
 
-	//creating and modifing Proton3DObjects -- loc:10.2
+	//creating and modifing Proton3DObjects
 	create3DObject( extras, object ) {
 		//the different object types that you see here must be used when swapping this function.
 		//any extras are welcome, though!
@@ -1834,7 +2200,7 @@ const Proton3DInterpreter = {
 				spotlight.name = object.name;
 				spotlight.shadow.camera.near = 8;
 				spotlight.shadow.camera.far = 200;
-				spotlight.shadow.bias = -0.002;
+				spotlight.shadow.bias = -0.0002;
 				spotlight.shadow.radius = 5;
 				//
 				meshes.push( spotlight );
@@ -1842,11 +2208,52 @@ const Proton3DInterpreter = {
 				object.changeColor = function ( hexString ) {
 					spotlight.color = new THREE.Color( hexString )
 				}
+				object.getColor = function ( hexString ) {
+					return spotlight.color
+				}
+				object.changeAngle = function ( value ) {
+					spotlight.angle = value;
+				}
+				object.getAngle = function () {
+					return spotlight.angle;
+				}
 				object.changeIntensity = function ( value ) {
 					spotlight.intensity = value
 				}
-				object.getIntensity = function ( value ) {
+				object.getIntensity = function () {
 					return spotlight.intensity
+				}
+				object.setTargetPosition = function ( x, y, z ) {
+					spotlight.parent.add( spotlight.target );
+					spotlight.target.position.set( x, y, z );
+				}
+				object.getTargetPosition = function () {
+					return spotlight.target.position;
+				}
+				//
+				break;
+			
+			case "pointlight":
+				var pointlight = new THREE.PointLight( new THREE.Color( extras.color || "#fff" ), extras.intensity || 15, extras.decay || 0 )
+				pointlight.castShadow = true;
+				pointlight.shadow.mapSize.width = 1024;
+				pointlight.shadow.mapSize.height = 1024;
+				pointlight.name = object.name;
+				pointlight.shadow.radius = 5;
+				//
+				meshes.push( pointlight );
+				//
+				object.changeColor = function ( hexString ) {
+					pointlight.color = new THREE.Color( hexString )
+				}
+				object.getColor = function ( hexString ) {
+					return pointlight.color
+				}
+				object.changeIntensity = function ( value ) {
+					pointlight.intensity = value
+				}
+				object.getIntensity = function () {
+					return pointlight.intensity
 				}
 				//
 				break;
@@ -1854,7 +2261,10 @@ const Proton3DInterpreter = {
 			case "directionallight":
 				var directionallight = new THREE.DirectionalLight( new THREE.Color( extras.color || "#fff" ), extras.intensity == null? 15 : extras.intensity )
 				directionallight.shadow.camera = new THREE.OrthographicCamera( -100, 100, 100, -100, 0.25, 1000 );
+				
 				directionallight.shadow.radius = 1.5;
+				directionallight.shadow.mapSize.width = 1024;
+				directionallight.shadow.mapSize.height = 1024;
 				directionallight.shadow.bias = -0.0008;
 				directionallight.name = object.name;
 				meshes.push( directionallight );
@@ -2174,8 +2584,13 @@ const Proton3DInterpreter = {
 		}
 		//sets the mesh's parent
 		getMeshByName( object.name ).p3dParent = object
+		//making the player invisible
+		if ( extras.invisible ) object.makeInvisible()
 	},
 	Proton3DObject: {
+		makeInvisible( P3DObject ) {
+			Object.defineProperty( getMeshByName( P3DObject.name ).material, "visible", { configurable: false, writable: false, value: false } );
+		},
 		getShadowOptions( P3DObject ) {
 			return {
 				cast: getMeshByName( P3DObject.name ).castShadow,
@@ -2248,21 +2663,11 @@ const Proton3DInterpreter = {
 		makeListeningObject( THREEListener = new THREE.AudioListener(), P3DObject ) {
 			getMeshByName( P3DObject.name ).add( THREEListener )
 		},
-		setLinearVelocity( x = 0, y = 0, z = 0, P3DObject ) {
-			if ( !x.x ) {
-
-				x = ProtonJS.cache.vector3( x, y, z )
-
-			}
-			getMeshByName( P3DObject.name ).setLinearVelocity( x )
+		setLinearVelocity( x = getMeshByName( P3DObject.name ).getLinearVelocity().x, y = getMeshByName( P3DObject.name ).getLinearVelocity().y, z = getMeshByName( P3DObject.name ).getLinearVelocity().z, P3DObject ) {
+			getMeshByName( P3DObject.name ).setLinearVelocity( new THREE.Vector3( x, y, z ) )
 		},
-		setAngularVelocity( x = 0, y = 0, z = 0, P3DObject ) {
-			if ( !x.x ) {
-
-				x = ProtonJS.cache.vector3( x, y, z )
-
-			}
-			getMeshByName( P3DObject.name ).setAngularVelocity( x )
+		setAngularVelocity( x = getMeshByName( P3DObject.name ).getAngularVelocity().x, y = getMeshByName( P3DObject.name ).getAngularVelocity().y, z = getMeshByName( P3DObject.name ).getAngularVelocity().z, P3DObject ) {
+			getMeshByName( P3DObject.name ).setAngularVelocity( new THREE.Vector3( x, y, z ) )
 		},
 		setLinearFactor( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( !x.x ) {
@@ -2378,8 +2783,23 @@ const Proton3DInterpreter = {
 		getWorldPosition( P3DObject ) {
 			return ( new THREE.Vector3() ).setFromMatrixPosition( getMeshByName( P3DObject.name ).matrixWorld )
 		},
+		getWorldRotation( P3DObject ) {
+			return getMeshByName( P3DObject.name ).getWorldQuaternion( new THREE.Euler() );
+		},
 		getCollidingObjects( P3DObject ) {
-			return getMeshByName( P3DObject.name )._physijs.touches
+			var touches = [], object = getMeshByName( P3DObject.name );
+			//modified from https://stackoverflow.com/questions/11473755/how-to-detect-collision-in-three-js/
+			for ( var vertexIndex = 0; vertexIndex < object.geometry.vertices.length; vertexIndex ++ ) {       
+				//reduced the vertices needed to find a collision
+				if ( vertexIndex % 2 == 0 || vertexIndex % 3 == 0 ) continue;
+				//reduced variable usage
+				var directionVector = object.geometry.vertices[ vertexIndex ].clone().applyMatrix4( object.matrix ).sub( object.position );
+				( new THREE.Raycaster( object.position, directionVector.clone().normalize() ) ).intersectObjects( Proton3DInterpreter.objects.children ).forEach( function( collision ) {
+					if ( touches.find( function( x ) { return x.name === collision.object.name } ) || collision.distance > ( directionVector.distanceTo( new THREE.Vector3() ) + .1 ) || ( collision.object.material && collision.object.material.uniforms && collision.object.material.uniforms.sunPosition ) || collision.object == object || collision.object.parent == object || collision.object.parent.parent == object || collision.object.parent.parent == object ) return;
+					touches.push( collision.object.p3dParent || collision.object )
+				} )
+			}
+			return touches;
 		},
 		add( object, P3DObject ) {
 			getMeshByName( P3DObject.name ).add( getMeshByName( object.name ) );
@@ -2393,10 +2813,15 @@ const Proton3DInterpreter = {
 		}
 	},
 	importObject: function( extras ){
+		//variables
 		var loader,
 			x = this,
-			objects = [],
-			mesh;
+			scene;
+		//output stuff
+		this.objects = [];
+		this.animations = [];
+		this.raw = null;
+
 		//gets the loader and loads the file
 		switch ( extras.fileType.toLowerCase() ) {
 
@@ -2405,17 +2830,19 @@ const Proton3DInterpreter = {
 				loader.setLogging( false, false );
 				if ( typeof extras.mtlPath === "string" ) {
 
+					//loads an mtl + an obj file
 					loader.loadMtl( extras.mtlPath, null, function ( materials ) {
 						loader.setMaterials( materials );
 						loader.load( extras.objPath, function ( object ) {
-							finishLoad( object, object.detail.loaderRootNode )
+							finishLoad( object.detail.loaderRootNode, object )
 						} );
 					} );
 
 				} else {
 
+					//loads just an obj file
 					loader.load( extras.objPath, function ( object ) {
-						finishLoad( object, object.detail.loaderRootNode )
+						finishLoad( object )
 					} );
 
 				}
@@ -2425,331 +2852,467 @@ const Proton3DInterpreter = {
 
 				loader = new THREE.GLTFLoader( extras.loadManager );
 				loader.load( extras.gltfPath, function ( object ) {
-					finishLoad( object, object.scene )
+					finishLoad( object )
 				} );
 				break;
 
 		}
-		//finishes the loading stuff
-		function finishLoad( object, threeObject ) {
-			mesh = threeObject;
-			mesh.children.forEach( function ( child ) {
-				if ( child.isGroup ) {
-					child.children.forEach( function ( child_child ) {
-						mesh.add( child_child )
-					} )
-					mesh.remove( child )
-				}
-			} )
+		//gets the loaded objects and completes the function
+		function finishLoad( load ) {
+			scene = load.scene || load.detail.loaderRootNode;
+			//"registers" each object as a physics object
 			if ( extras.noPhysics != true ) {
 
-				mesh.children.forEach( function ( c, i ) {
-					var m;
-					//some geometry stuff  {
-					if ( c.isMesh && c.geometry != null && !c._physijs ) {
-
-						c.updateMatrix();
-						c.geometry = new THREE.Geometry().fromBufferGeometry( c.geometry );
-						if ( extras.accountForExtraProperties ) {
-
-							c.geometry.vertices.forEach( function ( vertex ) {
-								vertex.multiply( c.scale );
-							} );
-
-						}
-						if ( extras.starterPos && extras.fileType.toLowerCase() === "gltf" ) {
-
-							c.position.add( extras.starterPos )
-
-						}
-
-					} else if ( !c._physijs ) {
-
-						if ( c.position && extras.starterPos ) {
-
-							c.position.add( extras.starterPos );
-
-						}
-						objects.push( c );
-						return;
-
-					} else if ( c._physijs ) {
-
-						return
-
-					}
-					if ( c.name && c.name.includes( " --noPhysics" ) ) {
-
-						objects.push( c );
-						return;
-
-					}
-					if ( extras.objectType ) {
-
-						switch ( typeof extras.objectType ) {
-
-							case "object":
-
-								extras.objectType[ i ].charAt( 0 ).toUpperCase() + extras.objectType.slice( 1 );
-								break;
-
-							default:
-
-								m = extras.objectType.charAt( 0 ).toUpperCase() + extras.objectType.slice( 1 );
-
-						}
-
-					}
-					if ( c.name && c.name.includes( "--geometry-" ) ) {
-
-						m = c.name.slice( c.name.indexOf( "--geometry-" ) + 11, c.name.length )
-						m = m.charAt( 0 ).toUpperCase() + m.slice( 1 );
-						if ( m.includes( "_" ) ) {
-
-							m = m.slice( 0, m.indexOf( "_" ) );
-
-						}
-
-					}
-					//
-					if ( extras.collisionMaterialTransparent ) {
-
-						extras.collisionMaterial = new THREE.MeshBasicMaterial();
-						extras.collisionMaterial.transparent = true;
-						extras.collisionMaterial.opacity = 0.001;
-						extras.collisionMaterial.depthWrite = false;
-
-					}
-					//
-					var mass = 0;
-					if ( extras.mass ) {
-
-						switch ( typeof extras.mass ) {
-
-							case "object":
-
-								mass = extras.mass[ i ]
-								break;
-
-							default:
-
-								mass = extras.mass
-
-						}
-
-					}
-					if ( c.name && c.name.includes( "--mass" ) ) {
-
-						mass = c.name.slice( c.name.indexOf( "--mass-" ) + 7, c.name.length )
-						if ( mass.includes( "_" ) ) {
-
-							mass = mass.slice( 0, mass.indexOf( "_" ) );
-
-						}
-						mass = parseFloat( mass );
-
-					}
-					//
-					var physicalObject = eval( `new Physijs.` + ( m || "Box" ) + `Mesh(
-						(  extras.collisionGeometry || c.geometry  ),
-						(  extras.collisionMaterial || c.material  ),
-						mass
-					)` );
-					if( c.name && c.name.replace( /_/ig, " " ).indexOf( " --" ) > -1 ) {
-
-						c.name = c.name.replace( /_/ig, " " ).slice( 0, c.name.indexOf( " --" ) );
-
-					} else if( c.name ) {
-
-						c.name = c.name.replace( /_/ig, " " )
-
-					}
-					physicalObject.name = c.name;
-					physicalObject.userData = c.userData;
-					physicalObject.material.transparent = true;
-					if ( extras.starterPos && extras.fileType.toLowerCase() != "gltf" ) {
-
-						physicalObject.position.set(
-							extras.starterPos.x + c.position.x,
-							extras.starterPos.y + c.position.y,
-							extras.starterPos.z + c.position.z,
-						);
-						physicalObject.__dirtyPosition = true;
-						c.position.set( 0, 0, 0 )
-
-					}
-					if ( extras.accountForExtraProperties ) {
-
-						physicalObject.rotation.set(
-							c.rotation.x,
-							c.rotation.y,
-							c.rotation.z
-						)
-						physicalObject.position.set(
-							c.position.x,
-							c.position.y,
-							c.position.z
-						)
-
-					}
-					//
-					if ( extras.useCollisionBox ) {
-
-						extras.collisionBoxPosition = ( extras.collisionBoxPosition || new THREE.Vector3( 0, 0, 0 ) );
-						c.position.set( extras.collisionBoxPosition.x, extras.collisionBoxPosition.y, extras.collisionBoxPosition.z );
-						physicalObject.add( c );
-						mesh.children.push( physicalObject );
-						objects.push( physicalObject );
-						return;
-
-					}
-					if ( extras.accountForExtraProperties ) {
-
-						mesh.children.push( physicalObject );
-						objects.push( physicalObject );
-						return;
-
-					}
-					if ( extras.fileType != "gltf" ) {
-
-						physicalObject.add( c );
-						mesh.children.push( physicalObject );
-						objects.push( physicalObject );
-
-					} else {
-
-						physicalObject.children = c.children
-						for ( var i in physicalObject ) {
-							if ( i != "position" && i != "rotation" && i != "quaternion" && i != "scale" ) {
-
-								c[ i ] = physicalObject[ i ];
-
-							}
-						}
-						objects.push( c );
-
-					}
-					physicalObject.geometry = new THREE.BufferGeometry().fromGeometry( physicalObject.geometry );
-					c.geometry = new THREE.BufferGeometry().fromGeometry( c.geometry );
-					if ( mesh.children.length === 1 ) {
-
-						mesh = mesh.children[ 0 ];
-
-					}
-				} );
+				scene.children.forEach( loadObjectPhysics )
 
 			} else {
 
 				if ( extras.starterPos ) {
 
-					mesh.position.add( extras.starterPos )
+					scene.position.add( extras.starterPos )
 
 				}
-				mesh.children.forEach( function ( child ) {
-					if ( extras.starterPos ) {
+				scene.children.forEach( function ( child ) {
+					if ( extras.starterPos && child.position ) {
 
 						child.position.add( extras.starterPos )
 
 					}
-					objects.push( child )
+					//armature
+					if ( child.name.toLowerCase().includes( "armature" ) && extras.armature ) {
+
+						child.children[ child.children.length - 1 ].armature = child;
+
+					}
 				} )
 
 
 			}
-			mesh.children.forEach( castShadow );
+			//shadows
+			scene.children.forEach( castShadow );
 			function castShadow( c ) {
-				if ( extras.castShadow ) {
+				if ( extras.castShadow != false ) {
 
 					c.castShadow = true
 
 				}
-				if ( extras.receiveShadow ) {
+				if ( extras.receiveShadow != false ) {
 
 					c.receiveShadow = true
 
 				}
-				c.children? c.children.forEach( castShadow ) : undefined;
+				if ( c.children ) c.children.forEach( castShadow )
 			}
 			//animations
-			if ( extras.fileType.toLowerCase() === "gltf" && object.animations && object.animations.length ) {
+			if ( extras.fileType.toLowerCase() === "gltf" && load.animations && load.animations.length ) {
 
-				x.animations = [];
 				if ( extras.starterPos ) {
 
-					mesh.position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z );
-					object.scene.position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z );
+					scene.position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z );
 
 				}
-				for ( var i in object.animations ) {
-					var mixer = new THREE.AnimationMixer( mesh );
+				var mixer = new THREE.AnimationMixer( scene ),
+					clock = 1/60;
+				for ( var i in load.animations ) {
 					var animation = {
-						action: mixer.clipAction( object.animations[ i ] ),
-						play: function ( animatingObjects = [] ) {
-							if ( !this.action.paused ) {
+						rootAction: mixer.clipAction( load.animations[ i ] ),
+						repeat: false,
+						playing: false,
+						play: function ( animatingObjects = [], presetPosition = undefined, presetRotation = undefined ) {
+						//	presetPosition = new THREE.Vector3( 0, 0, 0 )
+							if ( this.playing ) {
 
-								return
+								console.error( "An animation is currently in progress. Stop the current animation before playing it again." )
+								return;
 
 							}
-							this.action.clampWhenFinished = true;
-							this.action.enable = true;
-							this.action.stop();
-							this.action.reset();
-							this.action.play();
-							var frame = 0,
-								action = this.action,
-								animation = setInterval( function () {
-									if ( action.paused ) {
+							//variables
+							var x = this,
+								tracks = [];
+							this.animatingObjects = animatingObjects;
+							//creating a new action and making its values relative to an object
+							this.action = { ...this.rootAction };
+							this.animatingObjects.forEach( function ( P3DObject ) {
+								var object = getMeshByName( P3DObject.name );
+								x.action._clip.tracks.forEach( function( track, i ) {
+									if ( track.name.includes( object.name.replace( /_copy/ig, "" ) ) ) {
 
-										action.stop();
-										action.reset();
-										clearInterval( animation );
-										action.paused = true;
-										return;
+										if ( track.name.includes( "position" ) ) {
+
+											var xyz = 0, values = [], position = presetPosition || object.position;
+											track.values.forEach( function( value ) {
+												var result = value;
+												if ( xyz == 0 ) {
+
+													result = value + position.x
+	
+												}
+												if ( xyz == 1 ) {
+
+													result = value + position.y
+
+												}
+												if ( xyz == 2 ) {
+
+													result = value + position.z
+
+												}
+												values.push( result )
+												//
+												xyz ++;
+												if ( xyz == 3 ) xyz = 0
+											} )
+											tracks[ i ] = new THREE.KeyframeTrack( track.name, track.times, values )
+										}
+
+										if ( track.name.includes( "quaternion" ) ) {
+
+											var wxyz = 0, values = [], quaternion = presetRotation || object.quaternion;
+											track.values.forEach( function( value ) {
+												var result = value;
+												if ( wxyz == 0 ) {
+
+													result = value + quaternion.x
+												
+												}
+												if ( wxyz == 1 ) {
+
+													result = value + quaternion.y
+												
+												}
+												if ( wxyz == 2 ) {
+
+													result = value + quaternion.z
+
+												}
+												if ( wxyz == 3 ) {
+
+												//	result = value + quaternion.w
+
+												}
+												values.push( result )
+												//
+												wxyz ++;
+												if ( wxyz == 4 ) wxyz = 0
+											} )
+											tracks[ i ] = new THREE.KeyframeTrack( track.name, track.times, values )
+										}
 
 									}
-									mixer.update( frame += 0.005 );
-									mesh.children.forEach( function ( object ) {
-										if ( animatingObjects.indexOf( object ) > -1 ) {
+								} )
+							} );
+							this.action._clip = new THREE.AnimationClip( x.action._clip.name, x.action._clip.duration, tracks )
+							this.action = mixer.clipAction( this.action._clip )
+							//
+							var x = this,
+								actionMatches = [
+									"clampwhenfinished",
+									"enabled",
+									"loop",
+									"paused",
+									"repetitions",
+									"time",
+									"timescale",
+									"weight",
+									"zeroslopeatend",
+									"zeroslopeatstart"
+								]
+							for( var i in action ) {
+								if ( actionMatches.indexOf( i.toLowerCase() ) != -1 ) x.action[ i ] = action[ i ];
+							}
+							//
+							this.action.clampWhenFinished = true;
+							this.action.repetitions = this.repeat? Infinity : 0;
+							this.action.enabled = true;
+							this.action.paused = false;
+							this.playing = true;
+							console.log( tracks )
+							this.action.play();
+							var action = this.action;
+							this.animation = setInterval( function () {
+								if ( action.paused ) {
 
-											object.position.add( extras.starterPos );
+									x.stop();
+									return;
 
-										}
-										object.__dirtyPosition = true;
-										object.__dirtyRotation = true;
-									} );
-								}, 16 )
+								}
+								//update all animating objects
+								mixer.update( clock );
+								//add the position of all animating objects with its initial position
+								x.animatingObjects.forEach( function ( object ) {
+									object.applyLocRotChange();
+									object.__animationLastPosition = object.position.clone();
+									object.__animationLastRotation = getMeshByName( object.name ).quaternion.clone();
+								} );
+							}, 30 )
+						},
+						stop: function() {
+							this.action.stop();
+							this.action.reset();
+							this.rootAction.stop();
+							this.rootAction.reset();
+							this.action.paused = true;
+							this.playing = false;
+							if ( this.animation ) {
+							
+								clearInterval( this.animation );
+								
+							}
+							if ( this.animatingObjects ) {
+								this.animatingObjects.forEach( function ( object ) {
+									if ( object.__animationLastPosition ) {
+									
+										object.setPosition( 
+											object.__animationLastPosition.x,
+											object.__animationLastPosition.y,
+											object.__animationLastPosition.z
+										);
+										object.applyLocRotChange();
+
+									}
+									if ( object.__animationLastRotation ) {
+									
+										getMeshByName( object.name ).quaternion.copy( object.__animationLastRotation );
+										object.applyLocRotChange();
+
+									}
+									object.__animationLastPosition = undefined;
+									object.__animationLastRotation = undefined;
+									console.log( object.rotation )
+								} );
+
+							}
 						}
 					}
-					animation.action.paused = true;
+					animation.name = animation.rootAction._clip.name;
+					animation.rootAction.paused = true;
 					x.animations[ i ] = animation;
 				}
-			}
-			//
-			x.children = [];
-			objects.forEach( function ( mesh, i ) {
-				var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } )
-				x.children.push( object )
-				if ( extras.objects ) {
-
-					extras.objects.add( object )
-
+				x.animations.stopAll = function () {
+					x.animations.forEach( function( animation ) {
+						animation.stop()
+					} );
+					mixer.stopAllAction()
 				}
-			} )
+			}
+			//creating Proton3D objects
+			scene.children.forEach( convertObjectToProton3D );
+			x.getObjectByName = function( name ) {
+				return x.objects.find( function( child ) {
+					return child.name.includes( name )
+				} )
+			}
+			x.raw = scene;
 			//
+			x.objects.forEach( function( object ) {
+				ProtonJS.scene.add( object )
+			} )
+			ProtonJS.scene.add( scene )
 			if ( extras.onload ) {
 
-				extras.onload( threeObject );
+				extras.onload( scene );
 
 			}
 			if ( x.onload ) {
 
-				x.onload( threeObject );
+				x.onload( scene );
 
 			}
 		}
+		function convertObjectToProton3D( mesh ) {
+			if ( mesh.children ) {
+
+				mesh.children.forEach( convertObjectToProton3D )
+
+			}
+			if ( !mesh.material && !mesh.geometry ) {
+
+				return;
+
+			}
+
+			//build the 3d object
+			var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } )
+			if ( mesh.__physicsArmatureParent ) {
+
+				//sets the skeleton in the P3DObject to that in the three.js object.
+				object.armature = mesh.armature;
+				object.skeleton = mesh.skeleton;
+				mesh.__physicsArmatureParent.object = object;
+
+			}
+			
+			if ( object.armature ) {
+
+				if ( mesh.__physicsArmatureParent ) {
+					
+					//sets the position of the mesh to be 0, 0, and 0.
+					mesh.position.set( 0, 0, 0 );
+
+					//"hides" the physics object
+					delete mesh.__physicsArmatureParent.material.visible;
+					Object.defineProperty( mesh.__physicsArmatureParent.material, "visible", { configurable: false, writable: false, value: false } );
+					
+					//sets the P3DMaterial in the physics object to be rerouting to the material in the armature
+					mesh.__physicsArmatureParent.p3dParent.material = object.material;
+
+					//adds the armature to the physics object
+					mesh.__physicsArmatureParent.add( object.armature )
+					mesh.armatureObject = true;
+					mesh.__physicsArmatureParent.p3dParent.physicsObject = true;
+					object.armature.add( getMeshByName( object.name ) )
+				
+				} else {
+				
+					object.armature.add( getMeshByName( object.name ) )
+					
+				}
+			
+			}
+
+			//adds the object to the output of objects
+			x.objects.push( object );
+			meshes.push( mesh )
+			Proton3DInterpreter.initToScene( object, ProtonJS.scene )
+		}
+		function loadObjectPhysics( child, i ) {
+			var m = "Box", c = child;
+			//armature
+			if ( child.name.toLowerCase().includes( "armature" ) && extras.armature ) {
+
+				c = child.children[ child.children.length - 1 ].clone()
+				extras.accountForExtraProperties = true;
+
+			}
+			//geometry stuff
+			if ( c.isMesh && c.geometry != undefined ) {
+				
+				//'bakes' the scale into the geometry
+				c.geometry = c.geometry.type.toLowerCase() == "buffergeometry" ? new THREE.Geometry().fromBufferGeometry( c.geometry ) : c.geometry;
+				c.geometry.vertices.forEach( function ( vertex ) {
+					vertex.multiply( c.scale );
+				} );
+				//adds the starter position to the object's position.
+				if ( extras.starterPos && extras.fileType.toLowerCase() === "gltf" ) {
+
+					c.position.add( extras.starterPos )
+
+				}
+
+			} else {
+
+				//if the object is not a mesh, forget about it.
+				if ( c.children ) {
+
+					c.children.forEach( loadObjectPhysics )
+
+				}
+				if ( c.position && extras.starterPos ) {
+
+					c.position.add( extras.starterPos );
+
+				}
+				return;
+
+			}
+			//if the object has a --noPhysics flag in its name, forget about it.
+			if ( c.name && c.name.includes( " --noPhysics" ) ) {
+
+				return;
+
+			}
+			//makes the geometry type (m) equal extras.objectType
+			if ( extras.objectType ) m = extras.objectType.charAt( 0 ).toUpperCase() + extras.objectType.slice( 1 );
+			//if the object has a --geometry flag in its name, extras.objectType will be overridden with this.
+			if ( c.name && c.name.includes( "--geometry-" ) ) {
+
+				m = c.name.slice( c.name.indexOf( "--geometry-" ) + 11, c.name.length )
+				m = m.charAt( 0 ).toUpperCase() + m.slice( 1 );
+				if ( m.includes( "_" ) ) {
+
+					m = m.slice( 0, m.indexOf( "_" ) );
+
+				}
+
+			}
+			//same as above, but for mass.
+			var mass = extras.mass || 0;
+			//same as above, but with a flag.
+			if ( c.name && c.name.includes( "--mass" ) ) {
+
+				mass = c.name.slice( c.name.indexOf( "--mass-" ) + 7, c.name.length )
+				if ( mass.includes( "_" ) ) {
+
+					mass = mass.slice( 0, mass.indexOf( "_" ) );
+
+				}
+				mass = parseFloat( mass );
+
+			}
+			//creates a physijs object
+			var physicalObject = new Physijs[ m + "Mesh" ](
+				c.geometry,
+				c.material,
+				mass
+			);
+			//sets the physics object's position, rotation and mass
+			physicalObject.position.copy( c.position );
+			physicalObject.quaternion.copy( c.quaternion );
+			physicalObject.rotation.copy( c.rotation );
+			physicalObject.__dirtyPosition = true;
+			physicalObject.__dirtyRotation = true;
+			physicalObject.mass = mass;
+			//armature
+			if ( extras.armature ) {
+
+				//clones the physics object's material
+				physicalObject.material = physicalObject.material.clone();
+
+				//adds the physics object to the object list
+				scene.add( physicalObject );
+				scene.add( child )
+				
+				//adds the armature to the object list
+				child.children[ child.children.length - 1 ].armature = child;
+				child.children[ child.children.length - 1 ].__physicsArmatureParent = physicalObject
+				child.rotation.y += angle( 180, "rad" )
+				c = child.children[ child.children.length - 1 ];
+				
+				return;
+
+			}
+			//gives the properties of the physics object to the child
+			physicalObject.children = c.children;
+			var propertiesToOmit = [
+				//the object's position, rotation, and scale
+				"position",
+				"rotation",
+				"quaternion",
+				"scale",
+				//the object's uuid, id, type, and name
+				"uuid",
+				"id",
+				"type",
+				"name",
+				//the object's parent and children
+				"parent",
+				"children"
+			]
+			for ( var i in physicalObject ) {
+				//if the property is not a property we should omit...
+				if ( propertiesToOmit.indexOf( i.toLowerCase() ) == -1 ) {
+					
+					//...set that property in the child (initial) object.
+					c[ i ] = physicalObject[ i ];
+
+				}
+			}
+			c.scale.copy( physicalObject.scale )
+			//done
+		}
 	},
 
-	//creating and modifing Proton3DMaterials -- loc:10.3
+	//creating and modifing Proton3DMaterials
 	create3DMaterial( extras, P3DMaterial, parentObject ){
 		if ( !extras.material ) {
 
@@ -2834,7 +3397,7 @@ const Proton3DInterpreter = {
 		}
 	},
 
-	//some proton.js functions -- loc:10.4
+	//some proton.js functions
 	toggleDoor( door, P3DScene ){
 		if ( !door.checkForEnding ) {
 
@@ -2967,7 +3530,7 @@ const Proton3DInterpreter = {
 	},
 
 
-	//changing mesh geometry n' materials loc:10.5
+	//changing mesh geometry n' materials
 	createMeshGeometry( obj, extras = {} ) {
 		switch( extras.type.toLowerCase() ) {
 			case "sphere":
@@ -3094,12 +3657,6 @@ const Proton3DInterpreter = {
 			bump.wrapS = THREE.RepeatWrapping;
 			bump.wrapT = THREE.RepeatWrapping;
 			bump.repeat.set( ( extras.bumpMapRepeat || 1 ), ( extras.bumpMapRepeat || 1 ) );
-			if ( extras.pixelatedBumpMap ) {
-
-				bump.magFilter = THREE.NearestFilter;
-				bump.minFilter = THREE.LinearMipMapLinearFilter;
-
-			}
 			materialParameters.bumpMap = bump
 
 		}
@@ -3109,12 +3666,6 @@ const Proton3DInterpreter = {
 			normal.wrapS = THREE.RepeatWrapping;
 			normal.wrapT = THREE.RepeatWrapping;
 			normal.repeat.set( ( extras.normalMapRepeat || 1 ), ( extras.normalMapRepeat || 1 ) );
-			if ( extras.pixelatedNormalMap ) {
-
-				normal.magFilter = THREE.NearestFilter;
-				normal.minFilter = THREE.LinearMipMapLinearFilter;
-
-			}
 			materialParameters.normalMap = normal
 
 		}
@@ -3124,10 +3675,6 @@ const Proton3DInterpreter = {
 			rough.wrapS = THREE.RepeatWrapping;
 			rough.wrapT = THREE.RepeatWrapping;
 			rough.repeat.set( ( extras.roughMapRepeat || 1 ), ( extras.roughMapRepeat || 1 ) );
-			if ( extras.pixelatedRoughMap ) {
-				rough.magFilter = THREE.NearestFilter;
-				rough.minFilter = THREE.LinearMipMapLinearFilter;
-			}
 			materialParameters.roughnessMap = rough;
 
 		}
@@ -3137,12 +3684,6 @@ const Proton3DInterpreter = {
 			displacement.wrapS = THREE.RepeatWrapping;
 			displacement.wrapT = THREE.RepeatWrapping;
 			displacement.repeat.set( ( extras.displacementMapRepeat || 1 ), ( extras.displacementMapRepeat || 1 ) );
-			if ( extras.pixelatedDisplacementMap ) {
-
-				displacement.magFilter = THREE.NearestFilter;
-				displacement.minFilter = THREE.LinearMipMapLinearFilter;
-
-			}
 			materialParameters.displacementMap = displacement;
 
 		}
@@ -3271,4 +3812,206 @@ const Proton3DInterpreter = {
 		}
 	}
 }
-ProtonJS.importObject = Proton3DInterpreter.importObject
+//\\//\\//\\//\\// //
+//\\ protonjs  \// //loc:5
+//\\//\\//\\//\\// //
+let ProtonJS = {
+	version: "beta 1.0",
+	//
+	cache: {
+		vector3: function ( x, y, z ) {
+			ProtonJS.threevector = ProtonJS.threevector || new THREE.Vector3( 0, 0, 0 );
+			return ProtonJS.threevector.set( x, y, z )
+		}
+	},
+	css: {
+		"*": [
+			"font-family: monospace !important"
+		],
+		"html, body": [
+			"width:  100%",
+			"height: 100%",
+			"margin: 0px",
+			"display: block",
+			"border: 0"
+		],
+		"body": [
+			"margin: 0",
+			"padding: 0",
+			"overflow: hidden"
+		],
+		"canvas": [
+			"margin: 0",
+			"padding: 0"
+		],
+		"watermark": [
+			"position: fixed",
+			"bottom: 5px",
+			"right: 10px",
+			"font-family: monospace",
+			"user-select: none",
+			"z-index: 2",
+			"display: inline-block"
+		],
+		"scene": [
+			"display: block",
+			"overflow: auto"
+		],
+		"scene::-webkit-scrollbar": [
+			"display: none"
+		],
+		"scene::-moz-scrollbar": [
+			"display: none"
+		],
+		"button.aperturebutton": [
+		"box-shadow: 15px 0px 1px -7px #ce4b5a",
+		"border-color: #f1f1f1",
+		"background: #f1f1f1",
+		"color: #f2a519",
+		"border-top-right-radius: 5px",
+		"border-bottom-right-radius: 5px"
+		],
+		"button.aperturebutton:hover": [
+		"background: #f1f1f1"
+		],
+		"button": [
+		"padding: 10px",
+		"border: 5px solid black",
+		"outline: none",
+		"margin: 10px",
+		"cursor: pointer",
+		"font-weight: bold",
+		"font-family: monospace",
+		"background: white",
+		"background-size: 100% 100%",
+		"transition: all 0.3s ease"
+		],
+		"button:not(.aperturebutton):hover": [
+		"box-shadow: 5px 0px 1px royalblue"
+		],
+		"button.aperturebutton:focus": [
+		"color: #5291d8"
+		],
+		"button.aperturebutton:active": [
+		"box-shadow: 10px 0px 1px -7px #ce4b5a"
+		],
+		"button:not(.aperturebutton):active": [
+		"background: black",
+		"color: white"
+		]
+	},
+	paused: false,
+	ammojsURL: "https://cdn.jsdelivr.net/gh/Mwni/AmmoNext@master/builds/ammo.js",/*physijs version of ammo = "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/examples/js/ammo.js"; latest version of ammo = "https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js"*/
+	scenes: [],
+	importObject: Proton3DInterpreter.importObject,
+	compileCSS: function ( exclude = [] ) {
+		this.style = document.createElement( "style" );
+		for ( var i in ProtonJS.css ) {
+			if ( exclude.indexOf( i ) > -1 ) {
+
+				continue;
+
+			}
+			this.style.innerHTML += i + "  {\n\t" + ProtonJS.css[i].join( ";\n\t" ) + "\n}";
+		}
+		document.head.appendChild( this.style );
+	},
+	watermark: function ( parent = document.body ) {
+		parent.appendChild( Element( "watermark", "proton.js " + this.display_version ) );
+	},
+	loadingManager: function ( extras = {} ) {
+		this.value = 0;
+		this.min = 0;
+		this.max = 0;
+		this.onLoad = null;
+		this.onStart = null;
+		this.onProgress = null;
+		this._onProgress = function ( url, itemsLoaded, itemsTotal ) {
+			this.value += itemsLoaded;
+			if ( this.onProgress ) {
+
+				this.onProgress( url, itemsLoaded, itemsTotal );
+
+			}
+			if ( this.value >= this.max && this.onLoad ) {
+
+				this.loaded = true;
+				this.onLoad();
+
+			}
+		}
+		for ( var i in extras ) {
+			this[i] = extras[i];
+		}
+	},
+	pause: function () {
+		this.paused = true;
+		this.scenes.forEach( function( scene ) {
+			if ( scene.crosshair && scene.crosshair.hide ) scene.crosshair.hide()
+		} )
+		if ( window.onpause ) {
+
+			window.onpause();
+
+		}
+	},
+	resume: function () {
+		this.paused = false;
+		this.scenes.forEach( function( scene ) {
+			if ( scene.crosshair && scene.crosshair.show ) scene.crosshair.show()
+		} )
+		Proton3DInterpreter.resume();
+		if ( window.onresume ) {
+
+			window.onresume();
+
+		}
+	},
+	crosshair( crosshair ) {
+		var crosshairElement = document.createElement( "div" );
+		crosshairElement.style.cssText = `
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(  -50%, -50%  );
+			height: 21px;
+			width: 21px;
+			image-rendering: auto !important;
+			background: url(  "data:image / png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAKXnpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjarZhpliMrDoX / s4peArNgOYzn9A56 + f0JIp1DDa + yuu2qjDAmQOheSVc26z//3uZfvILzxcQkJdecLa9YY / WNm2Lv616djefv / ZCe79zncfP6wjMUuIb7Ma9nfmM8vT8g8Rnvn8eNjGed8izkXgufV9Cd9X4 + Rj4LBX / H3fPZ1OeBlj8c5 / nvx7Pss / jXz1FwxkysF7zxK7hg79 + 7U8CKUEPjms9f8Xe0hXT + hpB + 9J95ue4nDnzdffGffbMsvLvjLvR2rPzFT / mF1Ofx8NrGf7LI + dfO / hPU23b78fXBf3vPsve6p2sxG9yVn0O9HeXcMZFFYjiPZd7C / 8S9nHflXWyzA9QmR + 2GPYerzuPr7aKbrrnt1rkONzAx + uVxt / d ++HDGCu6vfhxQor7d9mLAZ4YCKgPkAsP + ZYs7 + 1bdj80KO0 / HTO9YzPHEp7f5OvC3708L7a00d86Wl6 + wyytlMUOR07 / MigeI69N0 / OvMvdivLwU2gGA6bi4csNl + l + jJvXMrHJyDTYap0d54cTKfBXAReyeMcQEEbHYhueyseC / O4ccCPg3LfYi + g4BLJvmJlT6GkAGneN2bZ8SduT75O0x6AYhE0AjQEECAFWOKmXgrUKiZFFJMKeUkqaSaWg455pRzlqx5qkmQKEmyiBSp0koosaSSi5RSamnV10AaS6bmKrXUWltj0xYbazXmNwa676HHnnru0kuvvQ3oM + JIIw8ZZdTRpp9hkgLMzFNmmXW25RZUWnGllZessupqG67tsONOO2 / ZZdfdXqg9qH5G7Styv0fNPaj5A5TOk3fUGBZ5W8JpOkmKGYj56EBcFAEI7RUzW1yMXpFTzGz1wZClPFYmBWc6RQwE43I + bffC7h25X + Jm8O53cfM / Q84odP8P5IxC9wG5H3H7CWqznXQbDkAahfiUDBkIPyas0nxpWpe + ee2rj12Mr5uFfCw9Br3rQgYlanzCbkmrz2XrLivxZcFLkQORybZWOJE1Zee0Q9hG9s4T + yWv6rBr7ZoBa87CGq3YwNQVkuwBxlPCXrMwUli7rxjbTnO7tocRf1fHcT4Ip4d1PvSd4 + 4JkHY / duZda5c8Ci4SGd3VsebA4p0WHKCKkJ59ybu3XHuHXdlXCb3jaL4d4OZ2L7J6HJg9GQ1Sc3BlbMFBNfW13G4pmdxqHDzIl1OKPjDr2iyCcZKcVho74bw + 5StHhioiXVlfA9NqZFJSNfLc / C / X5P02c1KZnFNblpJ4TpKhKg + BZ03mctBqdzDlK8ySGbN6TfpGeOjDFg6XhhqBzappxsbqHpMvu4 / Ausds6Oo6vgEB5vRfm2W + eY4Fo + 0gdJWL4rKNoKPrGzbe76YnbtuDYrE + tMNfa3G / 8me2qggkz6KEvcJgly24ZBvic6p67EP6BNYVp0968nTM + OOr + fUEUrElHFpO5J + rDWdxS0UHZGhx4ra5wlxFwTJLtcMcdaeWSF8SojKRIkUlurGp34WodYkzXnL10tT4 / Fp7ZgM80PEHfn1wM2u6f84C5qdfVNInt1HvNuS + wwJHyPDiDu / ZqGrmqnd70ohaplhabsiLScUNsfvYR7YKk1R6n / Z1qp2KfrpO6LUl21I3DORK + dJgCqOHNSOhuvDmN3Jbjc5gt + Ih1MKYJ2acWNHStigcVJ96uJf1uz7VopkP7V1QXpLuDwbB9HmcGrqA6Hg4pPaeaScN6BnafNAsGZoCIVxc2g34RTaHjIbPM + Cd + h0OvsjBmg60YYYZCm0Q1 / jPyljRjiV3VEd8nEQryctTfiU1XXAqCrkwLdsFBLuagwbiDvs1ZpyrLR + mASd7wrpaS6AeMeeMS / ZbofVs1yljuQU1xqDC9tC8N3uUU3URt7VRC9zxqRImkZg1Bw1osKm2eh + pF5sSSOLe241m9i0t1EPbtt2CiN7d6n / M0LTvqId9TbcoPrvFGuRUnbznzqEMzKeO9oisWRycCrCWZrPv + VxLRE2bAjdos3ZJ9BRLxccIdfqe0kzohk2 + WmNjSa0UkJZznLOjLRKCvVPxivaTTcv0WNXkvkrfhapj0QaOHD1xQ2pttd4SwHC8TKoqgSzgNX3HMXYXidQ42mG6i21jWQbLQmUvcAMlJxX1KzR6SvdciybySwNClqJ1JgZSIFWsaZPkWLdiFqpWp / JNEe7KODFWSb / wvJ402 + Qjx1EDGBn2cAFct6N + ZyDNZjNn5747bqgUeMCI1a0558rM6GXAhknFgTzSlhZ0UkuhGm0YoAe / HDB6Cw3w22XKmi + m0HjBlJoOUzpKyW6VTCFvoCnjRZNkd89GZpWHJSvHgp3rYUk6QkFZwnkQW78vV7 + oa3Ajc4ilcCo1 + HepQRpQrbk7SX + 4Qw1aGMIKizo1DO07Gl2K0IzgZ5jRyEMK5DjUAEqlBjUeTKAGmjVlSJ9Lv571ZnlWB6De80Baolmipl0L7ZUY2vMwsDRmmytlKvkLQQm2iSaEzeqRAGjIre2p8FHrjEr3gBrv8OnJl8Qb4c + 5oMCTHcGNiM9J5zvd0UYTBtyGEFYuIeDxzhzmKraHEXDO5zX7w4im2nAoI + ZhhKJNXbukOHDLJ7grPu + qF2gutjZBQXNqxJfaEZzcQJ + NxiS9RdMG7QSmU3bn96q9TbE0qk1pyi4W0qquIeQ7Ny3e8TEs4QIKNxXTnUTX67g1zuaqQPXij9djBwsjDaWpWrG5RLsvaEoZU6U + gs3XVOhRIyFzpOkVOZ5exo5eKVWnlkXOWQz7 + u1FS5YktF7VZxzZbiJO26kWS0OXaH4rBl5LGWDtkCWMGbpmce1pbUljadLWVM6G / k1efedq3m7Sk4OQLeQNdDRF8MiWQ79zj + hxjyDolN / ocZaWm1O4zQXhKbBRG7SqBVS5iaRiIh7 / E4Fpfq88pTwSeHlu4xUKiA + HD45mmFWrFvQ05BcNFtimSJJlZVIwkx5Ig0BDykXXbub9Ex996yraUmsCRuOrBIhefXTsKZrFtd / Q39OSxrAmb3K5b9rJC5inWpg59EHyHyoSBXPDWw9nItFij1PnUh2tima2ez6VUtR79J4qGaWT / uYCIED5jtcVXOavus + XUjtuA / hG0FI3K6RZ800lxkJ8Hf3ZyKlr0Q + jYtCd4vXnTe2BfNfmh6gvJKmVEW9iVGQrXFWtR8nQ2MDxGxBhPMJTlANFW4aL4k + Sgfl2r / C6to6CJWuSzPGaNjWTHkYlYjtB + jCyHV5p66haBRD0UZ1wFNpdarcciKjDUmP / JkJ / cmUhlWOWbG7nh347k5Fp0X1Mb / 02Qo9yhsq43TaZTTpp73TbNGFG2 + 2g2k6GpuHKo6T + jb9Pd6 + pBxIKJQLp0PdyWi4Laq3rvlodEfmjL4PIQqqNRFeBcvCnjd3BruA61TSoLY7SkSkZS39JODWD5Hh / S5hHRkQB / rS99sJhUG / UThS5BoBmOhikQXVaYQVef1dCEECYhoJVpiUfSA / ZtxgQ7PX0N9PfTBTakfNTmxOCA0HV5vwaD3rFllkRWP8FPvsaKYhf9VwAAAGFaUNDUElDQyBQUk9GSUxFAAB4nH2RPUjDQBzFX1O1RSoOdlBxyFCdLIqKOEoVi2ChtBVadTC59ENo0pCkuDgKrgUHPxarDi7Oujq4CoLgB4iLq5Oii5T4v6TQIsaD4368u / e4ewcI9TJTzY5xQNUsIxWPidncihh4RReCEDCGAYmZeiK9kIHn + LqHj693UZ7lfe7P0aPkTQb4ROJZphsW8Trx9Kalc94nDrOSpBCfE48adEHiR67LLr9xLjos8MywkUnNEYeJxWIby23MSoZKPEUcUVSN8oWsywrnLc5qucqa9 + QvDOW15TTXaQ4hjkUkkIQIGVVsoAwLUVo1UkykaD / m4R90 / ElyyeTaACPHPCpQITl + 8D / 43a1ZmJxwk0IxoPPFtj + GgcAu0KjZ9vexbTdOAP8zcKW1 / JU6MPNJeq2lRY6A3m3g4rqlyXvA5Q7Q / 6RLhuRIfppCoQC8n9E35YC + W6B71e2tuY / TByBDXS3dAAeHwEiRstc83h1s7 + 3fM83 + fgBjZ3KhWgKGVwAAAAZiS0dEADcASwDADel / eAAAAAlwSFlzAAAuIwAALiMBeKU / dgAAAAd0SU1FB + MGCAIyI1pj764AAAAqSURBVDjL7dUxEQAADMJA / EuGgUpoh455D7lIR0kqAIu2 / SzKNuUBr48az6wTuvSPBCoAAAAASUVORK5CYII="  )
+		`;
+		crosshair.hide = function () {
+			crosshairElement.style.display = "none"
+		}
+		crosshair.show = function () {
+			crosshairElement.style.display = null
+		}
+		crosshair.remove = function(){
+			crosshairElement.remove()
+		}
+		document.body.appendChild( crosshairElement );
+		return crosshair;
+	},
+	rotateVector3( axis, angle, vector, normalize, cancelAutoAngle ) {
+		if ( !cancelAutoAngle ) {
+	
+			angle = radian( angle );
+	
+		}
+		var rotationMatrix = new THREE.Matrix4();
+		if ( normalize ) {
+	
+			vector.normalize();
+	
+		}
+		vector.applyAxisAngle( axis, angle )
+		return vector;
+	}
+}
+//For code that has "ProtonJS" and not "protonjs"
+Object.defineProperty( window, "protonjs", {
+	get: function() { return ProtonJS }
+} );
+//Creates the scene
+( new GameCode( function() {
+	ProtonJS.scene = new Proton3DScene()
+} ) ).autoStart();
