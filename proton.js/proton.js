@@ -9,11 +9,16 @@
 	and type
 	"loc:[location number]"
 	Locations of sections:
+		[Scripts must load first.]
 		adding extra scripts | 1
-		constants | 2
-		pausing stuff | 3
-		misc (which includes some content from some other places on the web) | 4
-		proton3d | 9
+		
+		[Every class, variable, and function.]
+		pausing stuff | 2
+		misc (which includes some content from some other places on the web) | 3
+		proton3d | 4
+
+		[ProtonJS]
+		protonjs (variable) | 5
 */
 //\\//\\//\\//\\//\\//\\//\\ //
 //\\ adding extra scripts \\ // //loc:1
@@ -73,164 +78,8 @@ document.writeln( '<meta name="viewport" content="width = device-width, initial-
 			//shadowmap helpers
 			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/utils/ShadowMapViewer.js", true );
 		} );
-//\\//\\//\\//\\// //
-//\\ constants \// //loc:3
-//\\//\\//\\//\\// //
-let ProtonJS = {
-	version: "beta 1.0",
-	//
-	cache: {
-		vector3: function ( x, y, z ) {
-			ProtonJS.threevector = ProtonJS.threevector || new THREE.Vector3( 0, 0, 0 );
-			return ProtonJS.threevector.set( x, y, z )
-		}
-	},
-	css: {
-		"*": [
-			"font-family: monospace !important"
-		],
-		"html, body": [
-			"width:  100%",
-			"height: 100%",
-			"margin: 0px",
-			"display: block",
-			"border: 0"
-		],
-		"body": [
-			"margin: 0",
-			"padding: 0",
-			"overflow: hidden"
-		],
-		"canvas": [
-			"margin: 0",
-			"padding: 0"
-		],
-		"watermark": [
-			"position: fixed",
-			"bottom: 5px",
-			"right: 10px",
-			"font-family: monospace",
-			"user-select: none",
-			"z-index: 2",
-			"display: inline-block"
-		],
-		"scene": [
-			"display: block",
-			"overflow: auto"
-		],
-		"scene::-webkit-scrollbar": [
-			"display: none"
-		],
-		"scene::-moz-scrollbar": [
-			"display: none"
-		],
-		"button.aperturebutton": [
-		"box-shadow: 15px 0px 1px -7px #ce4b5a",
-		"border-color: #f1f1f1",
-		"background: #f1f1f1",
-		"color: #f2a519",
-		"border-top-right-radius: 5px",
-		"border-bottom-right-radius: 5px"
-		],
-		"button.aperturebutton:hover": [
-		"background: #f1f1f1"
-		],
-		"button": [
-		"padding: 10px",
-		"border: 5px solid black",
-		"outline: none",
-		"margin: 10px",
-		"cursor: pointer",
-		"font-weight: bold",
-		"font-family: monospace",
-		"background: white",
-		"background-size: 100% 100%",
-		"transition: all 0.3s ease"
-		],
-		"button:not(.aperturebutton):hover": [
-		"box-shadow: 5px 0px 1px royalblue"
-		],
-		"button.aperturebutton:focus": [
-		"color: #5291d8"
-		],
-		"button.aperturebutton:active": [
-		"box-shadow: 10px 0px 1px -7px #ce4b5a"
-		],
-		"button:not(.aperturebutton):active": [
-		"background: black",
-		"color: white"
-		]
-	},
-	paused: false,
-	ammojsURL: "https://cdn.jsdelivr.net/gh/Mwni/AmmoNext@master/builds/ammo.js"/*physijs version of ammo = "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/examples/js/ammo.js"; latest version of ammo = "https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js"*/,
-	scene: function () {
-		console.warn( "ProtonJS.scene is deprecated. Use new Proton3DScene() instead.");
-		return new Proton3DScene();
-	},
-	compileCSS: function ( exclude = [] ) {
-		this.style = document.createElement( "style" );
-		for ( var i in ProtonJS.css ) {
-			if ( exclude.indexOf( i ) > -1 ) {
-
-				continue;
-
-			}
-			this.style.innerHTML += i + "  {\n\t" + ProtonJS.css[i].join( ";\n\t" ) + "\n}";
-		}
-		document.head.appendChild( this.style );
-	},
-	watermark: function ( parent = document.body ) {
-		parent.appendChild( Element( "watermark", "proton.js " + this.display_version ) );
-	},
-	loadingManager: function ( extras = {} ) {
-		this.value = 0;
-		this.min = 0;
-		this.max = 0;
-		this.onLoad = null;
-		this.onStart = null;
-		this.onProgress = null;
-		this._onProgress = function ( url, itemsLoaded, itemsTotal ) {
-			this.value += itemsLoaded;
-			if ( this.onProgress ) {
-
-				this.onProgress( url, itemsLoaded, itemsTotal );
-
-			}
-			if ( this.value >= this.max && this.onLoad ) {
-
-				this.loaded = true;
-				this.onLoad();
-
-			}
-		}
-		for ( var i in extras ) {
-			this[i] = extras[i];
-		}
-	},
-	pause: function () {
-		this.paused = true;
-		if ( window.onpause ) {
-
-			window.onpause();
-
-		}
-	},
-	resume: function () {
-		this.paused = false;
-		Proton3DInterpreter.resume();
-		if ( window.onresume ) {
-
-			window.onresume();
-
-		}
-	}
-}
-//For code that has "ProtonJS" and not "protonjs"
-Object.defineProperty( window, "protonjs", {
-	get: function() { return ProtonJS }
-} );	
 //\\//\\//\\//\\//\\  //
-//\\ pausing stuff \  // loc:3
+//\\ pausing stuff \  // loc:2
 //\\//\\//\\//\\//\\  //
 window.timeoutList = [];
 window.intervalList = [];
@@ -322,7 +171,7 @@ window.setInterval = function ( code, delay ) {
 	return window.oldOldSetInterval( newCode, delay );
 }
 ////////////// //
-//   misc   // //loc:4
+//   misc   // //loc:3
 ////////////// //
 //starting games when all scripts have been loaded
 class GameCode {
@@ -418,8 +267,7 @@ Object.defineProperty( Object.prototype, "watch", {
 	}
 } );
 /*
-	~> loc:9
-		~> there are locations 9.1 - 10.0 in this section.
+	~> loc:4
 	proton3d
 */
 class Proton3DScene {
@@ -441,6 +289,7 @@ class Proton3DScene {
 		this.extraFunctions = [];
 		this.priorityExtraFunctions = [];
 		this.extraKeyControls = [];
+		ProtonJS.scenes.push( this )
 	}
 	//this is the same as the 2d init function,
 	//except with an object rather than
@@ -488,7 +337,7 @@ class Proton3DScene {
 	}
 	update( scene, time ) {
 		//pausing
-		if ( ProtonJS.paused ) {
+		if ( ProtonJS && ProtonJS.paused ) {
 
 			requestAnimationFrame( function() {
 				scene.update( scene )
@@ -1050,50 +899,7 @@ class Proton3DScene {
 	}
 }
 /*
-	loc:9.1
-	tools
-*/
-ProtonJS.crosshair = function ( crosshair ) {
-	var crosshairElement = document.createElement( "div" );
-	crosshairElement.style.cssText = `
-		position: fixed;
-		top: 50%;
-		left: 50%;
-		transform: translate(  -50%, -50%  );
-		height: 21px;
-		width: 21px;
-		image-rendering: auto !important;
-		background: url(  "data:image / png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAKXnpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjarZhpliMrDoX / s4peArNgOYzn9A56 + f0JIp1DDa + yuu2qjDAmQOheSVc26z//3uZfvILzxcQkJdecLa9YY / WNm2Lv616djefv / ZCe79zncfP6wjMUuIb7Ma9nfmM8vT8g8Rnvn8eNjGed8izkXgufV9Cd9X4 + Rj4LBX / H3fPZ1OeBlj8c5 / nvx7Pss / jXz1FwxkysF7zxK7hg79 + 7U8CKUEPjms9f8Xe0hXT + hpB + 9J95ue4nDnzdffGffbMsvLvjLvR2rPzFT / mF1Ofx8NrGf7LI + dfO / hPU23b78fXBf3vPsve6p2sxG9yVn0O9HeXcMZFFYjiPZd7C / 8S9nHflXWyzA9QmR + 2GPYerzuPr7aKbrrnt1rkONzAx + uVxt / d ++HDGCu6vfhxQor7d9mLAZ4YCKgPkAsP + ZYs7 + 1bdj80KO0 / HTO9YzPHEp7f5OvC3708L7a00d86Wl6 + wyytlMUOR07 / MigeI69N0 / OvMvdivLwU2gGA6bi4csNl + l + jJvXMrHJyDTYap0d54cTKfBXAReyeMcQEEbHYhueyseC / O4ccCPg3LfYi + g4BLJvmJlT6GkAGneN2bZ8SduT75O0x6AYhE0AjQEECAFWOKmXgrUKiZFFJMKeUkqaSaWg455pRzlqx5qkmQKEmyiBSp0koosaSSi5RSamnV10AaS6bmKrXUWltj0xYbazXmNwa676HHnnru0kuvvQ3oM + JIIw8ZZdTRpp9hkgLMzFNmmXW25RZUWnGllZessupqG67tsONOO2 / ZZdfdXqg9qH5G7Styv0fNPaj5A5TOk3fUGBZ5W8JpOkmKGYj56EBcFAEI7RUzW1yMXpFTzGz1wZClPFYmBWc6RQwE43I + bffC7h25X + Jm8O53cfM / Q84odP8P5IxC9wG5H3H7CWqznXQbDkAahfiUDBkIPyas0nxpWpe + ee2rj12Mr5uFfCw9Br3rQgYlanzCbkmrz2XrLivxZcFLkQORybZWOJE1Zee0Q9hG9s4T + yWv6rBr7ZoBa87CGq3YwNQVkuwBxlPCXrMwUli7rxjbTnO7tocRf1fHcT4Ip4d1PvSd4 + 4JkHY / duZda5c8Ci4SGd3VsebA4p0WHKCKkJ59ybu3XHuHXdlXCb3jaL4d4OZ2L7J6HJg9GQ1Sc3BlbMFBNfW13G4pmdxqHDzIl1OKPjDr2iyCcZKcVho74bw + 5StHhioiXVlfA9NqZFJSNfLc / C / X5P02c1KZnFNblpJ4TpKhKg + BZ03mctBqdzDlK8ySGbN6TfpGeOjDFg6XhhqBzappxsbqHpMvu4 / Ausds6Oo6vgEB5vRfm2W + eY4Fo + 0gdJWL4rKNoKPrGzbe76YnbtuDYrE + tMNfa3G / 8me2qggkz6KEvcJgly24ZBvic6p67EP6BNYVp0968nTM + OOr + fUEUrElHFpO5J + rDWdxS0UHZGhx4ra5wlxFwTJLtcMcdaeWSF8SojKRIkUlurGp34WodYkzXnL10tT4 / Fp7ZgM80PEHfn1wM2u6f84C5qdfVNInt1HvNuS + wwJHyPDiDu / ZqGrmqnd70ohaplhabsiLScUNsfvYR7YKk1R6n / Z1qp2KfrpO6LUl21I3DORK + dJgCqOHNSOhuvDmN3Jbjc5gt + Ih1MKYJ2acWNHStigcVJ96uJf1uz7VopkP7V1QXpLuDwbB9HmcGrqA6Hg4pPaeaScN6BnafNAsGZoCIVxc2g34RTaHjIbPM + Cd + h0OvsjBmg60YYYZCm0Q1 / jPyljRjiV3VEd8nEQryctTfiU1XXAqCrkwLdsFBLuagwbiDvs1ZpyrLR + mASd7wrpaS6AeMeeMS / ZbofVs1yljuQU1xqDC9tC8N3uUU3URt7VRC9zxqRImkZg1Bw1osKm2eh + pF5sSSOLe241m9i0t1EPbtt2CiN7d6n / M0LTvqId9TbcoPrvFGuRUnbznzqEMzKeO9oisWRycCrCWZrPv + VxLRE2bAjdos3ZJ9BRLxccIdfqe0kzohk2 + WmNjSa0UkJZznLOjLRKCvVPxivaTTcv0WNXkvkrfhapj0QaOHD1xQ2pttd4SwHC8TKoqgSzgNX3HMXYXidQ42mG6i21jWQbLQmUvcAMlJxX1KzR6SvdciybySwNClqJ1JgZSIFWsaZPkWLdiFqpWp / JNEe7KODFWSb / wvJ402 + Qjx1EDGBn2cAFct6N + ZyDNZjNn5747bqgUeMCI1a0558rM6GXAhknFgTzSlhZ0UkuhGm0YoAe / HDB6Cw3w22XKmi + m0HjBlJoOUzpKyW6VTCFvoCnjRZNkd89GZpWHJSvHgp3rYUk6QkFZwnkQW78vV7 + oa3Ajc4ilcCo1 + HepQRpQrbk7SX + 4Qw1aGMIKizo1DO07Gl2K0IzgZ5jRyEMK5DjUAEqlBjUeTKAGmjVlSJ9Lv571ZnlWB6De80Baolmipl0L7ZUY2vMwsDRmmytlKvkLQQm2iSaEzeqRAGjIre2p8FHrjEr3gBrv8OnJl8Qb4c + 5oMCTHcGNiM9J5zvd0UYTBtyGEFYuIeDxzhzmKraHEXDO5zX7w4im2nAoI + ZhhKJNXbukOHDLJ7grPu + qF2gutjZBQXNqxJfaEZzcQJ + NxiS9RdMG7QSmU3bn96q9TbE0qk1pyi4W0qquIeQ7Ny3e8TEs4QIKNxXTnUTX67g1zuaqQPXij9djBwsjDaWpWrG5RLsvaEoZU6U + gs3XVOhRIyFzpOkVOZ5exo5eKVWnlkXOWQz7 + u1FS5YktF7VZxzZbiJO26kWS0OXaH4rBl5LGWDtkCWMGbpmce1pbUljadLWVM6G / k1efedq3m7Sk4OQLeQNdDRF8MiWQ79zj + hxjyDolN / ocZaWm1O4zQXhKbBRG7SqBVS5iaRiIh7 / E4Fpfq88pTwSeHlu4xUKiA + HD45mmFWrFvQ05BcNFtimSJJlZVIwkx5Ig0BDykXXbub9Ex996yraUmsCRuOrBIhefXTsKZrFtd / Q39OSxrAmb3K5b9rJC5inWpg59EHyHyoSBXPDWw9nItFij1PnUh2tima2ez6VUtR79J4qGaWT / uYCIED5jtcVXOavus + XUjtuA / hG0FI3K6RZ800lxkJ8Hf3ZyKlr0Q + jYtCd4vXnTe2BfNfmh6gvJKmVEW9iVGQrXFWtR8nQ2MDxGxBhPMJTlANFW4aL4k + Sgfl2r / C6to6CJWuSzPGaNjWTHkYlYjtB + jCyHV5p66haBRD0UZ1wFNpdarcciKjDUmP / JkJ / cmUhlWOWbG7nh347k5Fp0X1Mb / 02Qo9yhsq43TaZTTpp73TbNGFG2 + 2g2k6GpuHKo6T + jb9Pd6 + pBxIKJQLp0PdyWi4Laq3rvlodEfmjL4PIQqqNRFeBcvCnjd3BruA61TSoLY7SkSkZS39JODWD5Hh / S5hHRkQB / rS99sJhUG / UThS5BoBmOhikQXVaYQVef1dCEECYhoJVpiUfSA / ZtxgQ7PX0N9PfTBTakfNTmxOCA0HV5vwaD3rFllkRWP8FPvsaKYhf9VwAAAGFaUNDUElDQyBQUk9GSUxFAAB4nH2RPUjDQBzFX1O1RSoOdlBxyFCdLIqKOEoVi2ChtBVadTC59ENo0pCkuDgKrgUHPxarDi7Oujq4CoLgB4iLq5Oii5T4v6TQIsaD4368u / e4ewcI9TJTzY5xQNUsIxWPidncihh4RReCEDCGAYmZeiK9kIHn + LqHj693UZ7lfe7P0aPkTQb4ROJZphsW8Trx9Kalc94nDrOSpBCfE48adEHiR67LLr9xLjos8MywkUnNEYeJxWIby23MSoZKPEUcUVSN8oWsywrnLc5qucqa9 + QvDOW15TTXaQ4hjkUkkIQIGVVsoAwLUVo1UkykaD / m4R90 / ElyyeTaACPHPCpQITl + 8D / 43a1ZmJxwk0IxoPPFtj + GgcAu0KjZ9vexbTdOAP8zcKW1 / JU6MPNJeq2lRY6A3m3g4rqlyXvA5Q7Q / 6RLhuRIfppCoQC8n9E35YC + W6B71e2tuY / TByBDXS3dAAeHwEiRstc83h1s7 + 3fM83 + fgBjZ3KhWgKGVwAAAAZiS0dEADcASwDADel / eAAAAAlwSFlzAAAuIwAALiMBeKU / dgAAAAd0SU1FB + MGCAIyI1pj764AAAAqSURBVDjL7dUxEQAADMJA / EuGgUpoh455D7lIR0kqAIu2 / SzKNuUBr48az6wTuvSPBCoAAAAASUVORK5CYII="  )
-	`;
-	crosshair.hide = function () {
-		crosshairElement.style.display = "none"
-	}
-	crosshair.show = function () {
-		crosshairElement.style.display = null
-	}
-	crosshair.remove = function(){
-		crosshairElement.remove()
-	}
-	document.body.appendChild( crosshairElement );
-	return crosshair;
-}
-ProtonJS.rotateVector3 = function ( axis, angle, vector, normalize, cancelAutoAngle ) {
-	if ( !cancelAutoAngle ) {
-
-		angle = radian( angle );
-
-	}
-	var rotationMatrix = new THREE.Matrix4();
-	if ( normalize ) {
-
-		vector.normalize();
-
-	}
-	vector.applyAxisAngle( axis, angle )
-	return vector;
-}
-/*
-	loc:9.2
+	loc:4.1
 	Proton3DObject
 */
 var genericMeshNameInstances = 0
@@ -1222,7 +1028,48 @@ class Proton3DObject {
 			}
 		} )
 	}
+	//making the object the player
+	makePlayer( extras ) {
+		var defaultExtras = {
+				//camera
+				type: "firstperson",
+				head: new THREE.Vector3( 0, 0.3, 0 ),
+				invisible: false,
+				//key controls
+				movementSpeed: undefined,
+				jumpHeight: undefined
+			},
+			object = this;
+		for( var i in defaultExtras ) {
+			if ( extras[ i ] == undefined ) extras[ i ] = defaultExtras[ i ];
+		}
+		//controls
+		ProtonJS.scene.controls = {
+			camera: ProtonJS.scene.setCameraControls( {
+				type: extras.type,
+				distance: extras.type == "firstperson"? extras.head : extras.head.clone().add( new THREE.Vector3( 5, 0, 5 ) ),
+				invisibleParent: extras.invisible,
+				cameraParent: object,
+				gun: extras.gun
+			} ),
+			key: ProtonJS.scene.setKeyControls( 
+				object,
+				extras.movementSpeed,
+				extras.jumpHeight,
+				{ gunAnimations: true }
+			)
+		}
+		//crosshair
+		ProtonJS.crosshair( ProtonJS.scene.crosshair );
+		//gun rotation
+		if ( extras.gunRotation ) extras.gun.setRotation( extras.gunRotation.x, extras.gunRotation.y, extras.gunRotation.z )
+		//making an invisible player
+		if ( extras.invisible ) object.makeInvisible();
+	}
 	//the accessors' corresponding functions
+	makeInvisible() {
+		return Proton3DInterpreter.Proton3DObject.makeInvisible( this )
+	}
 	getShadowOptions() {
 		return Proton3DInterpreter.Proton3DObject.getShadowOptions( this )
 	}
@@ -1380,7 +1227,7 @@ class Proton3DObject {
 	}
 }
 /*
-	loc:9.3
+	loc:4.2
 	Proton3DMaterial
 */
 class Proton3DMaterial {
@@ -1511,7 +1358,7 @@ class Proton3DMaterial {
 	}
 }
 /*
-	loc:9.4
+	loc:4.3
 	Proton3DInterpreter
 */
 var meshes = []
@@ -1526,10 +1373,9 @@ function getMaterialByName ( name ) {
 		return x.name === name
 	} )
 }
-//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//  //
-//\\ Proton3DInterpreter		    	//  //
-//\\ (the star of the Proton3D show)    //  // loc:10 - 10.11
-//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//  //
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//
+//\\ Proton3DInterpreter		    //
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //	README
 //		[!] All functions shown below that have parameters and that
 //				are not called by other functions in the Interpreter
@@ -1549,7 +1395,7 @@ function getMaterialByName ( name ) {
 //
 const Proton3DInterpreter = {
 
-	//creating and modifing Proton3DScenes -- loc:10.1
+	//creating and modifing Proton3DScenes
 	create3DScene( extras ) {
 		extras.refreshRate = extras.refreshRate || this.refreshRate || 10
 		extras.antialias = extras.antialias || false;
@@ -2060,7 +1906,7 @@ const Proton3DInterpreter = {
 	},
 
 
-	//creating and modifing Proton3DObjects -- loc:10.2
+	//creating and modifing Proton3DObjects
 	create3DObject( extras, object ) {
 		//the different object types that you see here must be used when swapping this function.
 		//any extras are welcome, though!
@@ -2534,8 +2380,13 @@ const Proton3DInterpreter = {
 		}
 		//sets the mesh's parent
 		getMeshByName( object.name ).p3dParent = object
+		//making the player invisible
+		if ( extras.invisible ) object.makeInvisible()
 	},
 	Proton3DObject: {
+		makeInvisible( P3DObject ) {
+			Object.defineProperty( getMeshByName( P3DObject.name ).material, "visible", { configurable: false, writable: false, value: false } );
+		},
 		getShadowOptions( P3DObject ) {
 			return {
 				cast: getMeshByName( P3DObject.name ).castShadow,
@@ -2836,12 +2687,12 @@ const Proton3DInterpreter = {
 			//shadows
 			scene.children.forEach( castShadow );
 			function castShadow( c ) {
-				if ( extras.castShadow ) {
+				if ( extras.castShadow != false ) {
 
 					c.castShadow = true
 
 				}
-				if ( extras.receiveShadow ) {
+				if ( extras.receiveShadow != false ) {
 
 					c.receiveShadow = true
 
@@ -3049,14 +2900,10 @@ const Proton3DInterpreter = {
 			}
 			x.raw = scene;
 			//
-			if ( extras.objects ) {
-
-				x.objects.forEach( function( object ) {
-					extras.objects.add( object )
-				} )
-				extras.objects.add( scene )
-
-			}
+			x.objects.forEach( function( object ) {
+				ProtonJS.scene.add( object )
+			} )
+			ProtonJS.scene.add( scene )
 			if ( extras.onload ) {
 
 				extras.onload( scene );
@@ -3122,11 +2969,7 @@ const Proton3DInterpreter = {
 			//adds the object to the output of objects
 			x.objects.push( object );
 			meshes.push( mesh )
-			if ( extras.objects ) {
-			
-				Proton3DInterpreter.initToScene( object, extras.objects )
-			
-			}
+			Proton3DInterpreter.initToScene( object, ProtonJS.scene )
 		}
 		function loadObjectPhysics( child, i ) {
 			var m = "Box", c = child;
@@ -3208,12 +3051,13 @@ const Proton3DInterpreter = {
 				c.material,
 				mass
 			);
-			//sets the physics object's position and rotation
+			//sets the physics object's position, rotation and mass
 			physicalObject.position.copy( c.position );
 			physicalObject.quaternion.copy( c.quaternion );
 			physicalObject.rotation.copy( c.rotation );
 			physicalObject.__dirtyPosition = true;
 			physicalObject.__dirtyRotation = true;
+			physicalObject.mass = mass;
 			//armature
 			if ( extras.armature ) {
 
@@ -3264,7 +3108,7 @@ const Proton3DInterpreter = {
 		}
 	},
 
-	//creating and modifing Proton3DMaterials -- loc:10.3
+	//creating and modifing Proton3DMaterials
 	create3DMaterial( extras, P3DMaterial, parentObject ){
 		if ( !extras.material ) {
 
@@ -3349,7 +3193,7 @@ const Proton3DInterpreter = {
 		}
 	},
 
-	//some proton.js functions -- loc:10.4
+	//some proton.js functions
 	toggleDoor( door, P3DScene ){
 		if ( !door.checkForEnding ) {
 
@@ -3482,7 +3326,7 @@ const Proton3DInterpreter = {
 	},
 
 
-	//changing mesh geometry n' materials loc:10.5
+	//changing mesh geometry n' materials
 	createMeshGeometry( obj, extras = {} ) {
 		switch( extras.type.toLowerCase() ) {
 			case "sphere":
@@ -3764,4 +3608,206 @@ const Proton3DInterpreter = {
 		}
 	}
 }
-ProtonJS.importObject = Proton3DInterpreter.importObject
+//\\//\\//\\//\\// //
+//\\ protonjs  \// //loc:5
+//\\//\\//\\//\\// //
+let ProtonJS = {
+	version: "beta 1.0",
+	//
+	cache: {
+		vector3: function ( x, y, z ) {
+			ProtonJS.threevector = ProtonJS.threevector || new THREE.Vector3( 0, 0, 0 );
+			return ProtonJS.threevector.set( x, y, z )
+		}
+	},
+	css: {
+		"*": [
+			"font-family: monospace !important"
+		],
+		"html, body": [
+			"width:  100%",
+			"height: 100%",
+			"margin: 0px",
+			"display: block",
+			"border: 0"
+		],
+		"body": [
+			"margin: 0",
+			"padding: 0",
+			"overflow: hidden"
+		],
+		"canvas": [
+			"margin: 0",
+			"padding: 0"
+		],
+		"watermark": [
+			"position: fixed",
+			"bottom: 5px",
+			"right: 10px",
+			"font-family: monospace",
+			"user-select: none",
+			"z-index: 2",
+			"display: inline-block"
+		],
+		"scene": [
+			"display: block",
+			"overflow: auto"
+		],
+		"scene::-webkit-scrollbar": [
+			"display: none"
+		],
+		"scene::-moz-scrollbar": [
+			"display: none"
+		],
+		"button.aperturebutton": [
+		"box-shadow: 15px 0px 1px -7px #ce4b5a",
+		"border-color: #f1f1f1",
+		"background: #f1f1f1",
+		"color: #f2a519",
+		"border-top-right-radius: 5px",
+		"border-bottom-right-radius: 5px"
+		],
+		"button.aperturebutton:hover": [
+		"background: #f1f1f1"
+		],
+		"button": [
+		"padding: 10px",
+		"border: 5px solid black",
+		"outline: none",
+		"margin: 10px",
+		"cursor: pointer",
+		"font-weight: bold",
+		"font-family: monospace",
+		"background: white",
+		"background-size: 100% 100%",
+		"transition: all 0.3s ease"
+		],
+		"button:not(.aperturebutton):hover": [
+		"box-shadow: 5px 0px 1px royalblue"
+		],
+		"button.aperturebutton:focus": [
+		"color: #5291d8"
+		],
+		"button.aperturebutton:active": [
+		"box-shadow: 10px 0px 1px -7px #ce4b5a"
+		],
+		"button:not(.aperturebutton):active": [
+		"background: black",
+		"color: white"
+		]
+	},
+	paused: false,
+	ammojsURL: "https://cdn.jsdelivr.net/gh/Mwni/AmmoNext@master/builds/ammo.js",/*physijs version of ammo = "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/examples/js/ammo.js"; latest version of ammo = "https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js"*/
+	scenes: [],
+	importObject: Proton3DInterpreter.importObject,
+	compileCSS: function ( exclude = [] ) {
+		this.style = document.createElement( "style" );
+		for ( var i in ProtonJS.css ) {
+			if ( exclude.indexOf( i ) > -1 ) {
+
+				continue;
+
+			}
+			this.style.innerHTML += i + "  {\n\t" + ProtonJS.css[i].join( ";\n\t" ) + "\n}";
+		}
+		document.head.appendChild( this.style );
+	},
+	watermark: function ( parent = document.body ) {
+		parent.appendChild( Element( "watermark", "proton.js " + this.display_version ) );
+	},
+	loadingManager: function ( extras = {} ) {
+		this.value = 0;
+		this.min = 0;
+		this.max = 0;
+		this.onLoad = null;
+		this.onStart = null;
+		this.onProgress = null;
+		this._onProgress = function ( url, itemsLoaded, itemsTotal ) {
+			this.value += itemsLoaded;
+			if ( this.onProgress ) {
+
+				this.onProgress( url, itemsLoaded, itemsTotal );
+
+			}
+			if ( this.value >= this.max && this.onLoad ) {
+
+				this.loaded = true;
+				this.onLoad();
+
+			}
+		}
+		for ( var i in extras ) {
+			this[i] = extras[i];
+		}
+	},
+	pause: function () {
+		this.paused = true;
+		this.scenes.forEach( function( scene ) {
+			if ( scene.crosshair && scene.crosshair.hide ) scene.crosshair.hide()
+		} )
+		if ( window.onpause ) {
+
+			window.onpause();
+
+		}
+	},
+	resume: function () {
+		this.paused = false;
+		this.scenes.forEach( function( scene ) {
+			if ( scene.crosshair && scene.crosshair.show ) scene.crosshair.show()
+		} )
+		Proton3DInterpreter.resume();
+		if ( window.onresume ) {
+
+			window.onresume();
+
+		}
+	},
+	crosshair( crosshair ) {
+		var crosshairElement = document.createElement( "div" );
+		crosshairElement.style.cssText = `
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(  -50%, -50%  );
+			height: 21px;
+			width: 21px;
+			image-rendering: auto !important;
+			background: url(  "data:image / png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAKXnpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjarZhpliMrDoX / s4peArNgOYzn9A56 + f0JIp1DDa + yuu2qjDAmQOheSVc26z//3uZfvILzxcQkJdecLa9YY / WNm2Lv616djefv / ZCe79zncfP6wjMUuIb7Ma9nfmM8vT8g8Rnvn8eNjGed8izkXgufV9Cd9X4 + Rj4LBX / H3fPZ1OeBlj8c5 / nvx7Pss / jXz1FwxkysF7zxK7hg79 + 7U8CKUEPjms9f8Xe0hXT + hpB + 9J95ue4nDnzdffGffbMsvLvjLvR2rPzFT / mF1Ofx8NrGf7LI + dfO / hPU23b78fXBf3vPsve6p2sxG9yVn0O9HeXcMZFFYjiPZd7C / 8S9nHflXWyzA9QmR + 2GPYerzuPr7aKbrrnt1rkONzAx + uVxt / d ++HDGCu6vfhxQor7d9mLAZ4YCKgPkAsP + ZYs7 + 1bdj80KO0 / HTO9YzPHEp7f5OvC3708L7a00d86Wl6 + wyytlMUOR07 / MigeI69N0 / OvMvdivLwU2gGA6bi4csNl + l + jJvXMrHJyDTYap0d54cTKfBXAReyeMcQEEbHYhueyseC / O4ccCPg3LfYi + g4BLJvmJlT6GkAGneN2bZ8SduT75O0x6AYhE0AjQEECAFWOKmXgrUKiZFFJMKeUkqaSaWg455pRzlqx5qkmQKEmyiBSp0koosaSSi5RSamnV10AaS6bmKrXUWltj0xYbazXmNwa676HHnnru0kuvvQ3oM + JIIw8ZZdTRpp9hkgLMzFNmmXW25RZUWnGllZessupqG67tsONOO2 / ZZdfdXqg9qH5G7Styv0fNPaj5A5TOk3fUGBZ5W8JpOkmKGYj56EBcFAEI7RUzW1yMXpFTzGz1wZClPFYmBWc6RQwE43I + bffC7h25X + Jm8O53cfM / Q84odP8P5IxC9wG5H3H7CWqznXQbDkAahfiUDBkIPyas0nxpWpe + ee2rj12Mr5uFfCw9Br3rQgYlanzCbkmrz2XrLivxZcFLkQORybZWOJE1Zee0Q9hG9s4T + yWv6rBr7ZoBa87CGq3YwNQVkuwBxlPCXrMwUli7rxjbTnO7tocRf1fHcT4Ip4d1PvSd4 + 4JkHY / duZda5c8Ci4SGd3VsebA4p0WHKCKkJ59ybu3XHuHXdlXCb3jaL4d4OZ2L7J6HJg9GQ1Sc3BlbMFBNfW13G4pmdxqHDzIl1OKPjDr2iyCcZKcVho74bw + 5StHhioiXVlfA9NqZFJSNfLc / C / X5P02c1KZnFNblpJ4TpKhKg + BZ03mctBqdzDlK8ySGbN6TfpGeOjDFg6XhhqBzappxsbqHpMvu4 / Ausds6Oo6vgEB5vRfm2W + eY4Fo + 0gdJWL4rKNoKPrGzbe76YnbtuDYrE + tMNfa3G / 8me2qggkz6KEvcJgly24ZBvic6p67EP6BNYVp0968nTM + OOr + fUEUrElHFpO5J + rDWdxS0UHZGhx4ra5wlxFwTJLtcMcdaeWSF8SojKRIkUlurGp34WodYkzXnL10tT4 / Fp7ZgM80PEHfn1wM2u6f84C5qdfVNInt1HvNuS + wwJHyPDiDu / ZqGrmqnd70ohaplhabsiLScUNsfvYR7YKk1R6n / Z1qp2KfrpO6LUl21I3DORK + dJgCqOHNSOhuvDmN3Jbjc5gt + Ih1MKYJ2acWNHStigcVJ96uJf1uz7VopkP7V1QXpLuDwbB9HmcGrqA6Hg4pPaeaScN6BnafNAsGZoCIVxc2g34RTaHjIbPM + Cd + h0OvsjBmg60YYYZCm0Q1 / jPyljRjiV3VEd8nEQryctTfiU1XXAqCrkwLdsFBLuagwbiDvs1ZpyrLR + mASd7wrpaS6AeMeeMS / ZbofVs1yljuQU1xqDC9tC8N3uUU3URt7VRC9zxqRImkZg1Bw1osKm2eh + pF5sSSOLe241m9i0t1EPbtt2CiN7d6n / M0LTvqId9TbcoPrvFGuRUnbznzqEMzKeO9oisWRycCrCWZrPv + VxLRE2bAjdos3ZJ9BRLxccIdfqe0kzohk2 + WmNjSa0UkJZznLOjLRKCvVPxivaTTcv0WNXkvkrfhapj0QaOHD1xQ2pttd4SwHC8TKoqgSzgNX3HMXYXidQ42mG6i21jWQbLQmUvcAMlJxX1KzR6SvdciybySwNClqJ1JgZSIFWsaZPkWLdiFqpWp / JNEe7KODFWSb / wvJ402 + Qjx1EDGBn2cAFct6N + ZyDNZjNn5747bqgUeMCI1a0558rM6GXAhknFgTzSlhZ0UkuhGm0YoAe / HDB6Cw3w22XKmi + m0HjBlJoOUzpKyW6VTCFvoCnjRZNkd89GZpWHJSvHgp3rYUk6QkFZwnkQW78vV7 + oa3Ajc4ilcCo1 + HepQRpQrbk7SX + 4Qw1aGMIKizo1DO07Gl2K0IzgZ5jRyEMK5DjUAEqlBjUeTKAGmjVlSJ9Lv571ZnlWB6De80Baolmipl0L7ZUY2vMwsDRmmytlKvkLQQm2iSaEzeqRAGjIre2p8FHrjEr3gBrv8OnJl8Qb4c + 5oMCTHcGNiM9J5zvd0UYTBtyGEFYuIeDxzhzmKraHEXDO5zX7w4im2nAoI + ZhhKJNXbukOHDLJ7grPu + qF2gutjZBQXNqxJfaEZzcQJ + NxiS9RdMG7QSmU3bn96q9TbE0qk1pyi4W0qquIeQ7Ny3e8TEs4QIKNxXTnUTX67g1zuaqQPXij9djBwsjDaWpWrG5RLsvaEoZU6U + gs3XVOhRIyFzpOkVOZ5exo5eKVWnlkXOWQz7 + u1FS5YktF7VZxzZbiJO26kWS0OXaH4rBl5LGWDtkCWMGbpmce1pbUljadLWVM6G / k1efedq3m7Sk4OQLeQNdDRF8MiWQ79zj + hxjyDolN / ocZaWm1O4zQXhKbBRG7SqBVS5iaRiIh7 / E4Fpfq88pTwSeHlu4xUKiA + HD45mmFWrFvQ05BcNFtimSJJlZVIwkx5Ig0BDykXXbub9Ex996yraUmsCRuOrBIhefXTsKZrFtd / Q39OSxrAmb3K5b9rJC5inWpg59EHyHyoSBXPDWw9nItFij1PnUh2tima2ez6VUtR79J4qGaWT / uYCIED5jtcVXOavus + XUjtuA / hG0FI3K6RZ800lxkJ8Hf3ZyKlr0Q + jYtCd4vXnTe2BfNfmh6gvJKmVEW9iVGQrXFWtR8nQ2MDxGxBhPMJTlANFW4aL4k + Sgfl2r / C6to6CJWuSzPGaNjWTHkYlYjtB + jCyHV5p66haBRD0UZ1wFNpdarcciKjDUmP / JkJ / cmUhlWOWbG7nh347k5Fp0X1Mb / 02Qo9yhsq43TaZTTpp73TbNGFG2 + 2g2k6GpuHKo6T + jb9Pd6 + pBxIKJQLp0PdyWi4Laq3rvlodEfmjL4PIQqqNRFeBcvCnjd3BruA61TSoLY7SkSkZS39JODWD5Hh / S5hHRkQB / rS99sJhUG / UThS5BoBmOhikQXVaYQVef1dCEECYhoJVpiUfSA / ZtxgQ7PX0N9PfTBTakfNTmxOCA0HV5vwaD3rFllkRWP8FPvsaKYhf9VwAAAGFaUNDUElDQyBQUk9GSUxFAAB4nH2RPUjDQBzFX1O1RSoOdlBxyFCdLIqKOEoVi2ChtBVadTC59ENo0pCkuDgKrgUHPxarDi7Oujq4CoLgB4iLq5Oii5T4v6TQIsaD4368u / e4ewcI9TJTzY5xQNUsIxWPidncihh4RReCEDCGAYmZeiK9kIHn + LqHj693UZ7lfe7P0aPkTQb4ROJZphsW8Trx9Kalc94nDrOSpBCfE48adEHiR67LLr9xLjos8MywkUnNEYeJxWIby23MSoZKPEUcUVSN8oWsywrnLc5qucqa9 + QvDOW15TTXaQ4hjkUkkIQIGVVsoAwLUVo1UkykaD / m4R90 / ElyyeTaACPHPCpQITl + 8D / 43a1ZmJxwk0IxoPPFtj + GgcAu0KjZ9vexbTdOAP8zcKW1 / JU6MPNJeq2lRY6A3m3g4rqlyXvA5Q7Q / 6RLhuRIfppCoQC8n9E35YC + W6B71e2tuY / TByBDXS3dAAeHwEiRstc83h1s7 + 3fM83 + fgBjZ3KhWgKGVwAAAAZiS0dEADcASwDADel / eAAAAAlwSFlzAAAuIwAALiMBeKU / dgAAAAd0SU1FB + MGCAIyI1pj764AAAAqSURBVDjL7dUxEQAADMJA / EuGgUpoh455D7lIR0kqAIu2 / SzKNuUBr48az6wTuvSPBCoAAAAASUVORK5CYII="  )
+		`;
+		crosshair.hide = function () {
+			crosshairElement.style.display = "none"
+		}
+		crosshair.show = function () {
+			crosshairElement.style.display = null
+		}
+		crosshair.remove = function(){
+			crosshairElement.remove()
+		}
+		document.body.appendChild( crosshairElement );
+		return crosshair;
+	},
+	rotateVector3( axis, angle, vector, normalize, cancelAutoAngle ) {
+		if ( !cancelAutoAngle ) {
+	
+			angle = radian( angle );
+	
+		}
+		var rotationMatrix = new THREE.Matrix4();
+		if ( normalize ) {
+	
+			vector.normalize();
+	
+		}
+		vector.applyAxisAngle( axis, angle )
+		return vector;
+	}
+}
+//For code that has "ProtonJS" and not "protonjs"
+Object.defineProperty( window, "protonjs", {
+	get: function() { return ProtonJS }
+} );
+//Creates the scene
+( new GameCode( function() {
+	ProtonJS.scene = new Proton3DScene()
+} ) ).autoStart();

@@ -45,12 +45,20 @@ var docs_data = {
 					name: "mass",
 					type: "float",
 					description: "Gets the object's mass."
-				},
+				}
 			],
 			functions: [
 				{
 					name: "playAudio( src (url), listener (three.js AudioListener) )",
 					description: "Plays audio. You need a three.js AudioListener to do this. It is that simple."
+				},
+				{
+					name: "makeInvisible()",
+					description: "Makes the object completely invisible."
+				},
+				{
+					name: "makePlayer( { type: 'firstperson' or 'thirdperson', head: Vector3 (the position of the player's head, relative to its position), invisible: boolean, gun: Proton3DObject, gunRotation: THREE.Vector3 (measurements are in radians), movementSpeed: float, jumpHeight: float } )",
+					description: "Treats the object as a player, and initializes it as such."
 				},
 				{
 					name: "applyImpulse( force (Vector3), offset (three.js Vector3) )",
@@ -231,7 +239,7 @@ var docs_data = {
 		{
 			name: "Proton3DObject (imported)",
 			description: "An object in Proton3D. It can either be imported via a '.obj' file or a glTF file.",
-			use: "ProtonJS.importObject( { type: ['gltf', 'obj'], objPath: url (obj files only), mtlPath: url (obj files only) }, gltfPath: url (gltf files only), onload: function, armature: boolean, objectType: ['box', 'sphere', 'cylinder', 'concave', 'convex'] (Physijs mesh types), mass: float, objects: Proton3DScene, armature: boolean (whether or not an imported object is just armature; the object in question must be the last child of the armature) } )",
+			use: "ProtonJS.importObject( { type: ['gltf', 'obj'], objPath: url (obj files only), mtlPath: url (obj files only) }, gltfPath: url (gltf files only), onload: function, armature: boolean, objectType: ['box', 'sphere', 'cylinder', 'concave', 'convex'] (Physijs mesh types), mass: float, armature: boolean (whether or not an imported object is just armature; the object in question must be the last child of the armature) } )",
 			properties: [
 				"Proton3DObject (universal)"
 			],
@@ -315,7 +323,7 @@ var docs_data = {
 		},
 		{
 			name: "Proton3DScene",
-			description: "An scene in Proton3D.",
+			description: "An scene in Proton3D. Since Proton.JS can handle at most one scene, a scene is pre-made when all scripts are loaded. It can be accessed via ProtonJS.scene and is not pre-initialized.",
 			use: "new Proton3DScene()",
 			
 			properties: [
