@@ -51,7 +51,7 @@ document.writeln( '<meta name="viewport" content="width = device-width, initial-
 		importScript( "https://code.jquery.com/jquery-3.4.1.min.js" );
 	//stuff for the default Proton3DInterpreter
 		//three.js
-		importScript( "https://threejs.org/build/three.min.js", undefined, function () {
+		importScript( "https://threejs.org/build/three.js", undefined, function () {
 			//proton3d models: three.js
 			importScript( "https://unpkg.com/three/examples/jsm/loaders/MTLLoader.js", true );
 			importScript( "https://unpkg.com/three/examples/jsm/loaders/OBJLoader2.js", true );
@@ -748,7 +748,7 @@ class Proton3DScene {
 				if ( window.gunWalkingAnimation == undefined ) {
 
 					window.gunWalkingAnimation = setInterval( function() {
-						var movement = Math.sin( gunMoveFrame += ( ( 0.03 * speed ) + ( x.keys[ x.mappedKeys.sprint ]? 0.1 : 0 ) ) ) / 500
+						var movement = Math.sin( gunMoveFrame += ( ( 0.03 * movementSpeed ) + ( x.keys[ x.mappedKeys.sprint ]? 0.1 : 0 ) ) ) / 500
 						x.gun.movePosition? $( x.gun.movePosition ).stop() : undefined;
 						x.gun.setPosition( x.gun.position.x + ( ( 2 * movement ) ), x.gun.position.y + ( movement / 2 ), undefined );
 						x.gun.movePosition = x.gun.position.clone();
@@ -1604,7 +1604,7 @@ const Proton3DInterpreter = {
 				if ( child.shadow ) {
 				
 					var originalWidth = child.shadow.mapSize.width;
-					child.shadow.mapSize.width = child.shadow.mapSize.height = getShadowLOD( scene.camera.getWorldPosition().distanceTo( child.position ) )
+					child.shadow.mapSize.width = child.shadow.mapSize.height = getShadowLOD( ProtonJS.scene.camera.getWorldPosition().distanceTo( child.position ) )
 					if ( child.shadow.mapSize.width != originalWidth ) {
 					
 						child.shadow.map.dispose();
@@ -1874,7 +1874,8 @@ const Proton3DInterpreter = {
 				newMaterial = new THREE.MeshStandardMaterial( {
 					shadowSide: THREE.BackSide,
 					roughness: ( oldMaterial.roughness || (oldMaterial.shininess / 100) * 3  || 0.3 ),
-					dithering: true
+					dithering: true,
+					vertexColors: true
 				} );
 				for ( var i in oldMaterial ) {
 
@@ -2037,6 +2038,8 @@ const Proton3DInterpreter = {
 				#endif
 				`;
 				newMaterial.onBeforeCompile = function ( shader ) {
+
+					if( !object.p3dParent ) return;
 
 					shader.uniforms.cubeMapSize = { value: object.p3dParent.boundingBox.getSize( new THREE.Vector3() ) };
 					shader.uniforms.cubeMapPos = { value: object.position };
