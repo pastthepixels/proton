@@ -55,6 +55,8 @@ document.writeln( '<meta name="viewport" content="width = device-width, initial-
 			//proton3d models: three.js
 			importScript( "https://unpkg.com/three/examples/jsm/loaders/MTLLoader.js", true );
 			importScript( "https://unpkg.com/three/examples/jsm/loaders/OBJLoader2.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/loaders/MTLLoader.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/loaders/obj2/bridge/MtlObjBridge.js", true );
 			importScript( "https://unpkg.com/three@0.108.0/examples/jsm/loaders/GLTFLoader.js", true );
 			//hdr: three.js
 			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/EffectComposer.js", true );
@@ -77,8 +79,9 @@ document.writeln( '<meta name="viewport" content="width = device-width, initial-
 			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/postprocessing/SAOPass.js", true );
 			//shadowmap helpers
 			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/utils/ShadowMapViewer.js", true );
-			//csm
-			importScript( "https://unpkg.com/three/examples/jsm/csm/CSM.js", true );
+			//light probes
+			importScript( "https://unpkg.com/three/examples/jsm/lights/LightProbeGenerator.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/helpers/LightProbeHelper.js", true );
 		} );
 //\\//\\//\\//\\//\\  //
 //\\ pausing stuff \  // loc:2
@@ -1670,6 +1673,10 @@ const Proton3DInterpreter = {
 
 		}
 		//PBR
+		this.lightProbe = new THREE.LightProbe();
+		this.objects.add( this.lightProbe );
+		this.pmremGenerator = new THREE.PMREMGenerator( this.renderer );
+		this.pmremGenerator.compileEquirectangularShader();
 		this.pbrTexture = extras.pbrTexture;
 		this.livePBRArray = [];
 		this.livePBR = extras.livePBR;
@@ -1785,16 +1792,20 @@ const Proton3DInterpreter = {
 			object.pbr = function ( scene = Proton3DInterpreter, PBRCamera = object.pbrCam ) {
 				object.visible = false;
 				PBRCamera.update( scene.renderer, scene.objects );
+				if ( THREE.LightProbeGenerator ) Proton3DInterpreter.lightProbe.copy( THREE.LightProbeGenerator.fromCubeRenderTarget( Proton3DInterpreter.renderer, PBRCamera.renderTarget ) );
 				object.visible = true;
+				//
+				var pbrTexture = PBRCamera.renderTarget.texture//Proton3DInterpreter.pmremGenerator.fromEquirectangular( PBRCamera.renderTarget.texture ).texture;
+				//
 				if ( object.material[0] != null ) {
 
 					object.material.forEach( function ( material ) {
-						( material.proto? material.proto : material ).envMap = object.pbrTexture || PBRCamera.renderTarget.texture
+						( material.proto? material.proto : material ).envMap = object.pbrTexture || pbrTexture
 					} )
 
 				} else {
 
-					( object.material.proto? object.material.proto : object.material ).envMap = object.pbrTexture || PBRCamera.renderTarget.texture
+					( object.material.proto? object.material.proto : object.material ).envMap = object.pbrTexture || pbrTexture
 
 				}
 			}
@@ -2830,12 +2841,13 @@ const Proton3DInterpreter = {
 
 			case "obj":
 				loader = new THREE.OBJLoader2( extras.loadManager );
+				var MTLLoader = new THREE.MTLLoader( extras.loadManager );
 				loader.setLogging( false, false );
 				if ( typeof extras.mtlPath === "string" ) {
 
 					//loads an mtl + an obj file
-					loader.loadMtl( extras.mtlPath, null, function ( materials ) {
-						loader.setMaterials( materials );
+					MTLLoader.load( extras.mtlPath, null, function ( materials ) {
+						loader.addMaterials( THREE.MtlObjBridge.addMaterialsFromMtlLoader( materials ), true );
 						loader.load( extras.objPath, function ( object ) {
 							finishLoad( object.detail.loaderRootNode, object )
 						} );
