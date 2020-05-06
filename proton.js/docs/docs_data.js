@@ -101,6 +101,10 @@ var docs_data = {
 					description: "Puts an AudioListener in the object."
 				},
 				{
+					name: "setDamping( linear (float), angular (float) )",
+					description: "Sets the damping of an object."
+				},
+				{
 					name: "setLinearVelocity( x (float), y (float), z (float) )",
 					description: "Sets the linear velocity of an object."
 				},
@@ -239,7 +243,7 @@ var docs_data = {
 		{
 			name: "Proton3DObject (imported)",
 			description: "An object in Proton3D. It can either be imported via a '.obj' file or a glTF file.",
-			use: "ProtonJS.importObject( { type: ['gltf', 'obj'], objPath: url (obj files only), mtlPath: url (obj files only) }, gltfPath: url (gltf files only), onload: function, armature: boolean, objectType: ['box', 'sphere', 'cylinder', 'concave', 'convex'] (Physijs mesh types), mass: float, armature: boolean (whether or not an imported object is just armature; the object in question must be the last child of the armature) } )",
+			use: "ProtonJS.importObject( { objPath: url (obj files only), mtlPath: url (obj files only) }, gltfPath: url (gltf files only), onload: function, armature: boolean, objectType: ['box', 'sphere', 'cylinder', 'concave', 'convex'] (Physijs mesh types), mass: float, armature: boolean (whether or not an imported object is just armature; the object in question must be the last child of the armature) } )",
 			properties: [
 				"Proton3DObject (universal)"
 			],
@@ -380,7 +384,7 @@ var docs_data = {
 			],
 			functions: [
 				{
-					name: "init( { antialias: boolean, shaderQuality: [ 'low', 'medium', 'high' ], pbr: boolean, gravity: float, bloom: boolean, hdr: boolean, dynamicToneMapping: boolean, pixelatedScene: boolean, pbrTexture: string (url), livePBR: boolean, dynamicResolution: boolean, pcfSoftShadows: boolean, anisotropicFiltering: boolean (requires pbr to be true), shadowLOD: float (max shadow map width/height) } )",
+					name: "init( { antialias: boolean, shaderQuality: [ 'low', 'medium', 'high' ], pbr: boolean, sky: boolean (creates [scene].sky if true), shadows: boolean, graphicsRating: float (decimal, out of 1; sets unset graphics settings according to the rating) gravity: float, bloom: boolean, hdr: boolean, dynamicToneMapping: boolean, pixelatedScene: boolean, pbrTexture: string (url), livePBR: boolean, dynamicResolution: boolean, pcfSoftShadows: boolean, anisotropicFiltering: boolean (requires pbr to be true), shadowLOD: float (max shadow map width/height) } )",
 					description: "Perhaps the most important Proton3D function. It initializes a scene."
 				},
 				{

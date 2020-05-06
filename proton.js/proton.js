@@ -23,65 +23,79 @@
 //\\//\\//\\//\\//\\//\\//\\ //
 //\\ adding extra scripts \\ // //loc:1
 //\\//\\//\\//\\//\\//\\//\\ //
-var loadedScripts = 0, maxScripts = 0
+var loadedScripts = 0, maxScripts = 0;
 function importScript( url, isModule = false, callback ) {
 	maxScripts ++;
 	if ( !isModule ) {
 		
 		document.writeln( "<script src='" + url + "'></script>");
-		
+		//finished!
+		if ( callback ) callback();
+		loadedScripts ++;
+		if ( loadedScripts >= maxScripts ) window.finishedLoadingScripts = true;
 		
 	} else {
 
 		import( url ).then( function( value ) {
-			for( var i in value ) {
-				THREE[ i ] = value[ i ]
+			if ( isModule = "three" ) {
+			
+				for( var i in value ) {
+					THREE[ i ] = value[ i ]
+				}
+			
+			} else {
+
+				for( var i in value ) {
+					window[ i ] = value[ i ]
+				}
+
 			}
+			//finished!
+			if ( callback ) callback();
+			loadedScripts ++;
+			if ( loadedScripts >= maxScripts ) window.finishedLoadingScripts = true;
 		} )
 
 	}
-	if ( callback ) callback();
-	loadedScripts ++;
-	if ( loadedScripts >= maxScripts ) window.finishedLoadingScripts = true;
 }
 document.writeln( '<meta name="viewport" content="width = device-width, initial-scale = 1.0">' );
 //the part that requires an internet connection:
 	//ui
 		//jquery
-		importScript( "https://code.jquery.com/jquery-3.4.1.min.js" );
+		importScript( "https://code.jquery.com/jquery-3.4.1.min.js", true );
 	//stuff for the default Proton3DInterpreter
 		//three.js
-		importScript( "https://threejs.org/build/three.js", undefined, function () {
+		importScript( "https://threejs.org/build/three.js", true, function () {
 			//proton3d models: three.js
-			importScript( "https://unpkg.com/three/examples/jsm/loaders/MTLLoader.js", true );
-			importScript( "https://unpkg.com/three/examples/jsm/loaders/OBJLoader2.js", true );
-			importScript( "https://unpkg.com/three/examples/jsm/loaders/MTLLoader.js", true );
-			importScript( "https://unpkg.com/three/examples/jsm/loaders/obj2/bridge/MtlObjBridge.js", true );
-			importScript( "https://unpkg.com/three@0.108.0/examples/jsm/loaders/GLTFLoader.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/loaders/MTLLoader.js", "three" );
+			importScript( "https://unpkg.com/three/examples/jsm/loaders/OBJLoader2.js", "three" );
+			importScript( "https://unpkg.com/three/examples/jsm/loaders/MTLLoader.js", "three" );
+			importScript( "https://unpkg.com/three/examples/jsm/loaders/obj2/bridge/MtlObjBridge.js", "three" );
+			importScript( "https://unpkg.com/three@0.108.0/examples/jsm/loaders/GLTFLoader.js", "three" );
 			//hdr: three.js
-			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/EffectComposer.js", true );
-			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/ShaderPass.js", true );
-			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/RenderPass.js", true );
-			importScript( "https://unpkg.com/three/examples/jsm/shaders/CopyShader.js", true );
-			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/UnrealBloomPass.js", true );
-			importScript( "https://unpkg.com/three/examples/jsm/shaders/LuminosityHighPassShader.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/EffectComposer.js", "three" );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/ShaderPass.js", "three" );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/RenderPass.js", "three" );
+			importScript( "https://unpkg.com/three/examples/jsm/shaders/CopyShader.js", "three" );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/UnrealBloomPass.js", "three" );
+			importScript( "https://unpkg.com/three/examples/jsm/shaders/LuminosityHighPassShader.js", "three" );
 			//
-			importScript( "https://unpkg.com/three/examples/jsm/shaders/LuminosityShader.js", true );
-			importScript( "https://unpkg.com/three/examples/jsm/shaders/ToneMapShader.js", true );
-			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/AdaptiveToneMappingPass.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/shaders/LuminosityShader.js", "three" );
+			importScript( "https://unpkg.com/three/examples/jsm/shaders/ToneMapShader.js", "three" );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/AdaptiveToneMappingPass.js", "three" );
 			//antialiasing: threejs
-			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/SMAAPass.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/SMAAPass.js", "three" );
 			//proton3d physics: physijs
-			importScript( "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js" );
+			importScript( "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js", true );
 			//three.js' sky shader, by https://github.com/zz85
-			importScript( "https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js" );
+			importScript( "https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js", "three" );
 			//ssao
-			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/postprocessing/SAOPass.js", true );
+			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/postprocessing/SAOPass.js", "three" );
 			//shadowmap helpers
-			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/utils/ShadowMapViewer.js", true );
+			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/utils/ShadowMapViewer.js", "three" );
 			//light probes
-			importScript( "https://unpkg.com/three/examples/jsm/lights/LightProbeGenerator.js", true );
-			importScript( "https://unpkg.com/three/examples/jsm/helpers/LightProbeHelper.js", true );
+			importScript( "https://unpkg.com/three/examples/jsm/lights/LightProbeGenerator.js", "three" );
+			importScript( "https://unpkg.com/three/examples/jsm/helpers/LightProbeHelper.js", "three" );
 		} );
 //\\//\\//\\//\\//\\  //
 //\\ pausing stuff \  // loc:2
@@ -196,7 +210,7 @@ class GameCode {
 					code.run();
 
 				}
-			}, 1000 )
+			}, 1500 )
 	}
 }
 //creating audio that repeats
@@ -456,9 +470,6 @@ class Proton3DScene {
 		this.extraKeyControls = [];
 		ProtonJS.scenes.push( this )
 	}
-	//this is the same as the 2d init function,
-	//except with an object rather than
-	//parameters.
 	init( extras = {} ) {
 		//some [extras] stuff
 		extras.width = extras.width || window.innerWidth;
@@ -470,7 +481,9 @@ class Proton3DScene {
 			viewportWidth: extras.width,
 			viewportHeight: extras.height
 		} );
+		this.camera.changeFar( 200 )
 		this.audio = new Audio();
+		this.dynamicResize();
 		//ifs
 		if ( extras.parent == undefined ) {
 
@@ -485,15 +498,6 @@ class Proton3DScene {
 		extras.element = this.element;
 		extras.scene = this;
 		Proton3DInterpreter.create3DScene( extras );
-		//watching for variables
-		this.background = ""
-		this.backgroundImage = "";
-		this.watch( "background", function ( id, oldval, newval ) {
-			this.element.style.background = newval;
-		} );
-		this.watch( "backgroundImage", function ( id, oldval, newval ) {
-			this.canvas.style.background = newval;
-		} );
 		//updating
 		this.update( this );
 		this.updateExtraFunctions( this );
@@ -797,6 +801,7 @@ class Proton3DScene {
 		returningObject.init = function () {
 			document.body.requestPointerLock();
 			ProtonJS.resume();
+			Proton3DInterpreter.setAudioControls( ProtonJS.scene );
 			init();
 		}
 
@@ -1100,6 +1105,14 @@ class Proton3DObject {
 			genericMeshNameInstances += 1;
 
 		}
+		//distributes extras.position
+		if ( extras.position ) {
+
+			extras.x = extras.position.x;
+			extras.y = extras.position.y;
+			extras.z = extras.position.z;
+
+		}
 		//gives children to the mesh
 		this.children = extras.children || []
 		//gives the decision to skip a material replacement when initilizing pbr
@@ -1230,6 +1243,11 @@ class Proton3DObject {
 		if ( extras.gunRotation ) extras.gun.setRotation( extras.gunRotation.x, extras.gunRotation.y, extras.gunRotation.z )
 		//making an invisible player
 		if ( extras.invisible ) object.makeInvisible();
+		//misc
+		ProtonJS.player = object;
+		//health (in hit points, not percentages nor decimals)
+		object.health = 100;
+		object.maxHealth = 100;
 	}
 	//the accessors' corresponding functions
 	makeInvisible() {
@@ -1288,6 +1306,9 @@ class Proton3DObject {
 	}
 	setAngularVelocity( x = 0, y = 0, z = 0 ) {
 		return Proton3DInterpreter.Proton3DObject.setAngularVelocity( x, y, z, this )
+	}
+	setDamping( linear = 0, angular = 0 ) {
+		return Proton3DInterpreter.Proton3DObject.setDamping( linear, angular, this )
 	}
 	setLinearFactor( x = 0, y = 0, z = 0 ) {
 		return Proton3DInterpreter.Proton3DObject.setLinearFactor( x, y, z, this )
@@ -1565,22 +1586,145 @@ const Proton3DInterpreter = {
 		extras.refreshRate = extras.refreshRate || this.refreshRate || 10
 		extras.antialias = extras.antialias || false;
 		extras.shaderQuality = extras.shaderQuality || "low";
+		extras.shadows = extras.shadows != undefined? extras.shadows : true;
+		//auto-graphics
+		switch( extras.graphicsRating ) {
+
+			case 1/10:
+				if ( extras.antialias == undefined ) extras.antialias = false;
+				if ( extras.pbr == undefined ) extras.pbr = false;
+				if ( extras.shaderQuality == undefined ) extras.shaderQuality = "low";
+				if ( extras.livePBR == undefined ) extras.livePBR = false;
+				if ( extras.hdr == undefined ) extras.hdr = false;
+				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = false;
+				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = true;
+				if ( extras.shadows == undefined ) extras.shadows = false;
+				break;
+
+			case 2/10:
+				if ( extras.antialias == undefined ) extras.antialias = false;
+				if ( extras.pbr == undefined ) extras.pbr = false;
+				if ( extras.shaderQuality == undefined ) extras.shaderQuality = "low";
+				if ( extras.livePBR == undefined ) extras.livePBR = false;
+				if ( extras.hdr == undefined ) extras.hdr = false;
+				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = true;
+				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = true;
+				if ( extras.shadows == undefined ) extras.shadows = false;
+				break;
+			
+			case 3/10:
+				if ( extras.antialias == undefined ) extras.antialias = false;
+				if ( extras.pbr == undefined ) extras.pbr = true;
+				if ( extras.shaderQuality == undefined ) extras.shaderQuality = "low";
+				if ( extras.livePBR == undefined ) extras.livePBR = false;
+				if ( extras.hdr == undefined ) extras.hdr = false;
+				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = true;
+				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = true;
+				if ( extras.shadows == undefined ) extras.shadows = false;
+				break;
+
+			case 4/10:
+				if ( extras.antialias == undefined ) extras.antialias = false;
+				if ( extras.pbr == undefined ) extras.pbr = true;
+				if ( extras.shaderQuality == undefined ) extras.shaderQuality = "low";
+				if ( extras.livePBR == undefined ) extras.livePBR = false;
+				if ( extras.hdr == undefined ) extras.hdr = false;
+				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = true;
+				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = true;
+				if ( extras.shadows == undefined ) extras.shadows = false;
+				break;
+
+			case 5/10:
+				if ( extras.antialias == undefined ) extras.antialias = false;
+				if ( extras.pbr == undefined ) extras.pbr = true;
+				if ( extras.shaderQuality == undefined ) extras.shaderQuality = "low";
+				if ( extras.livePBR == undefined ) extras.livePBR = false;
+				if ( extras.hdr == undefined ) extras.hdr = false;
+				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = false;
+				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = false;
+				if ( extras.shadows == undefined ) extras.shadows = true;
+				if ( extras.shadowLOD == undefined ) extras.shadowLOD = 512;
+				break;
+
+			case 6/10:
+				if ( extras.antialias == undefined ) extras.antialias = false;
+				if ( extras.pbr == undefined ) extras.pbr = true;
+				if ( extras.shaderQuality == undefined ) extras.shaderQuality = "medium";
+				if ( extras.livePBR == undefined ) extras.livePBR = false;
+				if ( extras.hdr == undefined ) extras.hdr = false;
+				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = true;
+				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = false;
+				if ( extras.shadows == undefined ) extras.shadows = true;
+				if ( extras.shadowLOD == undefined ) extras.shadowLOD = 512;
+				break;
+
+			case 7/10:
+				if ( extras.antialias == undefined ) extras.antialias = false;
+				if ( extras.pbr == undefined ) extras.pbr = true;
+				if ( extras.shaderQuality == undefined ) extras.shaderQuality = "medium";
+				if ( extras.livePBR == undefined ) extras.livePBR = false;
+				if ( extras.hdr == undefined ) extras.hdr = true;
+				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = true;
+				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = false;
+				if ( extras.shadows == undefined ) extras.shadows = true;
+				if ( extras.shadowLOD == undefined ) extras.shadowLOD = 1024;
+				break;
+
+			case 8/10:
+				if ( extras.antialias == undefined ) extras.antialias = true;
+				if ( extras.pbr == undefined ) extras.pbr = true;
+				if ( extras.shaderQuality == undefined ) extras.shaderQuality = "medium";
+				if ( extras.livePBR == undefined ) extras.livePBR = false;
+				if ( extras.hdr == undefined ) extras.hdr = true;
+				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = true;
+				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = false;
+				if ( extras.shadows == undefined ) extras.shadows = true;
+				if ( extras.shadowLOD == undefined ) extras.shadowLOD = 1024;
+				break;
+
+			case 9/10:
+				if ( extras.antialias == undefined ) extras.antialias = true;
+				if ( extras.pbr == undefined ) extras.pbr = true;
+				if ( extras.shaderQuality == undefined ) extras.shaderQuality = "high";
+				if ( extras.livePBR == undefined ) extras.livePBR = false;
+				if ( extras.hdr == undefined ) extras.hdr = true;
+				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = true;
+				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = false;
+				if ( extras.shadows == undefined ) extras.shadows = true;
+				if ( extras.ssao == undefined ) extras.ssao = true;
+				if ( extras.shadowLOD == undefined ) extras.shadowLOD = 1024;
+				break;
+			
+			case 10/10:
+				if ( extras.antialias == undefined ) extras.antialias = true;
+				if ( extras.pbr == undefined ) extras.pbr = true;
+				if ( extras.shaderQuality == undefined ) extras.shaderQuality = "high";
+				if ( extras.livePBR == undefined ) extras.livePBR = true;
+				if ( extras.hdr == undefined ) extras.hdr = true;
+				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = true;
+				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = false;
+				if ( extras.ssao == undefined ) extras.ssao = true;
+				if ( extras.shadows == undefined ) extras.shadows = true;
+				break;
+
+		}
 		//variables
 		extras.scene.usePBR = extras.pbr;
 		this.canvas = document.createElement( "canvas" );
-		this.context = this.canvas.getContext( "webgl2", { /*alpha: false*/ } );
+		this.context = this.canvas.getContext( "webgl2", { alpha: false } );
 		this.renderer = new THREE[ "WebGLRenderer" ]( {
 			antialias: false,
 			canvas: this.canvas,
 			context: this.context,
 			precision: extras.shaderQuality.toLowerCase() + "p",
-			logarithmicDepthBuffer: true
+			logarithmicDepthBuffer: true,
+			powerPreference: "high-performance"
 		} );
 		this.renderer.setPixelRatio( window.devicePixelRatio );
 		this.frame = 0;
 		this.fpsMeasurements = [];
 		this.renderer.setSize( extras.width, extras.height );
-		this.renderer.shadowMap.enabled = true;
+		this.renderer.shadowMap.enabled = extras.shadodws;
 		this.renderer.shadowMap.type = extras.pcfSoftShadows? THREE.PCFSoftShadowMap : THREE.VSMShadowMap;
 		//physics
 		this.objects = new Physijs.Scene();
@@ -1588,8 +1732,15 @@ const Proton3DInterpreter = {
 		//some element - y stuff
 		extras.element.appendChild( this.canvas );
 		extras.scene.element.style.imageRendering = extras.pixelatedScene? "pixelated": "";
-		//updating a scene
+		//updating the scene
 		Proton3DInterpreter.render( extras.scene );
+		//sky
+		if ( extras.sky ) {
+		
+			extras.scene.sky = new Proton3DObject( {  type: "sky", sunPosition: new THREE.Vector3( 0, 100, 0 ) } )
+			this.objects.add( getMeshByName( extras.scene.sky.name ) )
+			
+		}
 		//renderization
 		var hdrRenderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, stencilBuffer: false } );
 		var scenePass = new THREE.RenderPass( Proton3DInterpreter.objects, getMeshByName( extras.scene.camera.name ) );
@@ -1672,6 +1823,35 @@ const Proton3DInterpreter = {
 			Proton3DInterpreter.anisotropicFiltering = Proton3DInterpreter.renderer.capabilities.getMaxAnisotropy();
 
 		}
+		//frustum culling
+		this.frustum = new THREE.Frustum();
+		/*
+		//bad idea.
+		this.frustumCull = function() {
+			extras.scene.getObjectList().forEach( frustumCull );
+		}
+		function frustumCull( object ) {
+			if ( object == undefined || getMeshByName( object.name ) == undefined || ( getMeshByName( object.name ) && getMeshByName( object.name ).type.includes( "light" ) ) ) {
+
+				return
+
+			}
+			if ( object.children ) object.children.forEach( frustumCull )
+			//
+			getMeshByName( object.name ).frustumCulled = false;
+			Proton3DInterpreter.frustum.setFromProjectionMatrix( new THREE.Matrix4().multiplyMatrices( getMeshByName( extras.scene.camera.name ).projectionMatrix, getMeshByName( extras.scene.camera.name ).matrixWorldInverse ) );
+			if ( !Proton3DInterpreter.frustum.intersectsObject( getMeshByName( object.name ) ) ) {
+
+				getMeshByName( object.name ).visible = false;
+
+			} else {
+
+				getMeshByName( object.name ).visible = true;
+
+			}
+		}
+		setInterval( this.frustumCull, 64 );
+		*/
 		//PBR
 		this.lightProbe = new THREE.LightProbe();
 		this.objects.add( this.lightProbe );
@@ -1696,10 +1876,9 @@ const Proton3DInterpreter = {
 
 					}
 					//
-					var frustum = new THREE.Frustum();
-					frustum.setFromProjectionMatrix( new THREE.Matrix4().multiplyMatrices( getMeshByName( extras.scene.camera.name ).projectionMatrix, getMeshByName( extras.scene.camera.name ).matrixWorldInverse ) );
+					Proton3DInterpreter.frustum.setFromProjectionMatrix( new THREE.Matrix4().multiplyMatrices( getMeshByName( extras.scene.camera.name ).projectionMatrix, getMeshByName( extras.scene.camera.name ).matrixWorldInverse ) );
 					//
-					if ( getMeshByName( object.name ) == undefined || !frustum.intersectsObject( getMeshByName( object.name ) ) || ( object.material != undefined && object.material.roughness > 0.3 ) ) {
+					if ( getMeshByName( object.name ) == undefined || !Proton3DInterpreter.frustum.intersectsObject( getMeshByName( object.name ) ) || ( object.material != undefined && object.material.roughness > 0.3 ) ) {
 
 						return
 
@@ -1738,6 +1917,15 @@ const Proton3DInterpreter = {
 		}
 		//
 		return this.canvas
+	},
+	setAudioControls( scene ) {
+		if ( !this._audioControlsSet ) {
+		
+			this._audioControlsSet = true;
+			scene.camera.listener = new THREE.AudioListener();
+			getMeshByName( scene.camera.name ).add( scene.camera.listener )
+			
+		}
 	},
 	dynamicResize( scene ) {
 		window.addEventListener( "resize", function () {
@@ -1785,7 +1973,13 @@ const Proton3DInterpreter = {
 		}
 		P3DObject.updateBoundingBox();
 		//geometry
-	//	if ( object.geometry && object.geometry.isGeometry ) object.geometry = ( new THREE.BufferGeometry() ).fromGeometry( object.geometry )
+		if ( object.geometry && object.geometry.isGeometry ) {
+
+			var vertices = object.geometry.vertices;
+			object.geometry = ( new THREE.BufferGeometry() ).fromGeometry( object.geometry );
+			object.geometry.vertices = vertices;
+
+		}
 		//physically based rendering
 		if ( scene.usePBR != false && !skipPBRReplacement && !skipPBRReplacement_light && object.material ) {
 
@@ -1882,7 +2076,7 @@ const Proton3DInterpreter = {
 				//
 				hasProto = material.__proto__.type != null;
 				oldMaterial = hasProto? material.__proto__ : material;
-				newMaterial = new THREE.MeshStandardMaterial( {
+				newMaterial = new THREE[ "MeshStandardMaterial" ]( {
 					shadowSide: THREE.BackSide,
 					roughness: ( oldMaterial.roughness || (oldMaterial.shininess / 100) * 3  || 0.3 ),
 					dithering: true,
@@ -2683,6 +2877,9 @@ const Proton3DInterpreter = {
 		setAngularVelocity( x = getMeshByName( P3DObject.name ).getAngularVelocity().x, y = getMeshByName( P3DObject.name ).getAngularVelocity().y, z = getMeshByName( P3DObject.name ).getAngularVelocity().z, P3DObject ) {
 			getMeshByName( P3DObject.name ).setAngularVelocity( new THREE.Vector3( x, y, z ) )
 		},
+		setDamping( linear, angular, P3DObject ) {
+			getMeshByName( P3DObject.name ).setDamping( linear, angular )
+		},
 		setLinearFactor( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( !x.x ) {
 
@@ -2837,6 +3034,7 @@ const Proton3DInterpreter = {
 		this.raw = null;
 
 		//gets the loader and loads the file
+		extras.fileType = extras.gltfPath? "gltf" : "obj";
 		switch ( extras.fileType.toLowerCase() ) {
 
 			case "obj":
@@ -2854,7 +3052,7 @@ const Proton3DInterpreter = {
 					} );
 
 				} else {
-
+					
 					//loads just an obj file
 					loader.load( extras.objPath, function ( object ) {
 						finishLoad( object )
@@ -3839,6 +4037,20 @@ let ProtonJS = {
 			return ProtonJS.threevector.set( x, y, z )
 		}
 	},
+	//wrapper for localStorage
+	storage: {
+		name: "mygame",
+		get( name ) {
+			return localStorage.getItem( ProtonJS.storage.name + "-" + name ) || null;
+		},
+		set( name, value ) {
+			localStorage.setItem( ProtonJS.storage.name + "-" + name, value );
+			return value;
+		},
+		remove( name ) {
+			localStorage.removeItem( ProtonJS.storage.name + "-" + name );
+		}
+	},
 	css: {
 		"*": [
 			"font-family: monospace !important"
@@ -4020,6 +4232,25 @@ let ProtonJS = {
 		}
 		vector.applyAxisAngle( axis, angle )
 		return vector;
+	},
+	noclip(){
+		if ( ProtonJS.scene.noclip ) {
+
+			ProtonJS.scene.noclip = false;
+			ProtonJS.player.setLinearVelocity( 0, 0, 0 );
+			ProtonJS.player.setLinearFactor( 1, 1, 1 );
+			ProtonJS.player.setDamping( 0 );
+			return;
+
+		} else {
+
+			ProtonJS.scene.noclip = true;
+			ProtonJS.player.setLinearVelocity( 0, 0, 0 );
+			ProtonJS.player.setLinearFactor( 0, 0, 0 );
+			ProtonJS.player.setDamping( 1 );
+			return;
+
+		}
 	}
 }
 //For code that has "ProtonJS" and not "protonjs"
