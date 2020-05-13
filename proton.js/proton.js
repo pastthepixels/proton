@@ -450,7 +450,7 @@ Object.defineProperty( Object.prototype, "watch", {
 class Proton3DScene {
 	constructor() {
 		//this part requires an internet connection
-		Physijs.scripts.worker = "https://raw.githack.com/pastthepixels/proton/beta/proton.js/accessories/physijs_worker_modified.js"//"https://rawcdn.githack.com/pastthepixels/proton/fe138b6f451cdc648fc1a0fe845c68484a808fda/proton.js/accessories/physijs_worker_modified.js";
+		Physijs.scripts.worker = "https://rawcdn.githack.com/pastthepixels/proton/b4661ae9a96e661e859eb45dd534028eaa58a1f5/proton.js/accessories/physijs_worker_modified.js";
 		Physijs.scripts.ammo = ProtonJS.ammojsURL;
 		this.mappedKeys = {
 			forward: 38,
@@ -4129,7 +4129,7 @@ let ProtonJS = {
 		]
 	},
 	paused: false,
-	ammojsURL: "https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.wasm.js",//"https://cdn.jsdelivr.net/gh/Mwni/AmmoNext@master/builds/ammo.asm.js",
+	ammojsURL: "https://cdn.jsdelivr.net/gh/Mwni/AmmoNext@master/builds/ammo.js",
 	/*physijs version of ammo = "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/examples/js/ammo.js"; latest version of ammo = "https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js"*/
 	scenes: [],
 	importObject: Proton3DInterpreter.importObject,
