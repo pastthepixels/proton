@@ -450,7 +450,7 @@ Object.defineProperty( Object.prototype, "watch", {
 class Proton3DScene {
 	constructor() {
 		//this part requires an internet connection
-		Physijs.scripts.worker = "../../../proton/proton.js/accessories/physijs_worker_modified.js"//"https://rawcdn.githack.com/pastthepixels/proton/fe138b6f451cdc648fc1a0fe845c68484a808fda/proton.js/accessories/physijs_worker_modified.js";
+		Physijs.scripts.worker = "https://raw.githack.com/pastthepixels/proton/beta/proton.js/accessories/physijs_worker_modified.js"//"https://rawcdn.githack.com/pastthepixels/proton/fe138b6f451cdc648fc1a0fe845c68484a808fda/proton.js/accessories/physijs_worker_modified.js";
 		Physijs.scripts.ammo = ProtonJS.ammojsURL;
 		this.mappedKeys = {
 			forward: 38,
