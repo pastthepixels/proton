@@ -84,13 +84,11 @@ document.writeln( '<meta name="viewport" content="width = device-width, initial-
 			importScript( "https://unpkg.com/three/examples/jsm/shaders/ToneMapShader.js", "three" );
 			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/AdaptiveToneMappingPass.js", "three" );
 			//antialiasing: threejs
-			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/SMAAPass.js", "three" );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/TAARenderPass.js", "three" );
 			//proton3d physics: physijs
 			importScript( "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js", true );
 			//three.js' sky shader, by https://github.com/zz85
 			importScript( "https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js", "three" );
-			//ssao
-			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/postprocessing/SAOPass.js", "three" );
 			//shadowmap helpers
 			importScript( "https://unpkg.com/three@0.106.0/examples/jsm/utils/ShadowMapViewer.js", "three" );
 			//light probes
@@ -452,7 +450,7 @@ Object.defineProperty( Object.prototype, "watch", {
 class Proton3DScene {
 	constructor() {
 		//this part requires an internet connection
-		Physijs.scripts.worker = "https://rawcdn.githack.com/pastthepixels/proton/fe138b6f451cdc648fc1a0fe845c68484a808fda/proton.js/accessories/physijs_worker_modified.js";
+		Physijs.scripts.worker = "../../../proton/proton.js/accessories/physijs_worker_modified.js"//"https://rawcdn.githack.com/pastthepixels/proton/fe138b6f451cdc648fc1a0fe845c68484a808fda/proton.js/accessories/physijs_worker_modified.js";
 		Physijs.scripts.ammo = ProtonJS.ammojsURL;
 		this.mappedKeys = {
 			forward: 38,
@@ -599,10 +597,10 @@ class Proton3DScene {
 		x.camera.add( x.camera.flashlight );
 		x.camera.flashlight.setTargetPosition( 0, 0, 1 );
 		x.camera.flashlight.canBeEnabled = true;
-		x.camera.flashlight.changeAngle( 0.45 );
+		x.camera.flashlight.changeAngle( 0.5 );
 		x.camera.flashlight.enable = function() {
 			x.camera.flashlight.setTargetPosition( 0, 0, -1 );
-			x.camera.flashlight.changeIntensity( 30 )
+			x.camera.flashlight.changeIntensity( 5 )
 			x.camera.flashlight.enabled = true;
 		}
 		x.camera.flashlight.disable = function() {
@@ -1647,7 +1645,7 @@ const Proton3DInterpreter = {
 				break;
 
 			case 6/10:
-				if ( extras.antialias == undefined ) extras.antialias = false;
+				if ( extras.antialias == undefined ) extras.antialias = 1;
 				if ( extras.pbr == undefined ) extras.pbr = true;
 				if ( extras.shaderQuality == undefined ) extras.shaderQuality = "medium";
 				if ( extras.livePBR == undefined ) extras.livePBR = false;
@@ -1659,7 +1657,7 @@ const Proton3DInterpreter = {
 				break;
 
 			case 7/10:
-				if ( extras.antialias == undefined ) extras.antialias = false;
+				if ( extras.antialias == undefined ) extras.antialias = 2;
 				if ( extras.pbr == undefined ) extras.pbr = true;
 				if ( extras.shaderQuality == undefined ) extras.shaderQuality = "medium";
 				if ( extras.livePBR == undefined ) extras.livePBR = false;
@@ -1671,7 +1669,7 @@ const Proton3DInterpreter = {
 				break;
 
 			case 8/10:
-				if ( extras.antialias == undefined ) extras.antialias = true;
+				if ( extras.antialias == undefined ) extras.antialias = 3;
 				if ( extras.pbr == undefined ) extras.pbr = true;
 				if ( extras.shaderQuality == undefined ) extras.shaderQuality = "medium";
 				if ( extras.livePBR == undefined ) extras.livePBR = false;
@@ -1683,7 +1681,7 @@ const Proton3DInterpreter = {
 				break;
 
 			case 9/10:
-				if ( extras.antialias == undefined ) extras.antialias = true;
+				if ( extras.antialias == undefined ) extras.antialias = 4;
 				if ( extras.pbr == undefined ) extras.pbr = true;
 				if ( extras.shaderQuality == undefined ) extras.shaderQuality = "high";
 				if ( extras.livePBR == undefined ) extras.livePBR = false;
@@ -1696,7 +1694,7 @@ const Proton3DInterpreter = {
 				break;
 			
 			case 10/10:
-				if ( extras.antialias == undefined ) extras.antialias = true;
+				if ( extras.antialias == undefined ) extras.antialias = 5;
 				if ( extras.pbr == undefined ) extras.pbr = true;
 				if ( extras.shaderQuality == undefined ) extras.shaderQuality = "high";
 				if ( extras.livePBR == undefined ) extras.livePBR = true;
@@ -1724,7 +1722,7 @@ const Proton3DInterpreter = {
 		this.frame = 0;
 		this.fpsMeasurements = [];
 		this.renderer.setSize( extras.width, extras.height );
-		this.renderer.shadowMap.enabled = extras.shadodws;
+		//this.renderer.shadowMap.enabled = extras.shadows;
 		this.renderer.shadowMap.type = extras.pcfSoftShadows? THREE.PCFSoftShadowMap : THREE.VSMShadowMap;
 		//physics
 		this.objects = new Physijs.Scene();
@@ -1746,7 +1744,7 @@ const Proton3DInterpreter = {
 		var scenePass = new THREE.RenderPass( Proton3DInterpreter.objects, getMeshByName( extras.scene.camera.name ) );
 		this.composer = new THREE.EffectComposer( Proton3DInterpreter.renderer, hdrRenderTarget );
 		this.composer.addPass( scenePass );
-		//cascaded shadow maps
+		//cascaded shadow maps: an alternative
 		if ( extras.shadowLOD ) {
 
 			this.shadowLODInterval = function() {
@@ -1813,8 +1811,10 @@ const Proton3DInterpreter = {
 		//antialising
 		if ( extras.antialias ) {
 
-			var smaaPass = new THREE.SMAAPass( window.innerWidth * Proton3DInterpreter.renderer.getPixelRatio(), window.innerHeight * Proton3DInterpreter.renderer.getPixelRatio() );
-			this.composer.addPass( smaaPass );
+			var taaRenderPass = new THREE.TAARenderPass( window.innerWidth * Proton3DInterpreter.renderer.getPixelRatio(), window.innerHeight * Proton3DInterpreter.renderer.getPixelRatio() );
+			taaRenderPass.unbiased = true;
+			taaRenderPass.sampleLevel = extras.antialias
+			this.composer.addPass( taaRenderPass );
 
 		}
 		//anisotropic filtering
@@ -2004,16 +2004,16 @@ const Proton3DInterpreter = {
 				}
 			}
 			//
-			this.initPBR( object.material, object, undefined, scene, skipPBRReplacement, object.material? object.material.name : null );
+			this.updateObjectMaterials( object.material, object, undefined, scene, skipPBRReplacement, object.material? object.material.name : null );
 			object.pbr( this );
 
-		} else if ( !skipPBRReplacement ) {
+		} else {
 
-			this.initPBR( object.material, object, undefined, scene, skipPBRReplacement, object.material? object.material.name : null, false );
+			this.updateObjectMaterials( object.material, object, undefined, scene, skipPBRReplacement, object.material? object.material.name : null, false );
 
 		}
 	},
-	initPBR( material, object, materialLocation, scene = this, skipPBRReplacement = false, materialName, usePBRInTheFirstPlace = true ) {
+	updateObjectMaterials( material, object, materialLocation, scene = this, skipPBRReplacement = false, materialName, pbr = true ) {
 		if ( material == undefined ) {
 
 			return
@@ -2022,7 +2022,7 @@ const Proton3DInterpreter = {
 		if ( material[0] != null ) {
 
 			material.forEach( function (m, i) {
-				Proton3DInterpreter.initPBR( m, object, i, scene, skipPBRReplacement, m.name, usePBRInTheFirstPlace );
+				Proton3DInterpreter.initPBR( m, object, i, scene, skipPBRReplacement, m.name, pbr );
 			} )
 
 		} else {
@@ -2068,207 +2068,205 @@ const Proton3DInterpreter = {
 				"wireframeLinejoin",
 				"wireframeLinewidth"
 			];
-			if ( usePBRInTheFirstPlace ) {
+			//pbr
+			if ( pbr ) {
 
 				object.pbrCam = new THREE.CubeCamera( 1, 100, 128 );
 				object.pbrTexture = Proton3DInterpreter.pbrTexture? new THREE.TextureLoader().load( Proton3DInterpreter.pbrTexture ) : undefined;
 				object.add( object.pbrCam );
-				//
-				hasProto = material.__proto__.type != null;
-				oldMaterial = hasProto? material.__proto__ : material;
-				newMaterial = new THREE[ "MeshStandardMaterial" ]( {
-					shadowSide: THREE.BackSide,
-					roughness: ( oldMaterial.roughness || (oldMaterial.shininess / 100) * 3  || 0.3 ),
-					dithering: true,
-					vertexColors: true
-				} );
-				for ( var i in oldMaterial ) {
+				
+			}
 
-					if ( supportedPropertyList.indexOf( i ) < 0 ) {
+			//creates a new material
+			hasProto = material.__proto__.type != null;
+			oldMaterial = hasProto? material.__proto__ : material;
+			newMaterial = new THREE[ "MeshStandardMaterial" ]( {
+				shadowSide: THREE.BackSide,
+				roughness: ( oldMaterial.roughness || (oldMaterial.shininess / 100) * 3  || 0.3 ),
+				dithering: true,
+				vertexColors: true
+			} );
+			for ( var i in oldMaterial ) {
 
-						continue
+				if ( supportedPropertyList.indexOf( i ) < 0 ) {
 
-					}
-					if ( newMaterial[ i ] != null ) {
-
-						newMaterial[ i ] = oldMaterial[ i ];
-
-					}
+					continue
 
 				}
-				if ( oldMaterial.bumpMap != null ) {
+				if ( newMaterial[ i ] != null ) {
 
-					newMaterial.bumpMap = oldMaterial.bumpMap
-
-				}
-				if ( oldMaterial.map != null ) {
-
-					newMaterial.map = oldMaterial.map
+					newMaterial[ i ] = oldMaterial[ i ];
 
 				}
-				if ( oldMaterial.normalMap != null ) {
-
-					newMaterial.normalMap = oldMaterial.normalMap
-
-				}
-				newMaterial.envMap = object.pbrCam.renderTarget.texture;
-				newMaterial.shadowSide = THREE.BackSide;
-				newMaterial.color = oldMaterial.color;
-				//anisotropic filtering
-				if ( Proton3DInterpreter.anisotropicFiltering ) {
-					
-					for ( var i in newMaterial ) {
-
-						if ( newMaterial[ i ] && newMaterial[ i ].anisotropy ) {
-
-							newMaterial[ i ].anisotropy = Proton3DInterpreter.anisotropicFiltering;
-		
-						}
-
-					}
-
-				}
-				//box projected cubemaps ==> slightly modifed from https://github.com/mrdoob/three.js/blob/master/examples/webgl_materials_envmaps_parallax.html
-				var worldposReplace = `
-				#define BOX_PROJECTED_ENV_MAP
-				#if defined( USE_ENVMAP ) || defined( DISTANCE ) || defined ( USE_SHADOWMAP )
-					vec4 worldPosition = modelMatrix * vec4( transformed, 1.0 );
-					#ifdef BOX_PROJECTED_ENV_MAP
-						vWorldPosition = worldPosition.xyz;
-					#endif
-				#endif
-				`;
-
-				var envmapPhysicalParsReplace = `
-				#if defined( USE_ENVMAP )
-					#define BOX_PROJECTED_ENV_MAP
-					#ifdef BOX_PROJECTED_ENV_MAP
-						uniform vec3 cubeMapSize;
-						uniform vec3 cubeMapPos;
-						uniform vec4 cubeMapRotation;
-						varying vec3 vWorldPosition;
-						vec3 parallaxCorrectNormal( vec3 v, vec3 cubeSize, vec3 cubePos, vec4 q ) {
-							vec3 nDir = normalize( v );
-
-							vec3 rbmax = ( .5 * cubeSize + cubePos - vWorldPosition ) / nDir;
-							vec3 rbmin = ( -.5 * cubeSize + cubePos - vWorldPosition ) / nDir;
-							vec3 rbminmax;
-							rbminmax.x = ( nDir.x > 0. ) ? rbmax.x : rbmin.x;
-							rbminmax.y = ( nDir.y > 0. ) ? rbmax.y : rbmin.y;
-							rbminmax.z = ( nDir.z > 0. ) ? rbmax.z : rbmin.z;
-
-							float correction = min( min( rbminmax.x, rbminmax.y ), rbminmax.z );
-							vec3 boxIntersection = vWorldPosition + nDir * correction;
-							return boxIntersection - cubePos;
-						}
-					#endif
-					#ifdef ENVMAP_MODE_REFRACTION
-						uniform float refractionRatio;
-					#endif
-					vec3 getLightProbeIndirectIrradiance( /*const in SpecularLightProbe specularLightProbe,*/ const in GeometricContext geometry, const in int maxMIPLevel ) {
-						vec3 worldNormal = inverseTransformDirection( geometry.normal, viewMatrix );
-						#ifdef ENVMAP_TYPE_CUBE
-							#ifdef BOX_PROJECTED_ENV_MAP
-								worldNormal = parallaxCorrectNormal( worldNormal, cubeMapSize, cubeMapPos, cubeMapRotation );
-							#endif
-							vec3 queryVec = vec3( flipEnvMap * worldNormal.x, worldNormal.yz );
-							// TODO: replace with properly filtered cubemaps and access the irradiance LOD level, be it the last LOD level
-							// of a specular cubemap, or just the default level of a specially created irradiance cubemap.
-							#ifdef TEXTURE_LOD_EXT
-								vec4 envMapColor = textureCubeLodEXT( envMap, queryVec, float( maxMIPLevel ) );
-							#else
-								// force the bias high to get the last LOD level as it is the most blurred.
-								vec4 envMapColor = textureCube( envMap, queryVec, float( maxMIPLevel ) );
-							#endif
-							envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
-						#elif defined( ENVMAP_TYPE_CUBE_UV )
-							vec4 envMapColor = textureCubeUV( envMap, worldNormal, 1.0 );
-						#else
-							vec4 envMapColor = vec4( 0.0 );
-						#endif
-						return PI * envMapColor.rgb * envMapIntensity;
-					}
-					// Trowbridge-Reitz distribution to Mip level, following the logic of http://casual-effects.blogspot.ca/2011/08/plausible-environment-lighting-in-two.html
-					float getSpecularMIPLevel( const in float roughness, const in int maxMIPLevel ) {
-						float maxMIPLevelScalar = float( maxMIPLevel );
-						float sigma = PI * roughness * roughness / ( 1.0 + roughness );
-						float desiredMIPLevel = maxMIPLevelScalar + log2( sigma );
-						// clamp to allowable LOD ranges.
-						return clamp( desiredMIPLevel, 0.0, maxMIPLevelScalar );
-					}
-					vec3 getLightProbeIndirectRadiance( /*const in SpecularLightProbe specularLightProbe,*/ const in vec3 viewDir, const in vec3 normal, const in float roughness, const in int maxMIPLevel ) {
-						#ifdef ENVMAP_MODE_REFLECTION
-							vec3 reflectVec = reflect( -viewDir, normal );
-							// Mixing the reflection with the normal is more accurate and keeps rough objects from gathering light from behind their tangent plane.
-							reflectVec = normalize( mix( reflectVec, normal, roughness * roughness) );
-						#else
-							vec3 reflectVec = refract( -viewDir, normal, refractionRatio );
-						#endif
-						reflectVec = inverseTransformDirection( reflectVec, viewMatrix );
-						float specularMIPLevel = getSpecularMIPLevel( roughness, maxMIPLevel );
-						#ifdef ENVMAP_TYPE_CUBE
-							#ifdef BOX_PROJECTED_ENV_MAP
-								reflectVec = parallaxCorrectNormal( reflectVec, cubeMapSize, cubeMapPos, cubeMapRotation );
-							#endif
-							vec3 queryReflectVec = vec3( flipEnvMap * reflectVec.x, reflectVec.yz );
-							#ifdef TEXTURE_LOD_EXT
-								vec4 envMapColor = textureCubeLodEXT( envMap, queryReflectVec, specularMIPLevel );
-							#else
-								vec4 envMapColor = textureCube( envMap, queryReflectVec, specularMIPLevel );
-							#endif
-							envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
-						#elif defined( ENVMAP_TYPE_CUBE_UV )
-							vec4 envMapColor = textureCubeUV( envMap, reflectVec, roughness );
-						#elif defined( ENVMAP_TYPE_EQUIREC )
-							vec2 sampleUV;
-							sampleUV.y = asin( clamp( reflectVec.y, - 1.0, 1.0 ) ) * RECIPROCAL_PI + 0.5;
-							sampleUV.x = atan( reflectVec.z, reflectVec.x ) * RECIPROCAL_PI2 + 0.5;
-							#ifdef TEXTURE_LOD_EXT
-								vec4 envMapColor = texture2DLodEXT( envMap, sampleUV, specularMIPLevel );
-							#else
-								vec4 envMapColor = texture2D( envMap, sampleUV, specularMIPLevel );
-							#endif
-							envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
-						#elif defined( ENVMAP_TYPE_SPHERE )
-							vec3 reflectView = normalize( ( viewMatrix * vec4( reflectVec, 0.0 ) ).xyz + vec3( 0.0,0.0,1.0 ) );
-							#ifdef TEXTURE_LOD_EXT
-								vec4 envMapColor = texture2DLodEXT( envMap, reflectView.xy * 0.5 + 0.5, specularMIPLevel );
-							#else
-								vec4 envMapColor = texture2D( envMap, reflectView.xy * 0.5 + 0.5, specularMIPLevel );
-							#endif
-							envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
-						#endif
-						return envMapColor.rgb * envMapIntensity;
-					}
-				#endif
-				`;
-				newMaterial.onBeforeCompile = function ( shader ) {
-
-					if( !object.p3dParent ) return;
-
-					shader.uniforms.cubeMapSize = { value: object.p3dParent.boundingBox.getSize( new THREE.Vector3() ) };
-					shader.uniforms.cubeMapPos = { value: object.position };
-					shader.uniforms.cubeMapRotation = { value: object.quaternion };
-					
-
-					shader.vertexShader = 'varying vec3 vWorldPosition;\n' + shader.vertexShader;
-
-					shader.vertexShader = shader.vertexShader.replace(
-						'#include <worldpos_vertex>',
-						worldposReplace
-					);
-					shader.fragmentShader = shader.fragmentShader.replace(
-						'#include <envmap_physical_pars_fragment>',
-						envmapPhysicalParsReplace
-					);
-
-				};
-
-			} else {
-
-				newMaterial = hasProto? material.__proto__ : material
 
 			}
+			if ( oldMaterial.bumpMap != null ) {
+
+				newMaterial.bumpMap = oldMaterial.bumpMap
+
+			}
+			if ( oldMaterial.map != null ) {
+
+				newMaterial.map = oldMaterial.map
+
+			}
+			if ( oldMaterial.normalMap != null ) {
+
+				newMaterial.normalMap = oldMaterial.normalMap
+
+			}
+			if ( pbr ) newMaterial.envMap = object.pbrCam.renderTarget.texture;
+			newMaterial.shadowSide = THREE.BackSide;
+			newMaterial.color = oldMaterial.color;
+			//anisotropic filtering
+			if ( Proton3DInterpreter.anisotropicFiltering ) {
+				
+				for ( var i in newMaterial ) {
+
+					if ( newMaterial[ i ] && newMaterial[ i ].anisotropy ) {
+
+						newMaterial[ i ].anisotropy = Proton3DInterpreter.anisotropicFiltering;
+	
+					}
+
+				}
+
+			}
+			//box projected cubemaps ==> slightly modifed from https://github.com/mrdoob/three.js/blob/master/examples/webgl_materials_envmaps_parallax.html
+			var worldposReplace = `
+			#define BOX_PROJECTED_ENV_MAP
+			#if defined( USE_ENVMAP ) || defined( DISTANCE ) || defined ( USE_SHADOWMAP )
+				vec4 worldPosition = modelMatrix * vec4( transformed, 1.0 );
+				#ifdef BOX_PROJECTED_ENV_MAP
+					vWorldPosition = worldPosition.xyz;
+				#endif
+			#endif
+			`;
+
+			var envmapPhysicalParsReplace = `
+			#if defined( USE_ENVMAP )
+				#define BOX_PROJECTED_ENV_MAP
+				#ifdef BOX_PROJECTED_ENV_MAP
+					uniform vec3 cubeMapSize;
+					uniform vec3 cubeMapPos;
+					uniform vec4 cubeMapRotation;
+					varying vec3 vWorldPosition;
+					vec3 parallaxCorrectNormal( vec3 v, vec3 cubeSize, vec3 cubePos, vec4 q ) {
+						vec3 nDir = normalize( v );
+
+						vec3 rbmax = ( .5 * cubeSize + cubePos - vWorldPosition ) / nDir;
+						vec3 rbmin = ( -.5 * cubeSize + cubePos - vWorldPosition ) / nDir;
+						vec3 rbminmax;
+						rbminmax.x = ( nDir.x > 0. ) ? rbmax.x : rbmin.x;
+						rbminmax.y = ( nDir.y > 0. ) ? rbmax.y : rbmin.y;
+						rbminmax.z = ( nDir.z > 0. ) ? rbmax.z : rbmin.z;
+
+						float correction = min( min( rbminmax.x, rbminmax.y ), rbminmax.z );
+						vec3 boxIntersection = vWorldPosition + nDir * correction;
+						return boxIntersection - cubePos;
+					}
+				#endif
+				#ifdef ENVMAP_MODE_REFRACTION
+					uniform float refractionRatio;
+				#endif
+				vec3 getLightProbeIndirectIrradiance( /*const in SpecularLightProbe specularLightProbe,*/ const in GeometricContext geometry, const in int maxMIPLevel ) {
+					vec3 worldNormal = inverseTransformDirection( geometry.normal, viewMatrix );
+					#ifdef ENVMAP_TYPE_CUBE
+						#ifdef BOX_PROJECTED_ENV_MAP
+							worldNormal = parallaxCorrectNormal( worldNormal, cubeMapSize, cubeMapPos, cubeMapRotation );
+						#endif
+						vec3 queryVec = vec3( flipEnvMap * worldNormal.x, worldNormal.yz );
+						// TODO: replace with properly filtered cubemaps and access the irradiance LOD level, be it the last LOD level
+						// of a specular cubemap, or just the default level of a specially created irradiance cubemap.
+						#ifdef TEXTURE_LOD_EXT
+							vec4 envMapColor = textureCubeLodEXT( envMap, queryVec, float( maxMIPLevel ) );
+						#else
+							// force the bias high to get the last LOD level as it is the most blurred.
+							vec4 envMapColor = textureCube( envMap, queryVec, float( maxMIPLevel ) );
+						#endif
+						envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
+					#elif defined( ENVMAP_TYPE_CUBE_UV )
+						vec4 envMapColor = textureCubeUV( envMap, worldNormal, 1.0 );
+					#else
+						vec4 envMapColor = vec4( 0.0 );
+					#endif
+					return PI * envMapColor.rgb * envMapIntensity;
+				}
+				// Trowbridge-Reitz distribution to Mip level, following the logic of http://casual-effects.blogspot.ca/2011/08/plausible-environment-lighting-in-two.html
+				float getSpecularMIPLevel( const in float roughness, const in int maxMIPLevel ) {
+					float maxMIPLevelScalar = float( maxMIPLevel );
+					float sigma = PI * roughness * roughness / ( 1.0 + roughness );
+					float desiredMIPLevel = maxMIPLevelScalar + log2( sigma );
+					// clamp to allowable LOD ranges.
+					return clamp( desiredMIPLevel, 0.0, maxMIPLevelScalar );
+				}
+				vec3 getLightProbeIndirectRadiance( /*const in SpecularLightProbe specularLightProbe,*/ const in vec3 viewDir, const in vec3 normal, const in float roughness, const in int maxMIPLevel ) {
+					#ifdef ENVMAP_MODE_REFLECTION
+						vec3 reflectVec = reflect( -viewDir, normal );
+						// Mixing the reflection with the normal is more accurate and keeps rough objects from gathering light from behind their tangent plane.
+						reflectVec = normalize( mix( reflectVec, normal, roughness * roughness) );
+					#else
+						vec3 reflectVec = refract( -viewDir, normal, refractionRatio );
+					#endif
+					reflectVec = inverseTransformDirection( reflectVec, viewMatrix );
+					float specularMIPLevel = getSpecularMIPLevel( roughness, maxMIPLevel );
+					#ifdef ENVMAP_TYPE_CUBE
+						#ifdef BOX_PROJECTED_ENV_MAP
+							reflectVec = parallaxCorrectNormal( reflectVec, cubeMapSize, cubeMapPos, cubeMapRotation );
+						#endif
+						vec3 queryReflectVec = vec3( flipEnvMap * reflectVec.x, reflectVec.yz );
+						#ifdef TEXTURE_LOD_EXT
+							vec4 envMapColor = textureCubeLodEXT( envMap, queryReflectVec, specularMIPLevel );
+						#else
+							vec4 envMapColor = textureCube( envMap, queryReflectVec, specularMIPLevel );
+						#endif
+						envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
+					#elif defined( ENVMAP_TYPE_CUBE_UV )
+						vec4 envMapColor = textureCubeUV( envMap, reflectVec, roughness );
+					#elif defined( ENVMAP_TYPE_EQUIREC )
+						vec2 sampleUV;
+						sampleUV.y = asin( clamp( reflectVec.y, - 1.0, 1.0 ) ) * RECIPROCAL_PI + 0.5;
+						sampleUV.x = atan( reflectVec.z, reflectVec.x ) * RECIPROCAL_PI2 + 0.5;
+						#ifdef TEXTURE_LOD_EXT
+							vec4 envMapColor = texture2DLodEXT( envMap, sampleUV, specularMIPLevel );
+						#else
+							vec4 envMapColor = texture2D( envMap, sampleUV, specularMIPLevel );
+						#endif
+						envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
+					#elif defined( ENVMAP_TYPE_SPHERE )
+						vec3 reflectView = normalize( ( viewMatrix * vec4( reflectVec, 0.0 ) ).xyz + vec3( 0.0,0.0,1.0 ) );
+						#ifdef TEXTURE_LOD_EXT
+							vec4 envMapColor = texture2DLodEXT( envMap, reflectView.xy * 0.5 + 0.5, specularMIPLevel );
+						#else
+							vec4 envMapColor = texture2D( envMap, reflectView.xy * 0.5 + 0.5, specularMIPLevel );
+						#endif
+						envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
+					#endif
+					return envMapColor.rgb * envMapIntensity;
+				}
+			#endif
+			`;
+			newMaterial.onBeforeCompile = function ( shader ) {
+
+				if( !object.p3dParent ) return;
+
+				shader.uniforms.cubeMapSize = { value: object.p3dParent.boundingBox.getSize( new THREE.Vector3() ) };
+				shader.uniforms.cubeMapPos = { value: object.position };
+				shader.uniforms.cubeMapRotation = { value: object.quaternion };
+				
+
+				shader.vertexShader = 'varying vec3 vWorldPosition;\n' + shader.vertexShader;
+
+				shader.vertexShader = shader.vertexShader.replace(
+					'#include <worldpos_vertex>',
+					worldposReplace
+				);
+				shader.fragmentShader = shader.fragmentShader.replace(
+					'#include <envmap_physical_pars_fragment>',
+					envmapPhysicalParsReplace
+				);
+
+			};
 			if ( materialLocation != null ) {
 
 				var m = hasProto? new Physijs.createMaterial(
@@ -2410,6 +2408,7 @@ const Proton3DInterpreter = {
 				spotlight.shadow.camera.far = 200;
 				spotlight.shadow.bias = -0.0002;
 				spotlight.shadow.radius = 5;
+				spotlight.castShadow = extras.castShadow? extras.castShadow : true;
 				//
 				meshes.push( spotlight );
 				//
@@ -2448,6 +2447,7 @@ const Proton3DInterpreter = {
 				pointlight.shadow.mapSize.height = 1024;
 				pointlight.name = object.name;
 				pointlight.shadow.radius = 5;
+				pointlight.castShadow = extras.castShadow? extras.castShadow : true;
 				//
 				meshes.push( pointlight );
 				//
@@ -2475,6 +2475,7 @@ const Proton3DInterpreter = {
 				directionallight.shadow.mapSize.height = 1024;
 				directionallight.shadow.bias = -0.0008;
 				directionallight.name = object.name;
+				directionallight.castShadow = extras.castShadow? extras.castShadow : true;
 				meshes.push( directionallight );
 				//
 				object.changeColor = function ( hexString ) {
@@ -4128,7 +4129,8 @@ let ProtonJS = {
 		]
 	},
 	paused: false,
-	ammojsURL: "https://cdn.jsdelivr.net/gh/Mwni/AmmoNext@master/builds/ammo.js",/*physijs version of ammo = "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/examples/js/ammo.js"; latest version of ammo = "https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js"*/
+	ammojsURL: "https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.wasm.js",//"https://cdn.jsdelivr.net/gh/Mwni/AmmoNext@master/builds/ammo.asm.js",
+	/*physijs version of ammo = "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/examples/js/ammo.js"; latest version of ammo = "https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js"*/
 	scenes: [],
 	importObject: Proton3DInterpreter.importObject,
 	compileCSS: function ( exclude = [] ) {
