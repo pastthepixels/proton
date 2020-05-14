@@ -19,6 +19,9 @@
 
 		[ProtonJS]
 		protonjs (variable) | 5
+
+		[MapScript]
+		mapscript | 6
 */
 //\\//\\//\\//\\//\\//\\//\\ //
 //\\ adding extra scripts \\ // //loc:1
@@ -1999,7 +2002,7 @@ const Proton3DInterpreter = {
 					} )
 
 				} else {
-
+					
 					( object.material.proto? object.material.proto : object.material ).envMap = object.pbrTexture || pbrTexture
 
 				}
@@ -2008,7 +2011,7 @@ const Proton3DInterpreter = {
 			this.updateObjectMaterials( object.material, object, undefined, scene, skipPBRReplacement, object.material? object.material.name : null );
 			object.pbr( this );
 
-		} else {
+		} else if ( !skipPBRReplacement ) {
 
 			this.updateObjectMaterials( object.material, object, undefined, scene, skipPBRReplacement, object.material? object.material.name : null, false );
 
@@ -4262,3 +4265,110 @@ Object.defineProperty( window, "protonjs", {
 ( new GameCode( function() {
 	ProtonJS.scene = new Proton3DScene()
 } ) ).autoStart();
+
+//\\//\\//\\//\\//
+//\\ mapscript  //  //loc:1
+//\\//\\//\\//\\//
+class MapScript {
+	constructor( code ) {
+		this.code_mapscript = code;
+		this.code_javascript = "";
+	}
+	load( url ) {
+		var file = new XMLHttpRequest(),
+			x = this,
+			loaded = false,
+			events = {};
+		this.url = url;
+		file.open( "GET", url, false );
+		file.onreadystatechange = function (){
+			if( file.readyState == 4 ){
+				
+				if( file.status == 200 || file.status == 0 ) {
+					
+					x.code_mapscript = file.responseText;
+					loaded = true;
+					if ( events.callback ) events.callback();
+
+				}
+
+			}
+		}
+		file.send( null );
+		
+		return {
+			then: function( fn ) {
+				if ( !loaded ) { 
+					
+					events.callback = fn
+
+				} else {
+
+					fn()
+
+				}
+			}
+		}
+	}
+	compile() {
+		var completed,
+			events = {},
+			x = this;
+		this.code_javascript = this.code_mapscript
+		//functions
+		this.code_javascript = this.code_javascript.replace( /log/ig, "console.log" )
+		this.code_javascript = this.code_javascript.replace( /init/ig, "init" )
+		this.code_javascript = this.code_javascript.replace( /import/ig, "importObject" )
+
+		//keywords
+		this.code_javascript = this.code_javascript.replace( /set/ig, "var" )
+
+		//extras
+			//comments
+			this.code_javascript = this.code_javascript.split( "\n" );
+			this.code_javascript.forEach( function( string, i ) {
+				if ( string.includes( "//" ) ) x.code_javascript[ i ] = string.slice( 0, string.indexOf( "//" ) )
+			} )
+			this.code_javascript = this.code_javascript.join( "" );
+		//complete!
+		completed = true
+		return {
+			then: function( fn ) {
+				if ( !completed ) { 
+					
+					events.callback = fn
+
+				} else {
+
+					fn()
+
+				}
+			}
+		}
+	}
+	run() {
+		function init( graphicsRating, sky ) {
+			ProtonJS.scene.init( {
+				graphicsRating: graphicsRating,
+				sky: sky
+			} )
+		}
+		function importObject( extras ) {
+			var object = new ProtonJS.importObject( {
+				gltfPath: extras.src,
+				mass: extras.mass,
+				objectType: extras.objectType,
+				armature: extras.armature,
+				onload: function() {
+					if ( extras.onload ) extras.onload();
+					object.objects.forEach( function ( child ) {
+						child.setPickup( extras.interactable, !extras.pickupable );
+						child.onUse = extras.onuse;
+					} );
+				}
+			} );
+			return object;
+		}
+		eval( this.code_javascript );
+	}
+}

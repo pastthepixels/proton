@@ -499,6 +499,38 @@ var docs_data = {
 					description: "Pauses and resets the audio."
 				},
 			]
+		},
+		{
+			name: "MapScript",
+			description: "MapScript code.",
+			use: "new MapScript( code (string) )",
+			
+			properties: [
+				{
+					name: "code_mapscript",
+					type: "string",
+					description: "Your MapScript code."
+				},
+				{
+					name: "code_javascript",
+					type: "string",
+					description: "Your MapScript code, compiled for JavaScript."
+				},
+			],
+			functions: [
+				{
+					name: "load( url (string) )",
+					description: "Loads MapScript code."
+				},
+				{
+					name: "compile",
+					description: "Compiles current MapScript code."
+				},
+				{
+					name: "run",
+					description: "Runs compiled MapScript code."
+				},
+			]
 		}
 	]
 }
