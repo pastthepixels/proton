@@ -599,10 +599,10 @@ class Proton3DScene {
 		x.camera.add( x.camera.flashlight );
 		x.camera.flashlight.setTargetPosition( 0, 0, 1 );
 		x.camera.flashlight.canBeEnabled = true;
-		x.camera.flashlight.changeAngle( 0.5 );
+		x.camera.flashlight.changeAngle( 0.4 );
 		x.camera.flashlight.enable = function() {
 			x.camera.flashlight.setTargetPosition( 0, 0, -1 );
-			x.camera.flashlight.changeIntensity( 5 )
+			x.camera.flashlight.changeIntensity( 0.5 )
 			x.camera.flashlight.enabled = true;
 		}
 		x.camera.flashlight.disable = function() {
@@ -1885,10 +1885,22 @@ const Proton3DInterpreter = {
 
 			}
 		}
+		this.updatePBR = function () {
+			Proton3DInterpreter.objects.children.forEach( function( object ) {
+				if( object.pbr ) object.pbr()
+			} )
+		}
 		if ( extras.livePBR ) {
 		
 			setInterval( this.pbrInterval, 64 );
 			setInterval( this.pbrArrayInterval, 4000 );
+
+		}
+		//gi clauses and provisions
+		this.hemisphereLight = new THREE.HemisphereLight( 0xf1f1f1, 0x080808, 1 )
+		if ( !extras.pbr ) {
+
+			this.objects.add( this.hemisphereLight )
 
 		}
 		//dynamic resolution
