@@ -31,60 +31,36 @@
 	adding extra scripts
 */
 var loadedScripts = 0, maxScripts = 0;
-function importScript( url, isModule = false, callback ) {
+function importScript( url, isModule = true, callback ) {
 	maxScripts ++;
-	if ( !isModule ) {
-		
-		document.writeln( "<script src='" + url + "'></script>");
+	import( url ).then( function( value ) {
+		for( var i in value ) {
+			window[ isModule || "window" ][ i ] = value[ i ]
+		}
 		// finished!
 		if ( callback ) callback();
 		loadedScripts ++;
 		if ( loadedScripts >= maxScripts ) window.finishedLoadingScripts = true;
-		
-	} else {
-
-		import( url ).then( function( value ) {
-			if ( isModule = "three" ) {
-			
-				for( var i in value ) {
-					THREE[ i ] = value[ i ]
-				}
-			
-			} else {
-
-				for( var i in value ) {
-					window[ i ] = value[ i ]
-				}
-
-			}
-			// finished!
-			if ( callback ) callback();
-			loadedScripts ++;
-			if ( loadedScripts >= maxScripts ) window.finishedLoadingScripts = true;
-		} )
-
-	}
+	} )
 }
 // the part that requires an internet connection:
 	// stuff for the default Proton3DInterpreter
 		// three.js
 		importScript( "https://threejs.org/build/three.js", true, function () {
 			// proton3d models: three.js
-			importScript( "https://unpkg.com/three@0.108.0/examples/jsm/loaders/GLTFLoader.js", "three" );
+			importScript( "https://unpkg.com/three@0.108.0/examples/jsm/loaders/GLTFLoader.js", "THREE" );
 			// hdr: three.js
-			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/EffectComposer.js", "three" );
-			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/RenderPass.js", "three" );
-			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/UnrealBloomPass.js", "three" );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/EffectComposer.js", "THREE" );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/RenderPass.js", "THREE" );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/UnrealBloomPass.js", "THREE" );
 			// 
-			importScript( "https://unpkg.com/three/examples/jsm/shaders/LuminosityShader.js", "three" );
-			importScript( "https://unpkg.com/three/examples/jsm/shaders/ToneMapShader.js", "three" );
-			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/AdaptiveToneMappingPass.js", "three" );
-			// antialiasing: threejs
-			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/TAARenderPass.js", "three" );
+			importScript( "https://unpkg.com/three/examples/jsm/shaders/LuminosityShader.js", "THREE" );
+			importScript( "https://unpkg.com/three/examples/jsm/shaders/ToneMapShader.js", "THREE" );
+			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/AdaptiveToneMappingPass.js", "THREE" );
+			// three.js' sky shader, by https://github.com/zz85
+			importScript( "https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js", "THREE" );
 			// proton3d physics: physijs
 			importScript( "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js", true );
-			// three.js' sky shader, by https://github.com/zz85
-			importScript( "https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js", "three" );
 		} );
 /*
 	~> loc:2
@@ -721,7 +697,7 @@ class Proton3DScene {
 
 		// 
 
-		function init(){
+		function init() {
 			var localPosClone = x.crosshair.localPosition.clone();
 			
 			// physics
@@ -747,7 +723,7 @@ class Proton3DScene {
 			}
 			// 
 			var oldMovement = 0;
-			switch( extras.type ){
+			switch ( extras.type ) {
 
 				case "thirdperson":
 
@@ -768,6 +744,8 @@ class Proton3DScene {
 
 						x.camera.add( extras.gun )
 						x.gun = extras.gun;
+						extras.gun.castShadow = false;
+						extras.gun.receiveShadow = false;
 						extras.gun.setPosition( 0.9, -0.8, -1.4 )
 						if ( extras.gunPosition ) {
 
@@ -1629,6 +1607,7 @@ const Proton3DInterpreter = {
 			canvas: this.canvas,
 			context: this.context,
 			precision: extras.shaderQuality.toLowerCase() + "p",
+			antialias: false
 		} );
 		this.renderer.setPixelRatio( window.devicePixelRatio );
 		this.frame = 0;
@@ -1641,7 +1620,7 @@ const Proton3DInterpreter = {
 		this.objects.setGravity( new THREE.Vector3( 0, ( extras.gravity || /*-9.81*/-20 ), 0 ) );
 		// some element - y stuff
 		extras.element.appendChild( this.canvas );
-		extras.scene.element.style.imageRendering = extras.pixelatedScene? "pixelated": "";
+		extras.scene.element.style.imageRendering = "pixelated";
 		document.body.appendChild( extras.element )
 		// updating the scene
 		Proton3DInterpreter.render( extras.scene );
@@ -1653,7 +1632,7 @@ const Proton3DInterpreter = {
 			
 		}
 		// renderization
-		var hdrRenderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, stencilBuffer: false } );
+		var hdrRenderTarget = new THREE.WebGLMultisampleRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, stencilBuffer: false } );
 		var scenePass = new THREE.RenderPass( Proton3DInterpreter.objects, getMeshByName( extras.scene.camera.name ) );
 		this.composer = new THREE.EffectComposer( Proton3DInterpreter.renderer, hdrRenderTarget );
 		this.composer.addPass( scenePass );
@@ -1708,26 +1687,17 @@ const Proton3DInterpreter = {
 		}
 		if ( extras.bloom ) {
 
-			var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 0.3, 1, 0.985 );
+			var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 0.3, 1, 0.99 /*0.3, 1, 0.985*/ );
 			// 
 			this.composer.addPass( bloomPass );
 
 		}
 		if ( extras.dynamicToneMapping ) {
 
-			var adaptToneMappingPass = new THREE.AdaptiveToneMappingPass( true, 128 );
+			var adaptToneMappingPass = new THREE.AdaptiveToneMappingPass( true, 32 );
 			adaptToneMappingPass.needsSwap = true;
 			// 
 			this.composer.addPass( adaptToneMappingPass );
-
-		}
-		// antialising
-		if ( extras.antialias ) {
-
-			var taaRenderPass = new THREE.TAARenderPass( Proton3DInterpreter.objects, getMeshByName( extras.scene.camera.name ) );
-			taaRenderPass.unbiased = true;
-			taaRenderPass.sampleLevel = extras.antialias
-			this.composer.addPass( taaRenderPass );
 
 		}
 		// anisotropic filtering
@@ -1736,9 +1706,8 @@ const Proton3DInterpreter = {
 			Proton3DInterpreter.anisotropicFiltering = Proton3DInterpreter.renderer.capabilities.getMaxAnisotropy();
 
 		}
-		// frustum culling
-		this.frustum = new THREE.Frustum();
 		// PBR
+		this.frustum = new THREE.Frustum();
 		this.pbrTexture = extras.pbrTexture;
 		this.livePBRArray = [];
 		this.livePBR = extras.livePBR;
@@ -1971,7 +1940,7 @@ const Proton3DInterpreter = {
 			// pbr
 			if ( pbr ) {
 
-				object.pbrCam = new THREE.CubeCamera( 1, 100, 128 );
+				object.pbrCam = new THREE.CubeCamera( 1, 100, 64 );
 				object.pbrTexture = Proton3DInterpreter.pbrTexture? new THREE.TextureLoader().load( Proton3DInterpreter.pbrTexture ) : undefined;
 				object.add( object.pbrCam );
 				
@@ -2707,8 +2676,8 @@ const Proton3DInterpreter = {
 			}
 		},
 		setShadowOptions( cast = null, receive = null, P3DObject ) {
-			getMeshByName( P3DObject.name ).castShadow = cast || getMeshByName( P3DObject.name ).castShadow
-			getMeshByName( P3DObject.name ).receiveShadow = receive || getMeshByName( P3DObject.name ).receiveShadow
+			getMeshByName( P3DObject.name ).castShadow = cast != undefined? cast : getMeshByName( P3DObject.name ).castShadow
+			getMeshByName( P3DObject.name ).receiveShadow = receive != undefined? receive : getMeshByName( P3DObject.name ).receiveShadow
 		},
 		playAudio ( src, listener, P3DObject ) {
 			var sound = new THREE.PositionalAudio( listener );
