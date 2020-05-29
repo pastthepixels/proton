@@ -2,12 +2,15 @@
 var
 	transferableMessage = self.webkitPostMessage || self.postMessage,
 	
+	//???
+	Module = { TOTAL_MEMORY: 256*1024*1024 },
+
 	// enum
 	MESSAGE_TYPES = {
 		WORLDREPORT: 0,
 		COLLISIONREPORT: 1,
 		VEHICLEREPORT: 2,
-		CONSTRAINTREPORT: 3
+		CONSTRAINTREPORT: 3,
 	},
 
 	// temp variables
@@ -242,7 +245,7 @@ createShape = function( description ) {
 public_functions.init = function( params ) {
 	importScripts( params.ammo );
 	if ( typeof Ammo == "function" ) Ammo();
-
+	console.log( "Ammo =", Ammo )
 	_transform = new Ammo.btTransform;
 	_vec3_1 = new Ammo.btVector3(0,0,0);
 	_vec3_2 = new Ammo.btVector3(0,0,0);
