@@ -2289,7 +2289,7 @@ const Proton3DInterpreter = {
 				spotlight.name = object.name;
 				spotlight.shadow.camera.near = 8;
 				spotlight.shadow.camera.far = 200;
-				spotlight.shadow.bias = -0.0002;
+				spotlight.shadow.bias = -0.0005;
 				spotlight.shadow.radius = 5;
 				spotlight.castShadow = extras.castShadow? extras.castShadow : true;
 				// 
