@@ -33,6 +33,19 @@
 var loadedScripts = 0, maxScripts = 0;
 function importScript( url, isModule = true, callback ) {
 	maxScripts ++;
+	if ( !isModule ) {
+
+		var script = document.createElement( "script" );
+		script.src = url;
+		document.head.appendChild( script )
+		script.onload = function() {
+			if ( callback ) callback();
+			loadedScripts ++;
+			if ( loadedScripts >= maxScripts ) window.finishedLoadingScripts = true;
+		}
+		return
+
+	}
 	import( url ).then( function( value ) {
 		for( var i in value ) {
 			window[ isModule || "window" ][ i ] = value[ i ]
@@ -1356,20 +1369,20 @@ class Proton3DMaterial {
 				return this.setOpacity( value )
 			}
 		} )
-		Object.defineProperty( this, "emmisive", {
+		Object.defineProperty( this, "emissive", {
 			get: function() {
-				return this.getEmmisive()
+				return this.getEmissive()
 			},
 			set: function( value ) {
-				return this.setEmmisive( value )
+				return this.setEmissive( value )
 			}
 		} )
-		Object.defineProperty( this, "emmisiveColor", {
+		Object.defineProperty( this, "emissiveColor", {
 			get: function() {
-				return this.getEmmisiveColor()
+				return this.getEmissiveColor()
 			},
 			set: function( value ) {
-				return this.setEmmisiveColor( value )
+				return this.setEmissiveColor( value )
 			}
 		} )
 		Object.defineProperty( this, "wireframe", {
@@ -1382,11 +1395,11 @@ class Proton3DMaterial {
 		} )
 		// done!
 	}
-	setEmmisiveColor( color ) {
-		return Proton3DInterpreter.Proton3DMaterial.setEmmisiveColor( color, this )
+	setEmissiveColor( color ) {
+		return Proton3DInterpreter.Proton3DMaterial.setEmissiveColor( color, this )
 	}
-	getEmmisiveColor() {
-		return Proton3DInterpreter.Proton3DMaterial.getEmmisiveColor( this )
+	getEmissiveColor() {
+		return Proton3DInterpreter.Proton3DMaterial.getEmissiveColor( this )
 	}
 	setWireframe( value ) {
 		return Proton3DInterpreter.Proton3DMaterial.setWireframe( value, this )
@@ -1394,11 +1407,11 @@ class Proton3DMaterial {
 	getWireframe() {
 		return Proton3DInterpreter.Proton3DMaterial.getWireframe( this )
 	}
-	setEmmisive( value ) {
-		return Proton3DInterpreter.Proton3DMaterial.setEmmisive( value, this )
+	setEmissive( value ) {
+		return Proton3DInterpreter.Proton3DMaterial.setEmissive( value, this )
 	}
-	getEmmisive() {
-		return Proton3DInterpreter.Proton3DMaterial.getEmmisive( this )
+	getEmissive() {
+		return Proton3DInterpreter.Proton3DMaterial.getEmissive( this )
 	}
 	setColor( hexString ) {
 		return Proton3DInterpreter.Proton3DMaterial.setColor( hexString, this )
@@ -1905,9 +1918,9 @@ const Proton3DInterpreter = {
 				"displacementBias",
 				"displacementMap",
 				"displacementScale",
-				"emmisive",
-				"emmisiveIntensity",
-				"emmisiveMap",
+				"emissive",
+				"emissiveIntensity",
+				"emissiveMap",
 				"envMap",
 				"envMapIntensity",
 				"flatShading",
@@ -2269,6 +2282,7 @@ const Proton3DInterpreter = {
 				spotlight.castShadow = true;
 				spotlight.angle = Math.PI / 5;
 				spotlight.penumbra = 0.3;
+				spotlight.decay = 2;
 				spotlight.castShadow = true;
 				spotlight.shadow.mapSize.width = 1024;
 				spotlight.shadow.mapSize.height = 1024;
@@ -2311,12 +2325,12 @@ const Proton3DInterpreter = {
 			
 			case "pointlight":
 				var pointlight = new THREE.PointLight( new THREE.Color( extras.color || "#fff" ), extras.intensity || 15, extras.decay || 0 )
-				pointlight.castShadow = true;
 				pointlight.shadow.mapSize.width = 1024;
 				pointlight.shadow.mapSize.height = 1024;
 				pointlight.name = object.name;
 				pointlight.shadow.radius = 5;
 				pointlight.castShadow = extras.castShadow? extras.castShadow : true;
+				pointlight.shadow.camera = new THREE.OrthographicCamera( -100, 100, 100, -100, 1, 1000 )
 				// 
 				meshes.push( pointlight );
 				// 
@@ -2331,34 +2345,6 @@ const Proton3DInterpreter = {
 				}
 				object.getIntensity = function () {
 					return pointlight.intensity
-				}
-				// 
-				break;
-
-			case "directionallight":
-				var directionallight = new THREE.DirectionalLight( new THREE.Color( extras.color || "#fff" ), extras.intensity == null? 15 : extras.intensity )
-				directionallight.shadow.camera = new THREE.OrthographicCamera( -100, 100, 100, -100, 0.25, 1000 );
-				
-				directionallight.shadow.radius = 1.5;
-				directionallight.shadow.mapSize.width = 1024;
-				directionallight.shadow.mapSize.height = 1024;
-				directionallight.shadow.bias = -0.0008;
-				directionallight.name = object.name;
-				directionallight.castShadow = extras.castShadow? extras.castShadow : true;
-				meshes.push( directionallight );
-				// 
-				object.changeColor = function ( hexString ) {
-					directionallight.color = new THREE.Color( hexString )
-				}
-				object.changeIntensity = function ( value ) {
-					directionallight.intensity = value
-				}
-				object.getIntensity = function ( value ) {
-					return directionallight.intensity
-				}
-				object.setTargetPosition = function ( x, y, z ) {
-					directionallight.target.position.set( x, y, z )
-					directionallight.target.updateMatrixWorld();
 				}
 				// 
 				break;
@@ -2813,7 +2799,7 @@ const Proton3DInterpreter = {
 
 			}
 			getMeshByName( P3DObject.name ).position.set( x, y, z );
-			getMeshByName( P3DObject.name ).__dirtyPosition = true
+			getMeshByName( P3DObject.name ).__dirtyPosition = true;
 		},
 		getRotation( P3DObject ) {
 			return getMeshByName( P3DObject.name ).rotation// .clone()
@@ -3391,11 +3377,11 @@ const Proton3DInterpreter = {
 		}
 	},
 	Proton3DMaterial: {
-		setEmmisiveColor( color, P3DMaterial ) {
-			getMaterialByName( P3DMaterial.name ).emmisive = new THREE.Color( color )
+		setEmissiveColor( color, P3DMaterial ) {
+			getMaterialByName( P3DMaterial.name ).emissive = new THREE.Color( color )
 		},
-		getEmmisiveColor( P3DMaterial ) {
-			return getMaterialByName( P3DMaterial.name ).emmisive.getStyle()
+		getEmissiveColor( P3DMaterial ) {
+			return getMaterialByName( P3DMaterial.name ).emissive.getStyle()
 		},
 		setWireframe( value, P3DMaterial ) {
 			getMaterialByName( P3DMaterial.name ).wireframeIntensity = value
@@ -3403,11 +3389,11 @@ const Proton3DInterpreter = {
 		getWireframe( P3DMaterial ) {
 			return getMaterialByName( P3DMaterial.name ).wireframeIntensity
 		},
-		setEmmisive( value, P3DMaterial ) {
-			getMaterialByName( P3DMaterial.name ).emmisiveIntensity = value
+		setEmissive( value, P3DMaterial ) {
+			getMaterialByName( P3DMaterial.name ).emissiveIntensity = value
 		},
-		getEmmisive( P3DMaterial ) {
-			return getMaterialByName( P3DMaterial.name ).emmisiveIntensity
+		getEmissive( P3DMaterial ) {
+			return getMaterialByName( P3DMaterial.name ).emissiveIntensity
 		},
 		setColor( hexString, P3DMaterial ) {
 			getMaterialByName( P3DMaterial.name ).color = new THREE.Color( hexString )
@@ -4065,22 +4051,21 @@ let ProtonJS = {
 		vector.applyAxisAngle( axis, angle )
 		return vector;
 	},
-	noclip(){
+	noclip() {
 		if ( ProtonJS.scene.noclip ) {
 
 			ProtonJS.scene.noclip = false;
-			ProtonJS.player.setLinearVelocity( 0, 0, 0 );
 			ProtonJS.player.setLinearFactor( 1, 1, 1 );
+			ProtonJS.player.setLinearVelocity( 0, 0, 0 );
 			ProtonJS.player.setDamping( 0 );
 			return;
 
 		} else {
 
 			ProtonJS.scene.noclip = true;
-			ProtonJS.player.setLinearVelocity( 0, 0, 0 );
 			ProtonJS.player.setLinearFactor( 0, 0, 0 );
-			ProtonJS.player.setDamping( 1 );
-			return;
+			ProtonJS.player.setLinearVelocity( 0, 0, 0 );
+			ProtonJS.player.setDamping( 100 );
 
 		}
 	},
