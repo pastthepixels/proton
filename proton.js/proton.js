@@ -713,26 +713,31 @@ class Proton3DScene {
 		function init() {
 			var localPosClone = x.crosshair.localPosition.clone();
 			
-			// physics
-			extras.cameraParent.setAngularFactor( 0, 0, 0 );
-			extras.cameraParent.setLinearFactor( 1.2, 1.2, 1.2 );
+			if ( !extras.alreadyInitialized ) {
 			
-			// everything else
-			extras.cameraParent.add( x.camera );
-			extras.cameraParent.cameraRotation = new THREE.Vector3();
+				// physics
+				extras.cameraParent.setAngularFactor( 0, 0, 0 );
+				extras.cameraParent.setLinearFactor( 1.2, 1.2, 1.2 );
+				
+				// everything else
+				extras.cameraParent.add( x.camera );
+				extras.cameraParent.cameraRotation = new THREE.Vector3();
+				extras.alreadyInitialized = true;
 
-			if ( extras.invisibleParent ) {
+				if ( extras.invisibleParent ) {
 
-				extras.cameraParent.material.opacity = 0.001;
-				if ( extras.cameraParent.material && extras.cameraParent.material[ 0 ] ) {
+					extras.cameraParent.material.opacity = 0.001;
+					if ( extras.cameraParent.material && extras.cameraParent.material[ 0 ] ) {
 
-					extras.cameraParent.material.forEach( function ( material ) {
-						material.makeTransparent();
-					} );
+						extras.cameraParent.material.forEach( function ( material ) {
+							material.makeTransparent();
+						} );
+
+					}
+					extras.invisibleParent = undefined;
 
 				}
-				extras.invisibleParent = undefined;
-
+				
 			}
 			// 
 			var oldMovement = 0;
@@ -2184,14 +2189,15 @@ const Proton3DInterpreter = {
 
 		}
 	},
-	removeFromScene( object, scene ) {
+	removeFromScene( object ) {
 		this.objects.remove( getMeshByName( object.name ) || object )
 	},
-	render( scene, time ) {
+	render() {
 		// physics -- physijs
-		this.objects.simulate()
+		meshes.forEach( function( mesh ) { if ( mesh.__dirtyPosition === false ) mesh.__dirtyPosition = true } )
+		this.objects.simulate();
 		// rendering -- three.js
-		this.composer? this.composer.render() : this.renderer.render( this.objects, getMeshByName( scene.camera.name ) );
+		this.composer? this.composer.render() : this.renderer.render( this.objects, getMeshByName( ProtonJS.scene.camera.name ) );
 	},
 	resume() {
 		this.objects.onSimulationResume();
@@ -3230,7 +3236,7 @@ const Proton3DInterpreter = {
 					vertex.multiply( c.scale );
 				} );
 				// adds the starter position to the object's position.
-				if ( extras.starterPos && extras.fileType.toLowerCase() === "gltf" ) {
+				if ( extras.starterPos ) {
 
 					c.position.add( extras.starterPos )
 
