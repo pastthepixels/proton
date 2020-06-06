@@ -3178,6 +3178,7 @@ const Proton3DInterpreter = {
 
 			// build the 3d object
 			var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } )
+
 			if ( mesh.__physicsArmatureParent ) {
 
 				// sets the skeleton in the P3DObject to that in the three.js object.
