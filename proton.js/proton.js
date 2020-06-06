@@ -467,7 +467,7 @@ class Proton3DScene {
 			e = e || event;
 			x.keys[ e.keyCode ] = false;
 			// gun animations
-			if ( extras.gunAnimations && x.gun && x.gun.movePosition ) {
+			if ( extras.gunAnimations && !ProtonJS.cancelGunAnimations && x.gun && x.gun.movePosition ) {
 
 				clearInterval( window.gunWalkingAnimation );
 				window.gunWalkingAnimation = undefined;
@@ -653,7 +653,7 @@ class Proton3DScene {
 				obj.setLinearVelocity( y.x * speed * ( negatise? -1 : 1 ), obj.getLinearVelocity().y, y.z * speed * ( negatise? -1 : 1 ) );
 
 			}
-			if ( x.gun && extras.gunAnimations && gunAnimation == true ) {
+			if ( x.gun && extras.gunAnimations && !ProtonJS.cancelGunAnimations && gunAnimation == true ) {
 
 				if ( window.gunWalkingAnimation == undefined ) {
 
@@ -1263,7 +1263,7 @@ class Proton3DObject {
 
 					}
 					pobject.setPosition( pobject.__movePosition.x, pobject.__movePosition.y, pobject.__movePosition.z );
-					pobject.applyLocRotChange();
+				//	pobject.applyLocRotChange();
 					if ( step ) step()
 				},
 				callback: function() {
@@ -2882,7 +2882,7 @@ const Proton3DInterpreter = {
 		remove( object, P3DObject ) {
 			getMeshByName( P3DObject.name ).remove( getMeshByName( object.name ) );
 			object.parent = null;
-			removeFromArray( P3DObject.children, object );
+			P3DObject.children.splice( P3DObject.children.indexOf( object ), 1 );
 		}
 	},
 	importObject: function( extras ) {
