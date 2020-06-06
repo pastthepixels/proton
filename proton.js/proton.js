@@ -1654,6 +1654,8 @@ const Proton3DInterpreter = {
 		var scenePass = new THREE.RenderPass( Proton3DInterpreter.objects, getMeshByName( extras.scene.camera.name ) );
 		this.composer = new THREE.EffectComposer( Proton3DInterpreter.renderer, hdrRenderTarget );
 		this.composer.addPass( scenePass );
+		this.renderer.toneMapping = THREE.ReinhardToneMapping;
+		this.renderer.toneMappingExposure = 2;
 		// cascaded shadow maps: an alternative
 		if ( extras.shadowLOD ) {
 
