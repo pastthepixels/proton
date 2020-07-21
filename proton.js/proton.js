@@ -1,34 +1,33 @@
 "use strict";
 /*
-	[proton.js beta 1.0]
-	[third party software]
-		>> three js ( and extra related software, found under its branches ) @ mrdoob/threejs
-		>> jquery @ jquery.com
-	[locations of sections]
-	To get to locations, press Control+F
-	and type
-	"loc:[location number]"
-	Locations of sections:
-		[Scripts must load first.]
-		adding extra scripts | 1
-		
-		
+	
+	ProtonJS Beta
+	=============
+	
+	# Third party software
+		- three.js + addons / `git clone https://github.com/mrdoob/threejs.git`
+		- Physijs / `git clone https://github.com/chandlerprall/Physijs.git`
+	# How to navigate to sections
+	To get to sections, press Control+F and type `loc:[location number]`
+	# Table of contents:
+		## Scripts must load first.
+		- Loading the default Proton3DInterpreter's dependencies | 1
 
-		[Every class, variable, and function.]
-		pausing stuff | 2
-		misc (which includes some content from some other places on the web) | 3
-		proton3d | 4
+		## Every class, variable, and function.
+		- Enhancing window.setTimeout and window.setInterval | 2
+		- Clauses and Provisions | 3
+		- Proton3D | 4
 
-		[ProtonJS]
-		protonjs (variable) | 5
+		## ProtonJS
+		ProtonJS (variable) | 5
 
+		## MapScript
+		MapScript | 6
 
-		[MapScript]
-		mapscript | 6
 */
 /*
 	~> loc:1
-	adding extra scripts
+	Loading the default Proton3DInterpreter's dependencies
 */
 var loadedScripts = 0, maxScripts = 0;
 function importScript( url, isModule = true, callback ) {
@@ -77,7 +76,7 @@ function importScript( url, isModule = true, callback ) {
 		} );
 /*
 	~> loc:2
-	pausing stuff
+	Enhancing window.setTimeout and window.setInterval
 */
 window.timeoutList = [];
 window.intervalList = [];
@@ -144,7 +143,7 @@ window.clearInterval = function ( id ) {
 }
 /*
 	~> loc:3
-	misc
+	Clauses and Provisions
 */
 // starting games when all scripts have been loaded
 class GameCode {
@@ -361,7 +360,7 @@ Object.defineProperty( Object.prototype, "watch", {
 } );
 /*
 	~> loc:4
-	proton3d
+	Proton3D
 */
 class Proton3DScene {
 	constructor() {
@@ -3852,7 +3851,7 @@ const Proton3DInterpreter = {
 }
 /*
 	~> loc:5
-	protonjs
+	ProtonJS
 */
 let ProtonJS = {
 	version: "beta 1.0",
@@ -4144,7 +4143,7 @@ Object.defineProperty( window, "protonjs", {
 
 /*
 	~> loc:6
-	mapscript
+	MapScript
 */
 class MapScript {
 	constructor( code ) {
