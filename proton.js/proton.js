@@ -1,28 +1,8 @@
 "use strict";
 /*
 	
-	ProtonJS Beta
-	=============
-	
-	# Third party software
-		- three.js + addons / `git clone https://github.com/mrdoob/threejs.git`
-		- Physijs / `git clone https://github.com/chandlerprall/Physijs.git`
-	# How to navigate to sections
-	To get to sections, press Control+F and type `loc:[location number]`
-	# Table of contents:
-		## Scripts must load first.
-		- Loading the default Proton3DInterpreter's dependencies | 1
-
-		## Every class, variable, and function.
-		- Enhancing window.setTimeout and window.setInterval | 2
-		- Clauses and Provisions | 3
-		- Proton3D | 4
-
-		## ProtonJS
-		ProtonJS (variable) | 5
-
-		## MapScript
-		MapScript | 6
+	# What does "loc" mean? And why isn't there any documentation for ProtonJS?
+	If you have any of these symptoms, please consult the `README` in the same directory as this script.
 
 */
 /*
@@ -55,8 +35,8 @@ function importScript( url, isModule = true, callback ) {
 		if ( loadedScripts >= maxScripts ) window.finishedLoadingScripts = true;
 	} )
 }
-// the part that requires an internet connection:
-	// stuff for the default Proton3DInterpreter
+// The part that requires an internet connection:
+	// Stuff for the default Proton3DInterpreter
 		// three.js
 		importScript( "https://threejs.org/build/three.js", true, function () {
 			// proton3d models: three.js
@@ -145,186 +125,6 @@ window.clearInterval = function ( id ) {
 	~> loc:3
 	Clauses and Provisions
 */
-// starting games when all scripts have been loaded
-class GameCode {
-	constructor( code ) {
-		this.code = code
-	}
-	run() {
-		this.code();
-	}
-	autoStart() {
-		var code = this,
-			interval = oldSetInterval( function() {
-				code.loadingPercentage = ( loadedScripts / maxScripts ) * 100
-				if ( code.loadingPercentage == 100 ) {
-
-					clearInterval( interval );
-					code.run();
-
-				}
-			}, 1500 )
-	}
-}
-// creating audio that repeats
-class RepeatingAudio {
-	constructor( beginning, middle, end = undefined ) {
-		this.audio = new Audio( beginning );
-		ProtonJS.playingAudio.push( this )
-		// urls
-		this.beginning = beginning;
-		this.middle = middle;
-		this.end = end;
-		// repeating
-		this.repeatingTimes = Infinity;
-		this.loops = 0;
-	}
-	play() {
-		var x = this;
-		this.audio.play();
-		if ( this.audio.onended == undefined ) {
-
-			this.audio.onended = function() {
-				x.beginningOnEnded( x )
-			}
-		
-		}
-	}
-	pause() {
-		this.audio.pause();
-	}
-	reset() {
-		this.pause();
-		this.audio.src = this.beginning;
-		this.audio.onended = undefined;
-		this.loops = 0;
-	}
-	// 
-	beginningOnEnded( x ) {
-		this.audio.src = this.middle;
-		this.audio.play();
-		this.audio.onended = function() {
-			x.middleOnEnded( x )
-		}
-	}
-	middleOnEnded( x ) {
-		this.loops ++;
-		if ( this.loops >= this.repeatingTimes ) {
-		
-			if ( this.end ) {
-			
-				this.audio.src = this.end;
-				this.audio.play();
-				this.audio.onended = function() {
-					x.reset()
-				}
-				
-			} else {
-			
-				this.reset();
-			
-			}
-			
-		} else {
-
-			this.audio.play();
-
-		}
-	}
-}
-class RepeatingPositionalAudio {
-	constructor( beginning, middle, end = undefined, listener ) {
-		var x = this;
-		// 
-		this.audio = new THREE.PositionalAudio( listener );
-		this.audioLoader = new THREE.AudioLoader();
-		this.audioLoader.load( beginning, function( buffer ) {
-			x.audio.setBuffer( buffer );
-			x.audio.setRefDistance( 20 );
-		} );
-		ProtonJS.playingAudio.push( this )
-		// urls
-		this.beginning = beginning;
-		this.middle = middle;
-		this.end = end;
-		// repeating
-		this.repeatingTimes = Infinity;
-		this.loops = 0;
-		this.paused = true;
-	}
-	play() {
-		var x = this;
-		if ( !this.audio.source ) {
-
-			this.audioLoader.load( this.beginning, function( buffer ) {
-				x.audio.setBuffer( buffer );
-				x.audio.setRefDistance( 20 );
-				// 
-				x.audio.play();
-				x.audio.stop()
-				x.audio.source.onended = function() {
-					x.beginningOnEnded( x );
-					x.audio.isPlaying = false;
-				}
-			} );
-		
-		} else {
-		
-			this.audio.play();
-			this.paused = false;
-		
-		}
-	}
-	pause() {
-		this.audio.pause();
-		this.paused = true;
-	}
-	reset() {
-		this.pause();
-		this.audio.src = this.beginning;
-		this.audio.source = undefined;
-		this.audio.setLoop( false );
-		this.loops = 0;
-	}
-	// 
-	beginningOnEnded( x ) {
-		this.audioLoader.load( x.middle, function( buffer ) {
-			x.audio.setBuffer( buffer );
-			x.audio.setRefDistance( 20 );
-			// 
-			x.audio.pause();
-			x.audio.setLoop( true );
-			x.audio.play();
-			x.audio.source.stop( x.audio.context.currentTime + x.audio.buffer.duration * x.repeatingTimes )
-			x.audio.source.onended = function() {
-				x.middleOnEnded( x );
-				x.audio.isPlaying = false;
-			}
-		} );
-	}
-	middleOnEnded( x ) {
-		if ( this.end ) {
-			
-			this.audioLoader.load( x.end, function( buffer ) {
-				x.audio.setBuffer( buffer );
-				x.audio.setRefDistance( 20 );
-				x.audio.pause();
-				// 
-				x.audio.setLoop( false );
-				x.audio.play();
-				x.audio.source.onended = function() {
-					x.reset();
-					x.audio.isPlaying = false;
-				}
-			} );
-			
-		} else {
-		
-			this.reset();
-		
-		}
-	}
-}
 // bringing back object.watch from user Eli Grey on:
 // https://stackoverflow.com/questions/1759987/listening-for-variable-changes-in-javascript
 Object.defineProperty( Object.prototype, "watch", {
@@ -3846,6 +3646,190 @@ const Proton3DInterpreter = {
 				material: material,
 				parameters: materialParameters
 			}
+		}
+	}
+}
+/*
+	~> loc:4.5
+	Proton3D Tools
+*/
+// starting games when all scripts have been loaded
+class GameCode {
+	constructor( code ) {
+		this.code = code
+	}
+	run() {
+		this.code();
+	}
+	autoStart() {
+		var code = this,
+			interval = oldSetInterval( function() {
+				code.loadingPercentage = ( loadedScripts / maxScripts ) * 100
+				if ( code.loadingPercentage == 100 ) {
+
+					clearInterval( interval );
+					code.run();
+
+				}
+			}, 1500 )
+	}
+}
+// creating audio that repeats
+class RepeatingAudio {
+	constructor( beginning, middle, end = undefined ) {
+		this.audio = new Audio( beginning );
+		ProtonJS.playingAudio.push( this )
+		// urls
+		this.beginning = beginning;
+		this.middle = middle;
+		this.end = end;
+		// repeating
+		this.repeatingTimes = Infinity;
+		this.loops = 0;
+	}
+	play() {
+		var x = this;
+		this.audio.play();
+		if ( this.audio.onended == undefined ) {
+
+			this.audio.onended = function() {
+				x.beginningOnEnded( x )
+			}
+		
+		}
+	}
+	pause() {
+		this.audio.pause();
+	}
+	reset() {
+		this.pause();
+		this.audio.src = this.beginning;
+		this.audio.onended = undefined;
+		this.loops = 0;
+	}
+	// 
+	beginningOnEnded( x ) {
+		this.audio.src = this.middle;
+		this.audio.play();
+		this.audio.onended = function() {
+			x.middleOnEnded( x )
+		}
+	}
+	middleOnEnded( x ) {
+		this.loops ++;
+		if ( this.loops >= this.repeatingTimes ) {
+		
+			if ( this.end ) {
+			
+				this.audio.src = this.end;
+				this.audio.play();
+				this.audio.onended = function() {
+					x.reset()
+				}
+				
+			} else {
+			
+				this.reset();
+			
+			}
+			
+		} else {
+
+			this.audio.play();
+
+		}
+	}
+}
+class RepeatingPositionalAudio {
+	constructor( beginning, middle, end = undefined, listener ) {
+		var x = this;
+		// 
+		this.audio = new THREE.PositionalAudio( listener );
+		this.audioLoader = new THREE.AudioLoader();
+		this.audioLoader.load( beginning, function( buffer ) {
+			x.audio.setBuffer( buffer );
+			x.audio.setRefDistance( 20 );
+		} );
+		ProtonJS.playingAudio.push( this )
+		// urls
+		this.beginning = beginning;
+		this.middle = middle;
+		this.end = end;
+		// repeating
+		this.repeatingTimes = Infinity;
+		this.loops = 0;
+		this.paused = true;
+	}
+	play() {
+		var x = this;
+		if ( !this.audio.source ) {
+
+			this.audioLoader.load( this.beginning, function( buffer ) {
+				x.audio.setBuffer( buffer );
+				x.audio.setRefDistance( 20 );
+				// 
+				x.audio.play();
+				x.audio.stop()
+				x.audio.source.onended = function() {
+					x.beginningOnEnded( x );
+					x.audio.isPlaying = false;
+				}
+			} );
+		
+		} else {
+		
+			this.audio.play();
+			this.paused = false;
+		
+		}
+	}
+	pause() {
+		this.audio.pause();
+		this.paused = true;
+	}
+	reset() {
+		this.pause();
+		this.audio.src = this.beginning;
+		this.audio.source = undefined;
+		this.audio.setLoop( false );
+		this.loops = 0;
+	}
+	// 
+	beginningOnEnded( x ) {
+		this.audioLoader.load( x.middle, function( buffer ) {
+			x.audio.setBuffer( buffer );
+			x.audio.setRefDistance( 20 );
+			// 
+			x.audio.pause();
+			x.audio.setLoop( true );
+			x.audio.play();
+			x.audio.source.stop( x.audio.context.currentTime + x.audio.buffer.duration * x.repeatingTimes )
+			x.audio.source.onended = function() {
+				x.middleOnEnded( x );
+				x.audio.isPlaying = false;
+			}
+		} );
+	}
+	middleOnEnded( x ) {
+		if ( this.end ) {
+			
+			this.audioLoader.load( x.end, function( buffer ) {
+				x.audio.setBuffer( buffer );
+				x.audio.setRefDistance( 20 );
+				x.audio.pause();
+				// 
+				x.audio.setLoop( false );
+				x.audio.play();
+				x.audio.source.onended = function() {
+					x.reset();
+					x.audio.isPlaying = false;
+				}
+			} );
+			
+		} else {
+		
+			this.reset();
+		
 		}
 	}
 }
