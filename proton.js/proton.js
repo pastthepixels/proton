@@ -165,25 +165,21 @@ Object.defineProperty( Object.prototype, "watch", {
 class Proton3DScene {
 	constructor() {
 		this.mappedKeys = {
-			forward: 38,
-			sprint: 16,
-			backward: 40,
-			left: 37,
-			right: 39,
-			jump: 32,
-			use: 13,
-			flashlight: 70
+			forward: 38, // Up arrow key
+			sprint: 16, // Shift
+			backward: 40, // Down arrow key
+			left: 37, // Left arrow key
+			right: 39, // Right arrow key
+			jump: 32, // Spacebar
+			use: 13, // Enter
+			flashlight: 70 // "F"
 		}
 		this.keys = {};
 		this.extraFunctions = [];
 		this.priorityExtraFunctions = [];
 		this.extraKeyControls = [];
-		ProtonJS.scenes.push( this )
 	}
 	init( extras = {} ) {
-		// some [extras] stuff
-		extras.width = extras.width || window.innerWidth;
-		extras.height = extras.height || window.innerHeight;
 		// variables
 		this.camera = new Proton3DObject( {
 			type: "perspectivecamera",
@@ -191,51 +187,34 @@ class Proton3DScene {
 			viewportHeight: extras.height
 		} );
 		this.camera.changeFar( 200 );
-		this.dynamicResize();
 		// creating a scene
-		extras.element = this.element;
-		extras.scene = this;
-		Proton3DInterpreter.create3DScene( extras );
-		// updating
-		this.update( this );
-		this.updateExtraFunctions( this );
-		// objectList
-		this.objectList = []
-	}
-	update( scene, time ) {
-		// pausing
-		if ( ProtonJS && ProtonJS.paused ) {
-
-			requestAnimationFrame( function() {
-				scene.update( scene )
-			} );
-			return
-
-		}
-		// rendering using Proton3DInterpreter.render
-		Proton3DInterpreter.render( this, time )
+		Proton3DInterpreter.create3DScene( extras, this );
 		// extraFunctions
+		this.runExtraFunctions = false;
+		// objectList
+		this.objectList = [];
+	}
+	update() {
+		// rendering using Proton3DInterpreter.render
+		Proton3DInterpreter.render( this )
+		// extraFunctions
+		// priorityExtraFunctions = functions that must run each rendering cycle
+		// extraFunctions = functions that fun every 2nd cycle
 		this.priorityExtraFunctions.forEach( function ( e ) {
 			e();
 		} );
-		// looping
-		requestAnimationFrame( function( time ) {
-			scene.update( scene, time )
-		} );
-	}
-	updateExtraFunctions( scene ) {
-		requestIdleCallback( function () {
-			scene.updateExtraFunctions( scene )
-		} );
-		// functions
-		scene.extraFunctions.forEach( function ( e ) {
-			if ( ProtonJS.paused && !e.continuePastPausing ) {
+		if ( this.runExtraFunctions = !this.runExtraFunctions ) {
+			
+			scene.extraFunctions.forEach( function ( e ) {
+				if ( ProtonJS.paused && !e.continuePastPausing ) {
 
-				return
+					return
 
-			}
-			e();
-		} );
+				}
+				e();
+			} );
+
+		}
 	}
 	getObjectList() {
 		return this.objectList
@@ -246,15 +225,11 @@ class Proton3DScene {
 	remove( object ) {
 		return Proton3DInterpreter.removeFromScene( object, this )
 	}
-	dynamicResize() {
-		Proton3DInterpreter.dynamicResize( this )
-	}
 	setKeyControls( obj, movementSpeed = 2.5, jumpHeight = 4, extras = {} ) {
 		var x = this, gunMoveFrame = 0;
-		window.addEventListener( "keydown", function ( e ) {
+		Proton3DInterpreter.onKeyDown( function ( keyCode ) {
 			e = e || event;
-			x.keys[ e.keyCode ] = e.type;
-			x.keys[ e.keyCode ] = true;
+			x.keys[ keyCode ] = true;
 			// flashlight
 			if ( x.keys[ x.mappedKeys.flashlight ] && x.camera.flashlight.canBeEnabled ) {
 
@@ -262,14 +237,14 @@ class Proton3DScene {
 
 			}
 		} );
-		window.addEventListener( "keyup", function ( e ) {
+		Proton3DInterpreter.onKeyUp( function ( keyCode ) {
 			e = e || event;
-			x.keys[ e.keyCode ] = false;
+			x.keys[ keyCode ] = false;
 			// gun animations
 			if ( extras.gunAnimations && !ProtonJS.cancelGunAnimations && x.gun && x.gun.movePosition ) {
 
-				clearInterval( window.gunWalkingAnimation );
-				window.gunWalkingAnimation = undefined;
+				clearInterval( ProtonJS.cache.gunWalkingAnimation );
+				ProtonJS.cache.gunWalkingAnimation = undefined;
 				ProtonJS.animate( 
 					x.gun.movePosition,
 					{
@@ -341,11 +316,11 @@ class Proton3DScene {
 				if ( x.keys[ x.mappedKeys.left ] ) {
 
 					var y = ProtonJS.rotateVector3(
-						new THREE.Vector3( 0, 1, 0 ),
+						new ProtonJS.Vector3( 0, 1, 0 ),
 						45,
-						obj.getWorldDirection().multiply( new THREE.Vector3( 1, 0, 1, ) ),
+						obj.getWorldDirection().multiply( new ProtonJS.Vector3( 1, 0, 1, ) ),
 						true
-					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
+					).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
 					// 
 					move( y, speed - 0.5, undefined, undefined, false )
 					return
@@ -354,11 +329,11 @@ class Proton3DScene {
 				if ( x.keys[ x.mappedKeys.right ] ) {
 
 					var y = ProtonJS.rotateVector3(
-						new THREE.Vector3( 0, 1, 0 ),
+						new ProtonJS.Vector3( 0, 1, 0 ),
 						-45,
-						obj.getWorldDirection().multiply( new THREE.Vector3( 1, 0, 1, ) ),
+						obj.getWorldDirection().multiply( new ProtonJS.Vector3( 1, 0, 1, ) ),
 						true
-					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
+					).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
 					// 
 					move( y, speed - 0.5, undefined, undefined, false )
 					return
@@ -375,11 +350,11 @@ class Proton3DScene {
 				if ( x.keys[ x.mappedKeys.left ] ) {
 
 					var y = ProtonJS.rotateVector3(
-						new THREE.Vector3( 0, 1, 0 ),
+						new ProtonJS.Vector3( 0, 1, 0 ),
 						-45,
-						obj.getWorldDirection().multiply( new THREE.Vector3( 1, 0, 1, ) ),
+						obj.getWorldDirection().multiply( new ProtonJS.Vector3( 1, 0, 1, ) ),
 						true
-					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
+					).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
 					// 
 					move( y, speed - 0.5, true, undefined, false )
 					return
@@ -388,11 +363,11 @@ class Proton3DScene {
 				if ( x.keys[ x.mappedKeys.right ] ) {
 
 					var y = ProtonJS.rotateVector3(
-						new THREE.Vector3( 0, 1, 0 ),
+						new ProtonJS.Vector3( 0, 1, 0 ),
 						45,
-						obj.getWorldDirection().multiply( new THREE.Vector3( 1, 0, 1, ) ),
+						obj.getWorldDirection().multiply( new ProtonJS.Vector3( 1, 0, 1, ) ),
 						true
-					).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
+					).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
 					// 
 					move( y, speed - 0.5, true, undefined, false )
 					return
@@ -403,11 +378,11 @@ class Proton3DScene {
 			if ( x.keys[ x.mappedKeys.left ] ) {
 
 				var y = ProtonJS.rotateVector3(
-					new THREE.Vector3( 0, 1, 0 ),
+					new ProtonJS.Vector3( 0, 1, 0 ),
 					90,
-					obj.getWorldDirection().multiply( new THREE.Vector3( 1, 0, 1, ) ),
+					obj.getWorldDirection().multiply( new ProtonJS.Vector3( 1, 0, 1, ) ),
 					true
-				).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
+				).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
 				// 
 				move( y, speed - 0.5 )
 
@@ -415,11 +390,11 @@ class Proton3DScene {
 			if ( x.keys[ x.mappedKeys.right ] ) {
 
 				var y = ProtonJS.rotateVector3(
-					new THREE.Vector3( 0, 1, 0 ),
+					new ProtonJS.Vector3( 0, 1, 0 ),
 					-90,
 					obj.getWorldDirection(),
 					true
-				).add( new THREE.Vector3( 0, obj.getPosition().y, 0 ) );
+				).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
 				// 
 				move( y, speed - 0.5 )
 
@@ -454,9 +429,9 @@ class Proton3DScene {
 			}
 			if ( x.gun && extras.gunAnimations && !ProtonJS.cancelGunAnimations && gunAnimation == true ) {
 
-				if ( window.gunWalkingAnimation == undefined ) {
+				if ( ProtonJS.cache.gunWalkingAnimation == undefined ) {
 
-					window.gunWalkingAnimation = setInterval( function() {
+					ProtonJS.cache.gunWalkingAnimation = setInterval( function() {
 						var movement = Math.sin( gunMoveFrame += ( ( 0.03 * movementSpeed ) + ( x.keys[ x.mappedKeys.sprint ]? 0.1 : 0 ) ) ) / 500;
 						if ( x.gun.movePosition ) ProtonJS.resetAnimation( x.gun.movePosition )
 						x.gun.setPosition( x.gun.position.x + ( ( 2 * movement ) ), x.gun.position.y + ( movement / 2 ), undefined );
@@ -1284,13 +1259,13 @@ function getMaterialByName ( name ) {
 const Proton3DInterpreter = {
 
 	// creating and modifing Proton3DScenes
-	create3DScene( extras ) {
+	create3DScene( extras, scene ) {
 		// this part requires an internet connection
 		Physijs.scripts.worker = "https://rawcdn.githack.com/pastthepixels/proton/2c0b47f25e0bb01af5363f5347caea028491d672/proton.js/accessories/physijs_worker_modified.js";
 		Physijs.scripts.ammo = ProtonJS.ammojsURL;
 		//
-		extras.scene.element = ( extras.sceneElement || document.createElement( "scene" ) );
-		extras.element = extras.scene.element;
+		scene.element = document.createElement( "scene" );
+		extras.element = scene.element;
 		extras.refreshRate = extras.refreshRate || this.refreshRate || 10
 		extras.antialias = extras.antialias || false;
 		extras.shaderQuality = extras.shaderQuality || "low";
@@ -1417,7 +1392,8 @@ const Proton3DInterpreter = {
 
 		}
 		// variables
-		extras.scene.usePBR = extras.pbr;
+		scene.usePBR = extras.pbr;
+		this.dynamicResize( scene );
 		this.canvas = document.createElement( "canvas" );
 		this.context = this.canvas.getContext( "webgl2", { alpha: false } );
 		this.renderer = new THREE[ "WebGLRenderer" ]( {
@@ -1429,7 +1405,7 @@ const Proton3DInterpreter = {
 		this.renderer.setPixelRatio( window.devicePixelRatio );
 		this.frame = 0;
 		this.fpsMeasurements = [];
-		this.renderer.setSize( extras.width, extras.height );
+		this.renderer.setSize( window.innerWidth, window.innerHeight );
 		this.renderer.shadowMap.enabled = extras.shadows;
 		this.renderer.shadowMap.type = extras.pcfSoftShadows? THREE.PCFSoftShadowMap : THREE.VSMShadowMap;
 		// physics
@@ -1437,20 +1413,20 @@ const Proton3DInterpreter = {
 		this.objects.setGravity( new THREE.Vector3( 0, ( extras.gravity || /*-9.81*/-20 ), 0 ) );
 		// some element - y stuff
 		extras.element.appendChild( this.canvas );
-		extras.scene.element.style.imageRendering = "pixelated";
+		scene.element.style.imageRendering = "pixelated";
 		document.body.appendChild( extras.element )
 		// updating the scene
-		Proton3DInterpreter.render( extras.scene );
+		Proton3DInterpreter.render( scene );
 		// sky
 		if ( extras.sky ) {
 		
-			extras.scene.sky = new Proton3DObject( {  type: "sky", sunPosition: new THREE.Vector3( 0, 100, 0 ) } )
-			this.objects.add( getMeshByName( extras.scene.sky.name ) )
+			scene.sky = new Proton3DObject( {  type: "sky", sunPosition: new THREE.Vector3( 0, 100, 0 ) } )
+			this.objects.add( getMeshByName( scene.sky.name ) )
 			
 		}
 		// renderization
 		var hdrRenderTarget = new THREE.WebGLMultisampleRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, stencilBuffer: false } );
-		var scenePass = new THREE.RenderPass( Proton3DInterpreter.objects, getMeshByName( extras.scene.camera.name ) );
+		var scenePass = new THREE.RenderPass( Proton3DInterpreter.objects, getMeshByName( scene.camera.name ) );
 		this.composer = new THREE.EffectComposer( Proton3DInterpreter.renderer, hdrRenderTarget );
 		this.composer.addPass( scenePass );
 		this.renderer.toneMapping = THREE.ReinhardToneMapping;
@@ -1461,7 +1437,7 @@ const Proton3DInterpreter = {
 			this.shadowLODInterval = function() {
 				Proton3DInterpreter.objects.children.forEach( getLights )
 			}
-			extras.scene.extraFunctions.push( this.shadowLODInterval );
+			scene.extraFunctions.push( this.shadowLODInterval );
 			function getLights( child ) {
 				child.children.forEach( getLights )
 				if ( child.shadow ) {
@@ -1536,17 +1512,17 @@ const Proton3DInterpreter = {
 			} );
 		}
 		this.pbrArrayInterval = function () {
-			if ( extras.scene.getObjectList != undefined && extras.scene.getObjectList() != undefined ) {
+			if ( scene.getObjectList != undefined && scene.getObjectList() != undefined ) {
 				
 				Proton3DInterpreter.livePBRArray = [];
-				extras.scene.getObjectList().forEach( function ( object ) {
+				scene.getObjectList().forEach( function ( object ) {
 					if ( object == undefined ) {
 
 						return
 
 					}
 					// 
-					Proton3DInterpreter.frustum.setFromProjectionMatrix( new THREE.Matrix4().multiplyMatrices( getMeshByName( extras.scene.camera.name ).projectionMatrix, getMeshByName( extras.scene.camera.name ).matrixWorldInverse ) );
+					Proton3DInterpreter.frustum.setFromProjectionMatrix( new THREE.Matrix4().multiplyMatrices( getMeshByName( scene.camera.name ).projectionMatrix, getMeshByName( scene.camera.name ).matrixWorldInverse ) );
 					// 
 					if ( getMeshByName( object.name ) == undefined || !Proton3DInterpreter.frustum.intersectsObject( getMeshByName( object.name ) ) || ( object.material != undefined && object.material.roughness > 0.3 ) ) {
 
@@ -1583,7 +1559,7 @@ const Proton3DInterpreter = {
 				Proton3DInterpreter.composer.setPixelRatio( ( Proton3DInterpreter.fps / 60 ) / ( extras.dynamicResolutionFactor || 4 ) )
 				Proton3DInterpreter.renderer.setPixelRatio( ( Proton3DInterpreter.fps / 60 ) / ( extras.dynamicResolutionFactor || 4 ) ) 
 			}, 500 );
-			extras.scene.priorityExtraFunctions.push( function() {
+			scene.priorityExtraFunctions.push( function() {
 				// getting the fps, slightly modified from https://www.growingwiththeweb.com/2017/12/fast-simple-js-fps-counter.html
 				const now = performance.now();
 				while ( Proton3DInterpreter.fpsMeasurements.length > 0 && Proton3DInterpreter.fpsMeasurements[0] <= now - 1000 ) {
@@ -1597,8 +1573,26 @@ const Proton3DInterpreter = {
 			} )
 
 		}
-		// 
+		// starting the scene
+		this.updateScene( scene );
+		// done!
 		return this.canvas
+	},
+	updateScene( scene ) {
+		// pausing
+		if ( ProtonJS && ProtonJS.paused ) {
+
+			requestAnimationFrame( function() {
+				Proton3DInterpreter.updateScene( scene )
+			} );
+			return
+
+		}
+		scene.update()
+		// looping
+		requestAnimationFrame( function( time ) {
+			Proton3DInterpreter.updateScene( scene )
+		} );
 	},
 	setAudioControls( scene ) {
 		if ( !this._audioControlsSet ) {
@@ -3647,7 +3641,17 @@ const Proton3DInterpreter = {
 				parameters: materialParameters
 			}
 		}
-	}
+	},
+	onKeyDown: function( callback ) {
+		window.addEventListener( "keydown", function( e ) {
+			callback( e.keyCode )
+		} )
+	},
+	onKeyUp: function( callback ) {
+		window.addEventListener( "keyup", function( e ) {
+			callback( e.keyCode )
+		} )
+	},
 }
 /*
 	~> loc:4.5
@@ -3846,6 +3850,71 @@ let ProtonJS = {
 			return ProtonJS.threevector.set( x, y, z )
 		}
 	},
+	// port of  THREE.Vector3
+	vector3: function( x, y, z ) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.add = function( vector3 ) {
+			this.x += vector3.x;
+			this.y += vector3.y;
+			this.z += vector3.z;
+			return this;
+		}
+		this.sub = function( vector3 ) {
+			this.x -= vector3.x;
+			this.y -= vector3.y;
+			this.z -= vector3.z;
+			return this;
+		}
+		this.multiply = function( vector3 ) {
+			this.x *= vector3.x;
+			this.y *= vector3.y;
+			this.z *= vector3.z;
+			return this;
+		}
+		this.divide = function( vector3 ) {
+			this.x /= vector3.x;
+			this.y /= vector3.y;
+			this.z /= vector3.z;
+			return this;
+		}
+		this.set = function( x, y, z ) {
+			this.x = x;
+			this.y = y;
+			this.z = z;
+			return this;
+		}
+		this.applyAxisAngle( axis, angle ) {
+			function newQuaternion( axis, angle ) {
+				// http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm
+				// assumes axis is normalized
+				const halfAngle = angle / 2, s = Math.sin( halfAngle );
+				this.x = axis.x * s; this._y = axis.y * s; 
+				this.z = axis.z * s;
+				this.w = Math.cos( halfAngle );
+				return this;
+			}
+			const q = new newQuaternion( axis, angle );
+			const x = this.x,
+					y = this.y, 
+					z = this.z;
+			const qx = q.x,
+					qy = q.y,
+					qz = q.z,
+					qw = q.w;
+			// calculate quat * vector
+			const ix = qw * x + qy * z - qz * y;
+			const iy = qw * y + qz * x - qx * z;
+			const iz = qw * z + qx * y - qy * x;
+			const iw = - qx * x - qy * y - qz * z; 
+			// calculate result * inverse quat
+			this.x = ix * qw + iw * - qx + iy * - qz - iz * - qy;
+			this.y = iy * qw + iw * - qy + iz * - qx - ix * - qz;
+			this.z = iz * qw + iw * - qz + ix * - qy - iy * - qx;
+			return this;
+		}
+	},
 	// wrapper for localStorage
 	storage: {
 		name: "mygame",
@@ -3939,7 +4008,6 @@ let ProtonJS = {
 	paused: false,
 	ammojsURL: "https://cdn.jsdelivr.net/gh/Mwni/AmmoNext@master/builds/ammo.js",
 	/*physijs version of ammo = "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/examples/js/ammo.js"; latest version of ammo = "https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js"*/
-	scenes: [],
 	importObject: Proton3DInterpreter.importObject,
 	compileCSS: function ( exclude = [] ) {
 		this.style = document.createElement( "style" );
