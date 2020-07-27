@@ -445,27 +445,6 @@ class Proton3DScene {
 	makeDoor( door, width = door.width || 2.5, faceInwards = true ) {
 		Proton3DInterpreter.makeDoor( door, width, faceInwards, this )
 	}
-	addPortal2ZoomControls() {
-		var x = this.camera,
-			oldZoom = 1;
-		window.addEventListener( "wheel", function ( e ) {
-			if ( e.deltaY < 0 ) {
-
-				if ( x.getZoom() != 3 ) {
-
-					oldZoom = x.getZoom();
-
-				}
-				x.setZoom( 3 )
-
-			}
-			if ( e.deltaY > 0 ) {
-
-				x.setZoom( oldZoom );
-
-			}
-		} );
-	}
 	setCameraControls( extras = {} ) {
 		var x = this,
 			returningObject = {},
