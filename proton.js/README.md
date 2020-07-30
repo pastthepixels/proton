@@ -19,6 +19,7 @@ To get to various sections throughout ProtonJS, press Control+F and type `loc:[l
 - Clauses and Provisions --> 3
 ### ProtonJS
 - Proton3D --> 4
+- Proton3DInterpreter --> 4.3
 - Proton3D Tools --> 4.5
 - ProtonJS (variable) --> 5
 ### MapScript
