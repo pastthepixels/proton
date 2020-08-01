@@ -205,7 +205,7 @@ class Proton3DScene {
 		} );
 		if ( this.runExtraFunctions = !this.runExtraFunctions ) {
 			
-			scene.extraFunctions.forEach( function ( e ) {
+			this.extraFunctions.forEach( function ( e ) {
 				if ( ProtonJS.paused && !e.continuePastPausing ) {
 
 					return
@@ -228,7 +228,6 @@ class Proton3DScene {
 	setKeyControls( obj, movementSpeed = 2.5, jumpHeight = 4, extras = {} ) {
 		var x = this, gunMoveFrame = 0;
 		Proton3DInterpreter.onKeyDown( function ( keyCode ) {
-			e = e || event;
 			x.keys[ keyCode ] = true;
 			// flashlight
 			if ( x.keys[ x.mappedKeys.flashlight ] && x.camera.flashlight.canBeEnabled ) {
@@ -238,7 +237,6 @@ class Proton3DScene {
 			}
 		} );
 		Proton3DInterpreter.onKeyUp( function ( keyCode ) {
-			e = e || event;
 			x.keys[ keyCode ] = false;
 			// gun animations
 			if ( extras.gunAnimations && !ProtonJS.cancelGunAnimations && x.gun && x.gun.movePosition ) {
@@ -449,7 +447,7 @@ class Proton3DScene {
 		var x = this,
 			returningObject = {},
 			posY = 0;
-		extras.distance = extras.distance || new THREE.Vector3();
+		extras.distance = extras.distance || new ProtonJS.Vector3();
 		extras.xSensitivity = extras.xSensitivity || 10;
 		extras.ySensitivity = extras.ySensitivity || 10;
 		//
@@ -474,7 +472,7 @@ class Proton3DScene {
 				
 				// everything else
 				extras.cameraParent.add( x.camera );
-				extras.cameraParent.cameraRotation = new THREE.Vector3();
+				extras.cameraParent.cameraRotation = new ProtonJS.Vector3();
 				extras.alreadyInitialized = true;
 
 				if ( extras.invisibleParent ) {
@@ -1366,7 +1364,7 @@ const Proton3DInterpreter = {
 		scene.usePBR = extras.pbr;
 		this.dynamicResize( scene );
 		this.canvas = document.createElement( "canvas" );
-		this.context = this.canvas.getContext( "webgl2", { alpha: false } );
+		this.context = this.canvas.getContext( "webgl2" );
 		this.renderer = new THREE[ "WebGLRenderer" ]( {
 			canvas: this.canvas,
 			context: this.context,
@@ -1561,7 +1559,7 @@ const Proton3DInterpreter = {
 		}
 		scene.update()
 		// looping
-		requestAnimationFrame( function( time ) {
+		requestAnimationFrame( function() {
 			Proton3DInterpreter.updateScene( scene )
 		} );
 	},
@@ -2302,7 +2300,7 @@ const Proton3DInterpreter = {
 			getMeshByName( P3DObject.name ).castShadow = cast != undefined? cast : getMeshByName( P3DObject.name ).castShadow
 			getMeshByName( P3DObject.name ).receiveShadow = receive != undefined? receive : getMeshByName( P3DObject.name ).receiveShadow
 		},
-		playAudio ( src, listener, P3DObject ) {
+		playAudio ( src, listener = new THREE.AudioListener(), P3DObject ) {
 			var sound = new THREE.PositionalAudio( listener );
 			getMeshByName( P3DObject.name ).add( sound );
 			var audio = new Audio( src );
@@ -2310,6 +2308,7 @@ const Proton3DInterpreter = {
 			return audio;
 		},
 		applyImpulse( force, offset = ProtonJS.cache.vector3( 0, 0, 0 ), P3DObject ) {
+			offset = new THREE.Vector3( offset.x, offset.y, offset.z )
 			getMeshByName( P3DObject.name ).applyImpulse( force, offset )
 		},
 		delete( P3DObject ) {
@@ -3514,7 +3513,7 @@ const Proton3DInterpreter = {
 		`;
 		document.body.appendChild( crosshairElement );
 		return crosshairElement;
-	}
+	},
 	PI: Math.PI,
 	audio: Audio,
 	storage: localStorage,
@@ -3726,7 +3725,7 @@ let ProtonJS = {
 		return rad * ( 180 / Proton3DInterpreter.PI );
 	},
 	// port of  THREE.Vector3
-	vector3: function( x, y, z ) {
+	Vector3: function( x, y, z ) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -3761,20 +3760,21 @@ let ProtonJS = {
 			return this;
 		}
 		this.distanceTo = function( vec3 ) {
-			deltaX = this.x - vec3.x;
-			deltaY = this.y - vec3.y;
-			deltaZ = this.z - vec3.z;
+			var deltaX = this.x - vec3.x;
+			var deltaY = this.y - vec3.y;
+			var deltaZ = this.z - vec3.z;
 			return Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 		}
 		this.clone = function() {
 			return new ProtonJS.Vector3( this.x, this.y, this.z )
 		}
-		this.applyAxisAngle( axis, angle ) {
+		this.applyAxisAngle = function( axis, angle ) {
 			function newQuaternion( axis, angle ) {
 				// http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm
 				// assumes axis is normalized
 				const halfAngle = angle / 2, s = Math.sin( halfAngle );
 				this.x = axis.x * s; this._y = axis.y * s; 
+				this.y = 0
 				this.z = axis.z * s;
 				this.w = Math.cos( halfAngle );
 				return this;
@@ -3842,9 +3842,7 @@ let ProtonJS = {
 	},
 	pause: function () {
 		this.paused = true;
-		this.scenes.forEach( function( scene ) {
-			if ( scene.crosshair && scene.crosshair.hide ) scene.crosshair.hide()
-		} )
+		if ( this.scene.crosshair && this.scene.crosshair.hide ) this.scene.crosshair.hide()
 		if ( window.onpause ) {
 
 			window.onpause();
@@ -3853,9 +3851,7 @@ let ProtonJS = {
 	},
 	resume: function () {
 		this.paused = false;
-		this.scenes.forEach( function( scene ) {
-			if ( scene.crosshair && scene.crosshair.show ) scene.crosshair.show()
-		} )
+		if ( this.scene.crosshair && this.scene.crosshair.show ) this.scene.crosshair.show()
 		Proton3DInterpreter.resume();
 		if ( window.onresume ) {
 
