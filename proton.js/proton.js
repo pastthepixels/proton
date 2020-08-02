@@ -186,7 +186,7 @@ class Proton3DScene {
 			viewportWidth: extras.width,
 			viewportHeight: extras.height
 		} );
-		this.camera.changeFar( 200 );
+		this.camera.changeFar( 1000 );
 		// creating a scene
 		Proton3DInterpreter.create3DScene( extras, this );
 		// extraFunctions
@@ -531,7 +531,7 @@ class Proton3DScene {
 
 					x.crosshair.__localPosition = ProtonJS.rotateVector3(
 						new ProtonJS.Vector3( 0, 1, 0 ),
-						-ProtonJS.degToRad( e.movementX / extras.xSensitivity ),
+						-( ProtonJS.degToRad( e.movementX / extras.xSensitivity ) ),
 						localPosClone,
 						false,
 						true
@@ -989,7 +989,7 @@ class Proton3DObject {
 		return Proton3DInterpreter.Proton3DObject.setPosition( x, y, z, this )
 	}
 	animatePosition( x, y, z, time = 1500, step = undefined, callback = undefined ) {
-		var pobject = this
+		var pobject = this,
 			target = new ProtonJS.Vector3( x, y, z );
 		if ( this.__movePosition === undefined ) {
 			
@@ -1413,7 +1413,7 @@ const Proton3DInterpreter = {
 				
 					var originalWidth = child.shadow.mapSize.width;
 					child.shadow.mapSize.width = child.shadow.mapSize.height = getShadowLOD( ProtonJS.scene.camera.getWorldPosition().distanceTo( child.position ) )
-					if ( child.shadow.mapSize.width != originalWidth ) {
+					if ( child.shadow.mapSize.width != originalWidth && child.shadow.map ) {
 					
 						child.shadow.map.dispose();
 						child.shadow.map = null;
@@ -1582,6 +1582,7 @@ const Proton3DInterpreter = {
 
 			}
 		} );
+		scene.camera.changeAspectRatio( window.innerWidth / window.innerHeight );
 	},
 	addToScene( object, scene ) {
 		this.objects.add( object.name && getMeshByName( object.name )? getMeshByName( object.name ) : object );
@@ -1870,7 +1871,7 @@ const Proton3DInterpreter = {
 					camera.updateProjectionMatrix()
 				}
 				object.changeAspectRatio = function ( value ) {
-					camera.aspect = value;
+					camera.aspect = value != NaN? value : 1;
 					camera.updateProjectionMatrix()
 				}
 				// 
@@ -1883,6 +1884,7 @@ const Proton3DInterpreter = {
 					( extras.near || 0.26 ),
 					( extras.far || 100 )
 				);
+				camera.aspect = 1;
 				camera.name = object.name;
 				meshes.push( camera )
 				// 
@@ -3499,7 +3501,7 @@ const Proton3DInterpreter = {
 			crosshairElement.style.display = "none"
 		}
 		crosshairElement.show = function() {
-			crosshairElement.style.display = undefined
+			crosshairElement.style.display = null
 		}
 		crosshairElement.style.cssText = `
 			position: fixed;
@@ -3768,35 +3770,50 @@ let ProtonJS = {
 		this.clone = function() {
 			return new ProtonJS.Vector3( this.x, this.y, this.z )
 		}
-		this.applyAxisAngle = function( axis, angle ) {
-			function newQuaternion( axis, angle ) {
-				// http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm
-				// assumes axis is normalized
-				const halfAngle = angle / 2, s = Math.sin( halfAngle );
-				this.x = axis.x * s; this._y = axis.y * s; 
-				this.y = 0
-				this.z = axis.z * s;
-				this.w = Math.cos( halfAngle );
-				return this;
+		this.applyAxisAngle = function ( axis, angle ) {
+
+			var _quaternion = {
+				setFromAxisAngle: function ( axis, angle ) {
+
+					// http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm
+		
+					// assumes axis is normalized
+		
+					var halfAngle = angle / 2, s = Math.sin( halfAngle );
+		
+					this.x = axis.x * s;
+					this.y = axis.y * s;
+					this.z = axis.z * s;
+					this.w = Math.cos( halfAngle );
+					
+					return this;
+		
+				}
 			}
-			const q = new newQuaternion( axis, angle );
-			const x = this.x,
-					y = this.y, 
-					z = this.z;
-			const qx = q.x,
-					qy = q.y,
-					qz = q.z,
-					qw = q.w;
+
+			return this.applyQuaternion( _quaternion.setFromAxisAngle( axis, angle ) );
+
+		}
+		this.applyQuaternion = function ( q ) {
+
+			var x = this.x, y = this.y, z = this.z;
+			var qx = q.x, qy = q.y, qz = q.z, qw = q.w;
+
 			// calculate quat * vector
-			const ix = qw * x + qy * z - qz * y;
-			const iy = qw * y + qz * x - qx * z;
-			const iz = qw * z + qx * y - qy * x;
-			const iw = - qx * x - qy * y - qz * z; 
+
+			var ix = qw * x + qy * z - qz * y;
+			var iy = qw * y + qz * x - qx * z;
+			var iz = qw * z + qx * y - qy * x;
+			var iw = - qx * x - qy * y - qz * z;
+
 			// calculate result * inverse quat
+
 			this.x = ix * qw + iw * - qx + iy * - qz - iz * - qy;
 			this.y = iy * qw + iw * - qy + iz * - qx - ix * - qz;
 			this.z = iz * qw + iw * - qz + ix * - qy - iy * - qx;
+
 			return this;
+
 		}
 	},
 	// wrapper for localStorage
@@ -3867,7 +3884,7 @@ let ProtonJS = {
 		return crosshair;
 	},
 	rotateVector3( axis, angle, vector, normalize, cancelAutoAngle ) {
-		if ( !cancelAutoAngle ) {
+		if ( cancelAutoAngle == false ) {
 	
 			angle = ProtonJS.degToRad( angle );
 	
