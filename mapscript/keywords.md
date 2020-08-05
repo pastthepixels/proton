@@ -8,11 +8,12 @@
 | `init( graphicsRating (float), sky (boolean) )`                                                                       | Initializes the main scene.                    |
 | `//`                                                                                                                  | A single-line comment.                         |
 | `set`                                                                                                                 | Same as JavaScript's `var`.                    |
+| `set global`                                                                                                                 | Sets a global variable.                    |
 | `new`                                                                                                                 | Same as in JavaScript.                         |
 | `{}`                                                                                                                  | Same as in JavaScript.                         |
 | `[]`                                                                                                                  | Same as in JavaScript.                         |
 | `function`                                                                                                            | Same as in JavaScript.                         |
-| `import( { src: url, mass: float, onload: function, onuse: function, interactable: boolean, pickupable: boolean } )`  | Imports an object via a file (ex: glTF).       |
+| `importObject( { src: url, mass: float, onload: function, onuse: function, interactable: boolean, pickupable: boolean } )`  | Imports an object via a file (ex: glTF).       |
 | `toggle( boolean )`                                                                                                   | Returns `!boolean`                             |
 | `degToRad( deg )`                                                                                                     | Converts a measurement in degrees to radians.  |
 | `radToDeg( rad )`                                                                                                     | Converts a measurement in radians to degrees.  |
