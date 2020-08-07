@@ -13,7 +13,7 @@ The Proton engine is a game engine that is designed to focus on 3 things:
 # How can I use Proton?
 ## ProtonJS
 ProtonJS has been tested to work on Google Chrome.
-If you're using Proton3D locally on Chrome, you have to enable the flag `--disable-web-security` with `--user-data-dir` to bypass CORS-related issues. On GNU/Linux, it should look like this (note that Windows users can replace `google-chrome` with the path to Chrome's executable, and `/tmp` for a temporary directory, and that you can also use Chromium):
+If you're using Proton3D locally on Chrome, you have to enable the flag `--disable-web-security` with `--user-data-dir` to bypass CORS-related issues. On Linux, it should look like this (note that Windows users can replace `google-chrome` with the path to Chrome's executable, and `/tmp` for a temporary directory, and that you can also use Chromium):
 ```
 google-chrome --disable-web-security --user-data-dir=/tmp/chrome
 ```
