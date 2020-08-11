@@ -1,13 +1,19 @@
 /*
-    ROUGH DRAFT:
-    Just copied + pasted ProtonJS into this file.
+	Proton
+	======
+
+	## Table of Contents
+
+	| Section Name               | Location # |
+	| -------------------------- | ---------- |
+	| Proton3D                   | loc:1      |
 
 */
 
 
 
 /*
-	~> loc:4
+	~> loc:1
 	Proton3D
 */
 class Proton3DScene {
@@ -21,7 +27,7 @@ class Proton3DScene {
 			jump: 32, // Spacebar
 			use: 13, // Enter
 			flashlight: 70 // "F"
-		}
+		};
 		this.keys = {};
 		this.extraFunctions = [];
 		this.priorityExtraFunctions = [];
@@ -44,7 +50,7 @@ class Proton3DScene {
 	}
 	update() {
 		// rendering using Proton3DInterpreter.render
-		Proton3DInterpreter.render( this )
+		Proton3DInterpreter.render( this );
 		// extraFunctions
 		// priorityExtraFunctions = functions that must run each rendering cycle
 		// extraFunctions = functions that fun every 2nd cycle
@@ -56,7 +62,7 @@ class Proton3DScene {
 			this.extraFunctions.forEach( function ( e ) {
 				if ( ProtonJS.paused && !e.continuePastPausing ) {
 
-					return
+					return;
 
 				}
 				e();
@@ -104,7 +110,7 @@ class Proton3DScene {
 						},
 						duration: 1500
 					}
-				)
+				);
 
 			}
 		} );
@@ -125,11 +131,11 @@ class Proton3DScene {
 		x.camera.flashlight.changeAngle( 0.4 );
 		x.camera.flashlight.enable = function() {
 			x.camera.flashlight.setTargetPosition( 0, 0, -1 );
-			x.camera.flashlight.changeIntensity( 0.5 )
+			x.camera.flashlight.changeIntensity( 0.5 );
 			x.camera.flashlight.enabled = true;
 		}
 		x.camera.flashlight.disable = function() {
-			x.camera.flashlight.changeIntensity( 0 )
+			x.camera.flashlight.changeIntensity( 0 );
 			x.camera.flashlight.enabled = false;
 		}
 		x.camera.flashlight.disable();
@@ -144,12 +150,12 @@ class Proton3DScene {
 			}
 			// extra (user set) key controls
 			x.extraKeyControls.forEach( function ( f ) {
-				f( x.keys )
+				f( x.keys );
 			} )
 			// sprinting
 			if ( x.keys[ x.mappedKeys.sprint ] ) {
 
-				speed += 10
+				speed += 10;
 
 			}
 			// moving
@@ -157,7 +163,7 @@ class Proton3DScene {
 
 				set y = obj.getWorldDirection();
 				// 
-				move( y, speed, false, true )
+				move( y, speed, false, true );
 				// moving left and right
 				if ( x.keys[ x.mappedKeys.left ] ) {
 
@@ -168,8 +174,8 @@ class Proton3DScene {
 						true
 					).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
 					// 
-					move( y, speed - 0.5, undefined, undefined, false )
-					return
+					move( y, speed - 0.5, undefined, undefined, false );
+					return;
 
 				}
 				if ( x.keys[ x.mappedKeys.right ] ) {
@@ -181,8 +187,8 @@ class Proton3DScene {
 						true
 					).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
 					// 
-					move( y, speed - 0.5, undefined, undefined, false )
-					return
+					move( y, speed - 0.5, undefined, undefined, false );
+					return;
 
 				}
 
@@ -202,8 +208,8 @@ class Proton3DScene {
 						true
 					).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
 					// 
-					move( y, speed - 0.5, true, undefined, false )
-					return
+					move( y, speed - 0.5, true, undefined, false );
+					return;
 
 				}
 				if ( x.keys[ x.mappedKeys.right ] ) {
@@ -215,8 +221,8 @@ class Proton3DScene {
 						true
 					).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
 					// 
-					move( y, speed - 0.5, true, undefined, false )
-					return
+					move( y, speed - 0.5, true, undefined, false );
+					return;
 
 				}
 
@@ -230,7 +236,7 @@ class Proton3DScene {
 					true
 				).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
 				// 
-				move( y, speed - 0.5 )
+				move( y, speed - 0.5 );
 
 			}
 			if ( x.keys[ x.mappedKeys.right ] ) {
@@ -242,7 +248,7 @@ class Proton3DScene {
 					true
 				).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
 				// 
-				move( y, speed - 0.5 )
+				move( y, speed - 0.5 );
 
 			}
 			if ( x.keys[ x.mappedKeys.jump ] && obj.getLinearVelocity().y <= 0.5 && obj.getCollidingObjects().length > 0 ) {
@@ -258,7 +264,7 @@ class Proton3DScene {
 		function move ( y, speed, negatise = false, forward = false, gunAnimation = true) {
 			if ( x.noclip ) {
 
-				set pos = obj.position.clone().add( new THREE.Vector3( y.x * ( speed / 500 ) * ( negatise? -1 : 1 ) , forward? ( x.camera.getWorldDirection().y * (speed / 500) * ( negatise? -1 : 1 ) ) : 0, y.z * (speed / 500) * ( negatise? -1 : 1 )  ) )
+				set pos = obj.position.clone().add( new THREE.Vector3( y.x * ( speed / 500 ) * ( negatise? -1 : 1 ) , forward? ( x.camera.getWorldDirection().y * (speed / 500) * ( negatise? -1 : 1 ) ) : 0, y.z * (speed / 500) * ( negatise? -1 : 1 )  ) );
 				obj.setPosition( pos.x, pos.y, pos.z );
 				obj.applyLocRotChange();
 
@@ -277,9 +283,9 @@ class Proton3DScene {
 
 				if ( ProtonJS.cache.gunWalkingAnimation == undefined ) {
 
-					ProtonJS.cache.gunWalkingAnimation = setInterval( function() {
+					ProtonJS.cache.gunWalkingAnimation = interval( function() {
 						set movement = Math.sin( gunMoveFrame += ( ( 0.03 * movementSpeed ) + ( x.keys[ x.mappedKeys.sprint ]? 0.1 : 0 ) ) ) / 500;
-						if ( x.gun.movePosition ) ProtonJS.resetAnimation( x.gun.movePosition )
+						if ( x.gun.movePosition ) ProtonJS.resetAnimation( x.gun.movePosition );
 						x.gun.setPosition( x.gun.position.x + ( ( 2 * movement ) ), x.gun.position.y + ( movement / 2 ), undefined );
 						x.gun.movePosition = x.gun.position.clone();
 					}, 32 )
@@ -289,7 +295,7 @@ class Proton3DScene {
 		}
 	}
 	makeDoor( door, width = door.width || 2.5, faceInwards = true ) {
-		Proton3DInterpreter.makeDoor( door, width, faceInwards, this )
+		Proton3DInterpreter.makeDoor( door, width, faceInwards, this );
 	}
 	setCameraControls( extras = {} ) {
 		set x = this,
@@ -350,7 +356,7 @@ class Proton3DScene {
 
 				default:
 
-					x.camera.setPosition( 0, 0, 0 )
+					x.camera.setPosition( 0, 0, 0 );
 
 					if ( extras.distance != 5 ) {
 
@@ -363,10 +369,10 @@ class Proton3DScene {
 						x.gun = extras.gun;
 						extras.gun.castShadow = false;
 						extras.gun.receiveShadow = false;
-						extras.gun.setPosition( 0.9, -0.8, -1.4 )
+						extras.gun.setPosition( 0.9, -0.8, -1.4 );
 						if ( extras.gunPosition ) {
 
-							extras.gun.setPosition( extras.gunPosition.x, extras.gunPosition.y, extras.gunPosition.z )
+							extras.gun.setPosition( extras.gunPosition.x, extras.gunPosition.y, extras.gunPosition.z );
 
 						}
 						extras.gun.starterPosition = extras.gun.position.clone();
@@ -407,11 +413,11 @@ class Proton3DScene {
 						)
 						) {
 
-						x.crosshair.__localPosition.y -= ( e.movementY / ( extras.ySensitivity * 40 ) ) * ( x.crosshair.__localPosition.distanceTo( x.camera.getPosition() ) )
+						x.crosshair.__localPosition.y -= ( e.movementY / ( extras.ySensitivity * 40 ) ) * ( x.crosshair.__localPosition.distanceTo( x.camera.getPosition() ) );
 
 						if ( x.cameraType === "thirdperson" || extras.type === "thirdperson" ) {
 
-							x.camera.setPosition( undefined, ( posY += e.movementY / extras.ySensitivity ), undefined )
+							x.camera.setPosition( undefined, ( posY += e.movementY / extras.ySensitivity ), undefined );
 
 						}
 
@@ -432,14 +438,14 @@ class Proton3DScene {
 		}
 
 		// 
-		x.crosshair = {}
+		x.crosshair = {};
 		x.crosshair.localPosition = new ProtonJS.Vector3( 0, 0, 1 );
 		x.crosshair.__localPosition = new ProtonJS.Vector3( 0, 0, 0 );
 		// 
 
 		if ( !extras.cameraParent.parent ) {
 
-			x.add( extras.cameraParent )
+			x.add( extras.cameraParent );
 
 		}
 
@@ -487,7 +493,7 @@ class Proton3DScene {
 
 				} else {
 
-					x.pickingUpObject.animatePosition( 0, 0, -5, 500 )
+					x.pickingUpObject.animatePosition( 0, 0, -5, 500 );
 
 				}
 
@@ -504,36 +510,38 @@ class Proton3DScene {
 			if ( child.children ) {
 
 				child.children.forEach( function ( child ) {
-					checkKeypress( child )
+					checkKeypress( child );
 				} );
 
 			}
 			if ( child.__pickupable != true || ProtonJS.cache.keyErrorCheck ) {
 
-				return
+				return;
 
 			}
 			if ( x.keys[ x.mappedKeys.use ] && child.pickingUp === true ) {
 
-				resetPickingUp( child )
-				return
+				resetPickingUp( child );
+				return;
 
 			}
-			if ( x.keys[ x.mappedKeys.use ] && x.crosshair.position.distanceTo( child.position ) <= ( child.__pickupDistance || 2 ) && child.pickingUp == null && pickingUpChild == undefined ) {
+			if ( x.keys[ x.mappedKeys.use ] && x.crosshair.position.distanceTo( child.position ) <= ( child.__pickupDistance || 2 ) && child.pickingUp == null ) {
 
-				x.pickUpObject( child )
+				x.pickUpObject( child );
 
 			}
 		}
 		
-		set resetPickingUp = function ( child ) { x.resetPickingUp( child, x ) }
+		set resetPickingUp = function ( child ) {
+			x.resetPickingUp( child, x );
+		}
 	}
 	resetPickingUp( child, scene, callback = function(){} ) {
 		this.pickingUpObject = undefined;
 		if ( child.__movePosition ) ProtonJS.resetAnimation( child.__movePosition );
-		// 
-		set position = child.getWorldPosition(),
-			rotation = child.getWorldRotation();
+		//
+		set position = child.getWorldPosition();
+		set rotation = child.getWorldRotation();
 		scene.crosshair.show();
 		scene.add( child );
 		child.setLinearVelocity( 0, 0, 0 );
@@ -542,19 +550,23 @@ class Proton3DScene {
 		child.setRotation( rotation.x, rotation.y, rotation.z );
 		child.applyLocRotChange();
 		child.pickingUp = undefined;
-		// 
+		//
 		ProtonJS.cache.keyErrorCheck = true;
-		setTimeout( function () {
+		timeout( function () {
 			callback();
 		}, 50 );
-		setTimeout( function () {
+		timeout( function () {
 			ProtonJS.cache.keyErrorCheck = false;
-		}, 500 )
+		}, 500 );
 	}
 	pickUpObject( child ) {
-		set x = this, resetPickingUp = function ( child ) { x.resetPickingUp( child, x ) };
-		ProtonJS.cache.keyErrorCheck = true
-		setTimeout( function () { ProtonJS.cache.keyErrorCheck = false }, 250 )
+		set x = this, resetPickingUp = function ( child ) {
+			x.resetPickingUp( child, x );
+		};
+		ProtonJS.cache.keyErrorCheck = true;
+		timeout( function () {
+			ProtonJS.cache.keyErrorCheck = false;
+		}, 250 );
 		// 
 
 		if ( child.onUse ) {
@@ -562,7 +574,7 @@ class Proton3DScene {
 			child.onUse();
 			if ( child.__returnAfterPickup ) {
 
-				return
+				return;
 
 			}
 
@@ -581,14 +593,14 @@ class Proton3DScene {
 	loc:4.1
 	Proton3DObject
 */
-set genericMeshNameInstances = 0
-set genericMaterialNameInstances = 0
+set genericMeshNameInstances = 0;
+set genericMaterialNameInstances = 0;
 class Proton3DObject {
 	constructor( extras = {} ) {
 		// names the mesh
 		if ( extras.name === "" || extras.name == undefined ) {
 
-			this.name = "Mesh"
+			this.name = "Mesh";
 
 			if ( genericMeshNameInstances > 0 ) {
 
@@ -600,7 +612,7 @@ class Proton3DObject {
 
 		} else {
 
-			this.name = extras.name
+			this.name = extras.name;
 
 		}
 		if ( getMeshByName( this.name ) ) {
@@ -623,11 +635,11 @@ class Proton3DObject {
 
 		}
 		// gives children to the mesh
-		this.children = extras.children || []
+		this.children = extras.children || [];
 		// gives the decision to skip a material replacement when initializing pbr
-		this.skipPBRReplacement = false
+		this.skipPBRReplacement = false;
 		// creates a mesh
-		Proton3DInterpreter.create3DObject( extras, this )
+		Proton3DInterpreter.create3DObject( extras, this );
 		if ( extras.type && ( extras.type == "sky" || extras.type.includes( "light" ) || extras.type.includes( "camera" ) ) ) {
 			this.setLinearVelocity = null;
 			this.setLinearVelocity = null;
@@ -635,74 +647,74 @@ class Proton3DObject {
 			this.getAngularVelocity = null;
 		}
 		// sets the mesh's position + rotation to any predefined values
-		this.setPosition( extras.x, extras.y, extras.z )
-		this.setRotation( extras.rotationX, extras.rotationY, extras.rotationZ )
+		this.setPosition( extras.x, extras.y, extras.z );
+		this.setRotation( extras.rotationX, extras.rotationY, extras.rotationZ );
 		// 
-		this.position = null
-		this.rotation = null
+		this.position = null;
+		this.rotation = null;
 		// the accessors
 		Object.defineProperty( this, "castShadow", {
 			get: function() {
-				return this.getShadowOptions().cast
+				return this.getShadowOptions().cast;
 			},
 			set: function( value ) {
-				return this.setShadowOptions( value )
+				return this.setShadowOptions( value );
 			}
 		} )
 		Object.defineProperty( this, "receiveShadow", {
 			get: function() {
-				return this.getShadowOptions().receive
+				return this.getShadowOptions().receive;
 			},
 			set: function( value ) {
-				return this.setShadowOptions( undefined, value )
+				return this.setShadowOptions( undefined, value );
 			}
 		} )
 		Object.defineProperty( this, "position", {
 			get: function() {
-				return this.getPosition()
+				return this.getPosition();
 			},
 			set: function( vector ) {
-				return this.setPosition( vector.x, vector.y, vector.z )
+				return this.setPosition( vector.x, vector.y, vector.z );
 			}
 		} )
 		Object.defineProperty( this, "rotation", {
 			get: function() {
-				return this.getRotation()
+				return this.getRotation();
 			},
 			set: function( vector ) {
-				return this.setRotation( vector.x, vector.y, vector.z )
+				return this.setRotation( vector.x, vector.y, vector.z );
 			}
 		} )
 		Object.defineProperty( this, "pickupDistance", {
 			get: function() {
-				return this.getPickupDistance()
+				return this.getPickupDistance();
 			},
 			set: function( value ) {
-				return this.setPickupDistance( value )
+				return this.setPickupDistance( value );
 			}
 		} )
 		Object.defineProperty( this, "onNear", {
 			get: function() {
-				return this.getOnNear()
+				return this.getOnNear();
 			},
 			set: function( nearFunction ) {
-				return this.setOnNear( nearFunction )
+				return this.setOnNear( nearFunction );
 			}
 		} )
 		Object.defineProperty( this, "onUse", {
 			get: function() {
-				return this.getOnUse()
+				return this.getOnUse();
 			},
 			set: function( useFunction ) {
-				return this.setOnUse( useFunction )
+				return this.setOnUse( useFunction );
 			}
 		} )
 		Object.defineProperty( this, "mass", {
 			get: function() {
-				return this.getMass()
+				return this.getMass();
 			},
 			set: function( value ) {
-				return this.setMass( value )
+				return this.setMass( value );
 			}
 		} )
 	}
@@ -736,13 +748,21 @@ class Proton3DObject {
 				extras.jumpHeight,
 				{ gunAnimations: true }
 			)
-		}
+		};
 		// crosshair
 		ProtonJS.crosshair( ProtonJS.scene.crosshair );
 		// gun rotation
-		if ( extras.gunRotation ) extras.gun.setRotation( extras.gunRotation.x, extras.gunRotation.y, extras.gunRotation.z )
+		if ( extras.gunRotation ) {
+
+			extras.gun.setRotation( extras.gunRotation.x, extras.gunRotation.y, extras.gunRotation.z );
+		
+		}
 		// making an invisible player
-		if ( extras.invisible ) object.makeInvisible();
+		if ( extras.invisible ) {
+
+			object.makeInvisible();
+
+		}
 		// misc
 		ProtonJS.player = object;
 		// health (in hit points, not percentages nor decimals)
@@ -751,97 +771,101 @@ class Proton3DObject {
 	}
 	// the accessors' corresponding functions
 	makeInvisible() {
-		return Proton3DInterpreter.Proton3DObject.makeInvisible( this )
+		return Proton3DInterpreter.Proton3DObject.makeInvisible( this );
 	}
 	getShadowOptions() {
-		return Proton3DInterpreter.Proton3DObject.getShadowOptions( this )
+		return Proton3DInterpreter.Proton3DObject.getShadowOptions( this );
 	}
 	setShadowOptions( cast = null, receive = null ) {
-		return Proton3DInterpreter.Proton3DObject.setShadowOptions( cast, receive, this )
+		return Proton3DInterpreter.Proton3DObject.setShadowOptions( cast, receive, this );
 	}
 	playAudio ( src, listener ) {
-		return Proton3DInterpreter.Proton3DObject.playAudio( src, listener, this )
+		return Proton3DInterpreter.Proton3DObject.playAudio( src, listener, this );
 	}
 	applyImpulse( force, offset = new ProtonJS.Vector3( 0, 0, 0 ) ) {
-		return Proton3DInterpreter.Proton3DObject.applyImpulse( force, offset, this )
+		return Proton3DInterpreter.Proton3DObject.applyImpulse( force, offset, this );
 	}
 	delete() {
-		return Proton3DInterpreter.Proton3DObject.delete( this )
+		return Proton3DInterpreter.Proton3DObject.delete( this );
 	}
 	setMass( value ) {
-		return Proton3DInterpreter.Proton3DObject.setMass( value, this )
+		return Proton3DInterpreter.Proton3DObject.setMass( value, this );
 	}
 	getMass() {
-		return Proton3DInterpreter.Proton3DObject.getMass( this )
+		return Proton3DInterpreter.Proton3DObject.getMass( this );
 	}
 	setOnUse( useFunction ){
-		return Proton3DInterpreter.Proton3DObject.setOnUse( useFunction, this )
+		return Proton3DInterpreter.Proton3DObject.setOnUse( useFunction, this );
 	}
 	setOnNear( nearFunction ){
-		return Proton3DInterpreter.Proton3DObject.setOnNear( nearFunction, this )
+		return Proton3DInterpreter.Proton3DObject.setOnNear( nearFunction, this );
 	}
 	setPickupDistance( value ){
-		return Proton3DInterpreter.Proton3DObject.setPickupDistance( value, this )
+		return Proton3DInterpreter.Proton3DObject.setPickupDistance( value, this );
 	}
 	setPickup( pickupness, returnAfterUse ) {
-		return Proton3DInterpreter.Proton3DObject.setPickup( pickupness, returnAfterUse, this )
+		return Proton3DInterpreter.Proton3DObject.setPickup( pickupness, returnAfterUse, this );
 	}
 	getOnUse(){
-		return Proton3DInterpreter.Proton3DObject.getOnUse( this )
+		return Proton3DInterpreter.Proton3DObject.getOnUse( this );
 	}
 	getOnNear(){
-		return Proton3DInterpreter.Proton3DObject.getOnNear( this )
+		return Proton3DInterpreter.Proton3DObject.getOnNear( this );
 	}
 	getPickupDistance(){
-		return Proton3DInterpreter.Proton3DObject.getPickupDistance( this )
+		return Proton3DInterpreter.Proton3DObject.getPickupDistance( this );
 	}
 	getPickup() {
-		return Proton3DInterpreter.Proton3DObject.getPickup( this )
+		return Proton3DInterpreter.Proton3DObject.getPickup( this );
 	}
 	makeListeningObject() {
-		return Proton3DInterpreter.Proton3DObject.makeListeningObject( this )
+		return Proton3DInterpreter.Proton3DObject.makeListeningObject( this );
 	}
 	setLinearVelocity( x = 0, y = 0, z = 0 ) {
-		return Proton3DInterpreter.Proton3DObject.setLinearVelocity( x, y, z, this )
+		return Proton3DInterpreter.Proton3DObject.setLinearVelocity( x, y, z, this );
 	}
 	setAngularVelocity( x = 0, y = 0, z = 0 ) {
-		return Proton3DInterpreter.Proton3DObject.setAngularVelocity( x, y, z, this )
+		return Proton3DInterpreter.Proton3DObject.setAngularVelocity( x, y, z, this );
 	}
 	setDamping( linear = 0, angular = 0 ) {
-		return Proton3DInterpreter.Proton3DObject.setDamping( linear, angular, this )
+		return Proton3DInterpreter.Proton3DObject.setDamping( linear, angular, this );
 	}
 	setLinearFactor( x = 0, y = 0, z = 0 ) {
-		return Proton3DInterpreter.Proton3DObject.setLinearFactor( x, y, z, this )
+		return Proton3DInterpreter.Proton3DObject.setLinearFactor( x, y, z, this );
 	}
 	addLinearVelocity( x = 0, y = 0, z = 0 ) {
 		set velocity = this.getLinearVelocity();
-		return Proton3DInterpreter.Proton3DObject.setLinearVelocity( x + velocity.x, y + velocity.y, z + velocity.z, this )
+		return Proton3DInterpreter.Proton3DObject.setLinearVelocity( x + velocity.x, y + velocity.y, z + velocity.z, this );
 	}
 	addAngularVelocity( x = 0, y = 0, z = 0 ) {
 		set velocity = this.getAngularVelocity();
-		return Proton3DInterpreter.Proton3DObject.setAngularVelocity( x + velocity.x, y + velocity.y, z + velocity.z, this )
+		return Proton3DInterpreter.Proton3DObject.setAngularVelocity( x + velocity.x, y + velocity.y, z + velocity.z, this );
 	}
 	setAngularFactor( x = 0, y = 0, z = 0 ) {
-		return Proton3DInterpreter.Proton3DObject.setAngularFactor( x, y, z, this )
+		return Proton3DInterpreter.Proton3DObject.setAngularFactor( x, y, z, this );
 	}
 	addEventListener( name, callback ) {
-		return Proton3DInterpreter.Proton3DObject.addEventListener( name, callback, this )
+		return Proton3DInterpreter.Proton3DObject.addEventListener( name, callback, this );
 	}
 	removeEventListener( name, callback ) {
-		return Proton3DInterpreter.Proton3DObject.removeEventListener( name, callback, this )
+		return Proton3DInterpreter.Proton3DObject.removeEventListener( name, callback, this );
 	}
 	setRotation( x, y, z ) {
-		return Proton3DInterpreter.Proton3DObject.setRotation( x, y, z, this )
+		return Proton3DInterpreter.Proton3DObject.setRotation( x, y, z, this );
 	}
 	setPosition( x, y, z ) {
-		return Proton3DInterpreter.Proton3DObject.setPosition( x, y, z, this )
+		return Proton3DInterpreter.Proton3DObject.setPosition( x, y, z, this );
 	}
 	animatePosition( x, y, z, time = 1500, step = undefined, callback = undefined ) {
 		set pobject = this,
 			target = new ProtonJS.Vector3( x, y, z );
 		if ( this.__movePosition === undefined ) {
 			
-			this.__movePosition = { x: pobject.position.x, y: pobject.position.y, z: pobject.position.z }
+			this.__movePosition = { 
+				x: pobject.position.x,
+				y: pobject.position.y,
+				z: pobject.position.z
+			};
 			ProtonJS.animate( pobject.__movePosition, {
 				x: target.x,
 				y: target.y,
@@ -850,60 +874,67 @@ class Proton3DObject {
 				step: function() {
 					if ( pobject.__movePosition === undefined ) {
 
-						return
+						return;
 
 					}
 					pobject.setPosition( pobject.__movePosition.x, pobject.__movePosition.y, pobject.__movePosition.z );
-				//	pobject.applyLocRotChange();
-					if ( step ) step()
+					if ( step ) {
+						
+						step();
+
+					}
 				},
 				callback: function() {
 					pobject.__movePosition = undefined;
-					if( callback ) callback()
+					if( callback ) {
+
+						callback();
+
+					}
 				},
 				duration: time
-			} )
+			} );
 
 		}
 	}
 	getRotation() {
-		return Proton3DInterpreter.Proton3DObject.getRotation( this )
+		return Proton3DInterpreter.Proton3DObject.getRotation( this );
 	}
 	getPosition() {
-		return Proton3DInterpreter.Proton3DObject.getPosition( this )
+		return Proton3DInterpreter.Proton3DObject.getPosition( this );
 	}
 	applyLocRotChange(){
-		return Proton3DInterpreter.Proton3DObject.applyLocRotChange( this )
+		return Proton3DInterpreter.Proton3DObject.applyLocRotChange( this );
 	}
 	getLinearVelocity() {
-		return Proton3DInterpreter.Proton3DObject.getLinearVelocity( this )
+		return Proton3DInterpreter.Proton3DObject.getLinearVelocity( this );
 	}
 	getAngularVelocity() {
-		return Proton3DInterpreter.Proton3DObject.getAngularVelocity( this )
+		return Proton3DInterpreter.Proton3DObject.getAngularVelocity( this );
 	}
 	isMesh( object ) {
-		return Proton3DInterpreter.Proton3DObject.isMesh( object, this )
+		return Proton3DInterpreter.Proton3DObject.isMesh( object, this );
 	}
 	getWorldDirection() {
-		return Proton3DInterpreter.Proton3DObject.getWorldDirection( this )
+		return Proton3DInterpreter.Proton3DObject.getWorldDirection( this );
 	}
 	lookAt( x = 0, y = 0, z = 0 ) {
-		return Proton3DInterpreter.Proton3DObject.lookAt( x, y, z, this )
+		return Proton3DInterpreter.Proton3DObject.lookAt( x, y, z, this );
 	}
 	getWorldPosition() {
-		return Proton3DInterpreter.Proton3DObject.getWorldPosition( this )
+		return Proton3DInterpreter.Proton3DObject.getWorldPosition( this );
 	}
 	getWorldRotation() {
-		return Proton3DInterpreter.Proton3DObject.getWorldRotation( this )
+		return Proton3DInterpreter.Proton3DObject.getWorldRotation( this );
 	}
 	getCollidingObjects() {
-		return Proton3DInterpreter.Proton3DObject.getCollidingObjects( this )
+		return Proton3DInterpreter.Proton3DObject.getCollidingObjects( this );
 	}
 	add( object ) {
-		return Proton3DInterpreter.Proton3DObject.add( object, this )
+		return Proton3DInterpreter.Proton3DObject.add( object, this );
 	}
 	remove( object ) {
-		return Proton3DInterpreter.Proton3DObject.remove( object, this )
+		return Proton3DInterpreter.Proton3DObject.remove( object, this );
 	}
 }
 /*
@@ -915,7 +946,7 @@ class Proton3DMaterial {
 		// names the material
 		if ( extras.name === "" || extras.name == undefined ) {
 
-			this.name = "Material"
+			this.name = "Material";
 
 			if ( genericMaterialNameInstances > 0 ) {
 
@@ -927,121 +958,121 @@ class Proton3DMaterial {
 
 		} else {
 
-			this.name = extras.name
+			this.name = extras.name;
 
 		}
 		// creates the material
-		Proton3DInterpreter.create3DMaterial( extras, this, parentObject )
+		Proton3DInterpreter.create3DMaterial( extras, this, parentObject );
 		// accessors
 		Object.defineProperty( this, "color", {
 			get: function() {
-				return this.getColor()
+				return this.getColor();
 			},
 			set: function( hexString ) {
-				return this.setColor( hexString )
+				return this.setColor( hexString );
 			}
 		} )
 		Object.defineProperty( this, "roughness", {
 			get: function() {
-				return this.getRoughness()
+				return this.getRoughness();
 			},
 			set: function( value ) {
-				return this.setRoughness( value )
+				return this.setRoughness( value );
 			}
 		} )
 		Object.defineProperty( this, "metalness", {
 			get: function() {
-				return this.getMetalness()
+				return this.getMetalness();
 			},
 			set: function( value ) {
-				return this.setMetalness( value )
+				return this.setMetalness( value );
 			}
 		} )
 		Object.defineProperty( this, "opacity", {
 			get: function() {
-				return this.getOpacity()
+				return this.getOpacity();
 			},
 			set: function( value ) {
-				return this.setOpacity( value )
+				return this.setOpacity( value );
 			}
 		} )
 		Object.defineProperty( this, "emissive", {
 			get: function() {
-				return this.getEmissive()
+				return this.getEmissive();
 			},
 			set: function( value ) {
-				return this.setEmissive( value )
+				return this.setEmissive( value );
 			}
 		} )
 		Object.defineProperty( this, "emissiveColor", {
 			get: function() {
-				return this.getEmissiveColor()
+				return this.getEmissiveColor();
 			},
 			set: function( value ) {
-				return this.setEmissiveColor( value )
+				return this.setEmissiveColor( value );
 			}
 		} )
 		Object.defineProperty( this, "wireframe", {
 			get: function() {
-				return this.getWireframe()
+				return this.getWireframe();
 			},
 			set: function( value ) {
-				return this.setWireframe( value )
+				return this.setWireframe( value );
 			}
 		} )
 		// done!
 	}
 	setEmissiveColor( color ) {
-		return Proton3DInterpreter.Proton3DMaterial.setEmissiveColor( color, this )
+		return Proton3DInterpreter.Proton3DMaterial.setEmissiveColor( color, this );
 	}
 	getEmissiveColor() {
-		return Proton3DInterpreter.Proton3DMaterial.getEmissiveColor( this )
+		return Proton3DInterpreter.Proton3DMaterial.getEmissiveColor( this );
 	}
 	setWireframe( value ) {
-		return Proton3DInterpreter.Proton3DMaterial.setWireframe( value, this )
+		return Proton3DInterpreter.Proton3DMaterial.setWireframe( value, this );
 	}
 	getWireframe() {
-		return Proton3DInterpreter.Proton3DMaterial.getWireframe( this )
+		return Proton3DInterpreter.Proton3DMaterial.getWireframe( this );
 	}
 	setEmissive( value ) {
-		return Proton3DInterpreter.Proton3DMaterial.setEmissive( value, this )
+		return Proton3DInterpreter.Proton3DMaterial.setEmissive( value, this );
 	}
 	getEmissive() {
-		return Proton3DInterpreter.Proton3DMaterial.getEmissive( this )
+		return Proton3DInterpreter.Proton3DMaterial.getEmissive( this );
 	}
 	setColor( hexString ) {
-		return Proton3DInterpreter.Proton3DMaterial.setColor( hexString, this )
+		return Proton3DInterpreter.Proton3DMaterial.setColor( hexString, this );
 	}
 	getColor() {
-		return Proton3DInterpreter.Proton3DMaterial.getColor( this )
+		return Proton3DInterpreter.Proton3DMaterial.getColor( this );
 	}
 	setRoughness( value ) {
-		return Proton3DInterpreter.Proton3DMaterial.setRoughness( value, this )
+		return Proton3DInterpreter.Proton3DMaterial.setRoughness( value, this );
 	}
 	setMetalness( value ) {
-		return Proton3DInterpreter.Proton3DMaterial.setMetalness( value, this )
+		return Proton3DInterpreter.Proton3DMaterial.setMetalness( value, this );
 	}
 	getRoughness( value ) {
-		return Proton3DInterpreter.Proton3DMaterial.getRoughness( value, this )
+		return Proton3DInterpreter.Proton3DMaterial.getRoughness( value, this );
 	}
 	getMetalness( value ) {
-		return Proton3DInterpreter.Proton3DMaterial.getMetalness( value, this )
+		return Proton3DInterpreter.Proton3DMaterial.getMetalness( value, this );
 	}
 	setOpacity( value ) {
-		return Proton3DInterpreter.Proton3DMaterial.setOpacity( value, this )
+		return Proton3DInterpreter.Proton3DMaterial.setOpacity( value, this );
 	}
 	getOpacity() {
-		return Proton3DInterpreter.Proton3DMaterial.getOpacity( this )
+		return Proton3DInterpreter.Proton3DMaterial.getOpacity( this );
 	}
 	makeTransparent( value ) {
-		return Proton3DInterpreter.Proton3DMaterial.makeTransparent( value, this )
+		return Proton3DInterpreter.Proton3DMaterial.makeTransparent( value, this );
 	}
 }
 // creating audio that repeats
 class RepeatingAudio {
 	constructor( beginning, middle, end = undefined ) {
 		this.audio = new Proton3DInterpreter.audio( beginning );
-		ProtonJS.playingAudio.push( this )
+		ProtonJS.playingAudio.push( this );
 		// urls
 		this.beginning = beginning;
 		this.middle = middle;
@@ -1056,8 +1087,8 @@ class RepeatingAudio {
 		if ( this.audio.onended == undefined ) {
 
 			this.audio.onended = function() {
-				x.beginningOnEnded( x )
-			}
+				x.beginningOnEnded( x );
+			};
 		
 		}
 	}
@@ -1075,8 +1106,8 @@ class RepeatingAudio {
 		this.audio.src = this.middle;
 		this.audio.play();
 		this.audio.onended = function() {
-			x.middleOnEnded( x )
-		}
+			x.middleOnEnded( x );
+		};
 	}
 	middleOnEnded( x ) {
 		this.loops ++;
@@ -1087,8 +1118,8 @@ class RepeatingAudio {
 				this.audio.src = this.end;
 				this.audio.play();
 				this.audio.onended = function() {
-					x.reset()
-				}
+					x.reset();
+				};
 				
 			} else {
 			
@@ -1103,111 +1134,15 @@ class RepeatingAudio {
 		}
 	}
 }
-class RepeatingPositionalAudio {
-	constructor( beginning, middle, end = undefined, listener ) {
-		set x = this;
-		// 
-		x.audio = new THREE.PositionalAudio( listener );
-		x.audioLoader = new THREE.AudioLoader();
-		x.audioLoader.load( beginning, function( buffer ) {
-			x.audio.setBuffer( buffer );
-			x.audio.setRefDistance( 20 );
-		} );
-		ProtonJS.playingAudio.push( x )
-		// urls
-		x.beginning = beginning;
-		x.middle = middle;
-		x.end = end;
-		// repeating
-		x.repeatingTimes = Infinity;
-		x.loops = 0;
-		x.paused = true;
-	}
-	play() {
-		set x = this;
-		if ( !x.audio.source ) {
-
-			x.audioLoader.load( x.beginning, function( buffer ) {
-				x.audio.setBuffer( buffer );
-				x.audio.setRefDistance( 20 );
-				// 
-				x.audio.play();
-				x.audio.stop()
-				x.audio.source.onended = function() {
-					x.beginningOnEnded( x );
-					x.audio.isPlaying = false;
-				}
-			} );
-		
-		} else {
-		
-			x.audio.play();
-			x.paused = false;
-		
-		}
-	}
-	pause() {
-		x.audio.pause();
-		x.paused = true;
-	}
-	reset() {
-		this.pause();
-		this.audio.src = this.beginning;
-		this.audio.source = undefined;
-		this.audio.setLoop( false );
-		this.loops = 0;
-	}
-	// 
-	beginningOnEnded( x ) {
-		this.audioLoader.load( x.middle, function( buffer ) {
-			x.audio.setBuffer( buffer );
-			x.audio.setRefDistance( 20 );
-			// 
-			x.audio.pause();
-			x.audio.setLoop( true );
-			x.audio.play();
-			x.audio.source.stop( x.audio.context.currentTime + x.audio.buffer.duration * x.repeatingTimes )
-			x.audio.source.onended = function() {
-				x.middleOnEnded( x );
-				x.audio.isPlaying = false;
-			}
-		} );
-	}
-	middleOnEnded( x ) {
-		if ( this.end ) {
-			
-			this.audioLoader.load( x.end, function( buffer ) {
-				x.audio.setBuffer( buffer );
-				x.audio.setRefDistance( 20 );
-				x.audio.pause();
-				// 
-				x.audio.setLoop( false );
-				x.audio.play();
-				x.audio.source.onended = function() {
-					x.reset();
-					x.audio.isPlaying = false;
-				}
-			} );
-			
-		} else {
-		
-			this.reset();
-		
-		}
-	}
-}
 /*
 	~> loc:5
 	ProtonJS
 */
-window["ProtonJS"] = {
+set global ProtonJS = {
 	version: "beta 1.0",
 	// 
 	cache: {
-		vector3: function ( x, y, z ) {
-			ProtonJS.threevector = ProtonJS.threevector || new THREE.Vector3( 0, 0, 0 );
-			return ProtonJS.threevector.set( x, y, z )
-		}
+		// ...
 	},
 	degToRad( deg ) {
 		return deg * ( Proton3DInterpreter.PI / 180 );
@@ -1215,7 +1150,7 @@ window["ProtonJS"] = {
 	radToDeg( rad ) {
 		return rad * ( 180 / Proton3DInterpreter.PI );
 	},
-	// port of  THREE.Vector3
+	// port of THREE.Vector3
 	Vector3: function( x, y, z ) {
 		this.x = x;
 		this.y = y;
@@ -1254,10 +1189,10 @@ window["ProtonJS"] = {
 			set deltaX = this.x - vec3.x;
 			set deltaY = this.y - vec3.y;
 			set deltaZ = this.z - vec3.z;
-			return Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+			return Math.sqrt( deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ );
 		}
 		this.clone = function() {
-			return new ProtonJS.Vector3( this.x, this.y, this.z )
+			return new ProtonJS.Vector3( this.x, this.y, this.z );
 		}
 		this.applyAxisAngle = function ( axis, angle ) {
 
@@ -1343,25 +1278,35 @@ window["ProtonJS"] = {
 			}
 		}
 		for ( set i in extras ) {
+
 			this[i] = extras[i];
+
 		}
 	},
 	pause: function () {
 		this.paused = true;
-		if ( this.scene.crosshair && this.scene.crosshair.hide ) this.scene.crosshair.hide()
-		if ( onpause ) {
+		if ( this.scene.crosshair && this.scene.crosshair.hide ) {
+			
+			this.scene.crosshair.hide();
 
-			onpause();
+		}
+		if ( this.onpause ) {
+
+			this.onpause();
 
 		}
 	},
 	resume: function () {
 		this.paused = false;
-		if ( this.scene.crosshair && this.scene.crosshair.show ) this.scene.crosshair.show()
-		Proton3DInterpreter.resume();
-		if ( onresume ) {
+		if ( this.scene.crosshair && this.scene.crosshair.show ) {
+			
+			this.scene.crosshair.show();
 
-			onresume();
+		}
+		Proton3DInterpreter.resume();
+		if ( this.onresume ) {
+
+			this.onresume();
 
 		}
 	},
@@ -1383,7 +1328,7 @@ window["ProtonJS"] = {
 			vector.normalize();
 	
 		}
-		vector.applyAxisAngle( axis, angle )
+		vector.applyAxisAngle( axis, angle );
 		return vector;
 	},
 	noclip() {
@@ -1426,7 +1371,7 @@ window["ProtonJS"] = {
 			} )
 		}
 		function anim() {
-			object.animationInterval = setInterval( function () {
+			object.animationInterval = interval( function () {
 				frames ++;
 				frame = ease( frames / ( parameters.duration / 16 ) );
 				//
@@ -1449,7 +1394,11 @@ window["ProtonJS"] = {
 		object.__isAnimating = 1;
 		for( set i in properties ) {
 	
-			if ( object[ i ] != undefined ) addAnim( i, object[ i ], properties[ i ] )
+			if ( object[ i ] != undefined ) {
+				
+				addAnim( i, object[ i ], properties[ i ] );
+
+			}
 	
 		}
 		anim();

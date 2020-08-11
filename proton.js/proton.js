@@ -1278,7 +1278,7 @@ const Proton3DInterpreter = {
 			sound.setMediaElementSource( audio );
 			return audio;
 		},
-		applyImpulse( force, offset = ProtonJS.cache.vector3( 0, 0, 0 ), P3DObject ) {
+		applyImpulse( force, offset = new THREE.Vector3( 0, 0, 0 ), P3DObject ) {
 			offset = new THREE.Vector3( offset.x, offset.y, offset.z )
 			getMeshByName( P3DObject.name ).applyImpulse( force, offset )
 		},
@@ -1346,7 +1346,7 @@ const Proton3DInterpreter = {
 		setLinearFactor( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( !x.x ) {
 
-				x = ProtonJS.cache.vector3( x, y, z )
+				x = new THREE.Vector3( x, y, z )
 
 			}
 			getMeshByName( P3DObject.name ).setLinearFactor( x )
@@ -1354,7 +1354,7 @@ const Proton3DInterpreter = {
 		setAngularFactor( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( !x.x ) {
 
-				x = ProtonJS.cache.vector3( x, y, z )
+				x = new THREE.Vector3( x, y, z )
 
 			}
 			getMeshByName( P3DObject.name ).setAngularFactor( x )
@@ -1450,7 +1450,7 @@ const Proton3DInterpreter = {
 		},
 		lookAt( x = 0, y = 0, z = 0, P3DObject ) {
 			if ( getMeshByName( P3DObject.name ).lookAt ) {
-				getMeshByName( P3DObject.name ).lookAt( ProtonJS.cache.vector3( x, y, z ) )
+				getMeshByName( P3DObject.name ).lookAt( new THREE.Vector3( x, y, z ) )
 				getMeshByName( P3DObject.name ).__dirtyRotation = true;
 			}
 		},
@@ -2654,6 +2654,8 @@ class MapScript {
 				}
 			}
 		}
+		window.interval = window.setInterval;
+		window.timeout = window.setTimeout;
 		console.log( "Executing", this.code_javascript )
 		var geval = eval;
 		geval( this.code_javascript );
