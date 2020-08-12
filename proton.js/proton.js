@@ -2575,8 +2575,8 @@ class MapScript {
 			// "set"
 			this.code_javascript = this.code_javascript.replace( /set /ig, "var " )
 			// "set global"
-			this.code_javascript = this.code_javascript.replace( /(?<=set global)(.*)(?==)/ig, function () { return '["' + arguments[ 0 ] + '"] ' } );
-			this.code_javascript = this.code_javascript.replace( /set global/ig, "window" )
+			this.code_javascript = this.code_javascript.replace( /(?<=var global )(.*)(?= =)/ig, function () { return '["' + arguments[ 0 ] + '"] ' } );
+			this.code_javascript = this.code_javascript.replace( /var global/ig, "window" )
 
 		// extras
 			// comments
