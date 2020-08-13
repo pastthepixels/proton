@@ -2568,15 +2568,14 @@ class MapScript {
 			x = this;
 		this.code_javascript = this.code_mapscript
 		// functions
-		this.code_javascript = this.code_javascript.replace( /log/ig, "console.log" )
 		this.code_javascript = this.code_javascript.replace( /init/ig, "init" )
 
 		// keywords
-			// "set"
-			this.code_javascript = this.code_javascript.replace( /set /ig, "var " )
-			// "set global"
+			// "var global"
 			this.code_javascript = this.code_javascript.replace( /(?<=var global )(.*)(?= =)/ig, function () { return '["' + arguments[ 0 ] + '"] ' } );
 			this.code_javascript = this.code_javascript.replace( /var global/ig, "window" )
+			// "toggle"
+			this.code_javascript = this.code_javascript.replace( /toggle /ig, "!" )
 
 		// extras
 			// comments
@@ -2589,7 +2588,6 @@ class MapScript {
 			var toAdd = "";
 			this.code_javascript = this.code_javascript.replace( /(?<=class)(.*)(?={)/ig, function () { toAdd += "\n" + "window['" + arguments[ 0 ].replace( / /ig, "" ) + "'] =" + arguments[ 0 ]; return arguments[ 0 ] } );
 			this.code_javascript += toAdd;
-			console.log( toAdd )
 		// complete!
 		completed = true
 		return {
@@ -2629,9 +2627,6 @@ class MapScript {
 			} );
 			return object;
 		}
-		window.toggle = function( boolean ) {
-			return !boolean;
-		}
 		window.degToRad = function( value ) {
 			return ProtonJS.degToRad( value )
 		}
@@ -2656,7 +2651,7 @@ class MapScript {
 		}
 		window.interval = window.setInterval;
 		window.timeout = window.setTimeout;
-		console.log( "Executing", this.code_javascript )
+		window.print = console.log;
 		var geval = eval;
 		geval( this.code_javascript );
 	}
