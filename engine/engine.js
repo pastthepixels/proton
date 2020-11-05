@@ -10,8 +10,6 @@
 
 */
 
-
-
 /*
 	~> loc:1
 	Proton3D
@@ -60,7 +58,7 @@ class Proton3DScene {
 		if ( this.runExtraFunctions = !this.runExtraFunctions ) {
 			
 			this.extraFunctions.forEach( function ( e ) {
-				if ( ProtonJS.paused && !e.continuePastPausing ) {
+				if ( Proton.paused && !e.continuePastPausing ) {
 
 					return;
 
@@ -94,11 +92,11 @@ class Proton3DScene {
 		Proton3DInterpreter.onKeyUp( function ( keyCode ) {
 			x.keys[ keyCode ] = false;
 			// gun animations
-			if ( extras.gunAnimations && !ProtonJS.cancelGunAnimations && x.gun && x.gun.movePosition ) {
+			if ( extras.gunAnimations && !Proton.cancelGunAnimations && x.gun && x.gun.movePosition ) {
 
-				clearInterval( ProtonJS.cache.gunWalkingAnimation );
-				ProtonJS.cache.gunWalkingAnimation = undefined;
-				ProtonJS.animate( 
+				clearInterval( Proton.cache.gunWalkingAnimation );
+				Proton.cache.gunWalkingAnimation = undefined;
+				Proton.animate( 
 					x.gun.movePosition,
 					{
 						x: x.gun.starterPosition.x,
@@ -168,12 +166,12 @@ class Proton3DScene {
 				// moving left and right
 				if ( x.keys[ x.mappedKeys.left ] ) {
 
-					var y = ProtonJS.rotateVector3(
-						new ProtonJS.Vector3( 0, 1, 0 ),
+					var y = Proton.rotateVector3(
+						new Proton.Vector3( 0, 1, 0 ),
 						45,
-						obj.getWorldDirection().multiply( new ProtonJS.Vector3( 1, 0, 1, ) ),
+						obj.getWorldDirection().multiply( new Proton.Vector3( 1, 0, 1, ) ),
 						true
-					).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
+					).add( new Proton.Vector3( 0, obj.getPosition().y, 0 ) );
 					// 
 					move( y, speed - 0.5, undefined, undefined, false );
 					return;
@@ -181,12 +179,12 @@ class Proton3DScene {
 				}
 				if ( x.keys[ x.mappedKeys.right ] ) {
 
-					var y = ProtonJS.rotateVector3(
-						new ProtonJS.Vector3( 0, 1, 0 ),
+					var y = Proton.rotateVector3(
+						new Proton.Vector3( 0, 1, 0 ),
 						-45,
-						obj.getWorldDirection().multiply( new ProtonJS.Vector3( 1, 0, 1, ) ),
+						obj.getWorldDirection().multiply( new Proton.Vector3( 1, 0, 1, ) ),
 						true
-					).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
+					).add( new Proton.Vector3( 0, obj.getPosition().y, 0 ) );
 					// 
 					move( y, speed - 0.5, undefined, undefined, false );
 					return;
@@ -202,12 +200,12 @@ class Proton3DScene {
 				// moving left and right
 				if ( x.keys[ x.mappedKeys.left ] ) {
 
-					var y = ProtonJS.rotateVector3(
-						new ProtonJS.Vector3( 0, 1, 0 ),
+					var y = Proton.rotateVector3(
+						new Proton.Vector3( 0, 1, 0 ),
 						-45,
-						obj.getWorldDirection().multiply( new ProtonJS.Vector3( 1, 0, 1, ) ),
+						obj.getWorldDirection().multiply( new Proton.Vector3( 1, 0, 1, ) ),
 						true
-					).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
+					).add( new Proton.Vector3( 0, obj.getPosition().y, 0 ) );
 					// 
 					move( y, speed - 0.5, true, undefined, false );
 					return;
@@ -215,12 +213,12 @@ class Proton3DScene {
 				}
 				if ( x.keys[ x.mappedKeys.right ] ) {
 
-					var y = ProtonJS.rotateVector3(
-						new ProtonJS.Vector3( 0, 1, 0 ),
+					var y = Proton.rotateVector3(
+						new Proton.Vector3( 0, 1, 0 ),
 						45,
-						obj.getWorldDirection().multiply( new ProtonJS.Vector3( 1, 0, 1, ) ),
+						obj.getWorldDirection().multiply( new Proton.Vector3( 1, 0, 1, ) ),
 						true
-					).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
+					).add( new Proton.Vector3( 0, obj.getPosition().y, 0 ) );
 					// 
 					move( y, speed - 0.5, true, undefined, false );
 					return;
@@ -230,24 +228,24 @@ class Proton3DScene {
 			}
 			if ( x.keys[ x.mappedKeys.left ] ) {
 
-				var y = ProtonJS.rotateVector3(
-					new ProtonJS.Vector3( 0, 1, 0 ),
+				var y = Proton.rotateVector3(
+					new Proton.Vector3( 0, 1, 0 ),
 					90,
-					obj.getWorldDirection().multiply( new ProtonJS.Vector3( 1, 0, 1, ) ),
+					obj.getWorldDirection().multiply( new Proton.Vector3( 1, 0, 1, ) ),
 					true
-				).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
+				).add( new Proton.Vector3( 0, obj.getPosition().y, 0 ) );
 				// 
 				move( y, speed - 0.5 );
 
 			}
 			if ( x.keys[ x.mappedKeys.right ] ) {
 
-				var y = ProtonJS.rotateVector3(
-					new ProtonJS.Vector3( 0, 1, 0 ),
+				var y = Proton.rotateVector3(
+					new Proton.Vector3( 0, 1, 0 ),
 					-90,
 					obj.getWorldDirection(),
 					true
-				).add( new ProtonJS.Vector3( 0, obj.getPosition().y, 0 ) );
+				).add( new Proton.Vector3( 0, obj.getPosition().y, 0 ) );
 				// 
 				move( y, speed - 0.5 );
 
@@ -280,13 +278,13 @@ class Proton3DScene {
 				obj.setLinearVelocity( y.x * speed * ( negatise? -1 : 1 ), obj.getLinearVelocity().y, y.z * speed * ( negatise? -1 : 1 ) );
 
 			}
-			if ( x.gun && extras.gunAnimations && !ProtonJS.cancelGunAnimations && gunAnimation == true ) {
+			if ( x.gun && extras.gunAnimations && !Proton.cancelGunAnimations && gunAnimation == true ) {
 
-				if ( ProtonJS.cache.gunWalkingAnimation == undefined ) {
+				if ( Proton.cache.gunWalkingAnimation == undefined ) {
 
-					ProtonJS.cache.gunWalkingAnimation = interval( function() {
+					Proton.cache.gunWalkingAnimation = interval( function() {
 						var movement = Math.sin( gunMoveFrame += ( ( 0.03 * movementSpeed ) + ( x.keys[ x.mappedKeys.sprint ]? 0.1 : 0 ) ) ) / 500;
-						if ( x.gun.movePosition ) ProtonJS.resetAnimation( x.gun.movePosition );
+						if ( x.gun.movePosition ) Proton.resetAnimation( x.gun.movePosition );
 						x.gun.setPosition( x.gun.position.x + ( ( 2 * movement ) ), x.gun.position.y + ( movement / 2 ), undefined );
 						x.gun.movePosition = x.gun.position.clone();
 					}, 32 )
@@ -302,15 +300,15 @@ class Proton3DScene {
 		var x = this,
 			returningObject = {},
 			posY = 0;
-		extras.distance = extras.distance || new ProtonJS.Vector3();
+		extras.distance = extras.distance || new Proton.Vector3();
 		extras.xSensitivity = extras.xSensitivity || 10;
 		extras.ySensitivity = extras.ySensitivity || 10;
 		//
 
 		returningObject.init = function () {
 			Proton3DInterpreter.hidePointer();
-			ProtonJS.resume();
-			Proton3DInterpreter.setAudioControls( ProtonJS.scene );
+			Proton.resume();
+			Proton3DInterpreter.setAudioControls( Proton.scene );
 			init();
 		}
 		
@@ -327,7 +325,7 @@ class Proton3DScene {
 				
 				// everything else
 				extras.cameraParent.add( x.camera );
-				extras.cameraParent.cameraRotation = new ProtonJS.Vector3();
+				extras.cameraParent.cameraRotation = new Proton.Vector3();
 				extras.alreadyInitialized = true;
 
 				if ( extras.invisibleParent ) {
@@ -381,11 +379,11 @@ class Proton3DScene {
 
 			}
 			Proton3DInterpreter.onMouseMove( function ( e ) {
-				if ( !ProtonJS.paused ) {
+				if ( !Proton.paused ) {
 
-					x.crosshair.__localPosition = ProtonJS.rotateVector3(
-						new ProtonJS.Vector3( 0, 1, 0 ),
-						-( ProtonJS.degToRad( e.movementX / extras.xSensitivity ) ),
+					x.crosshair.__localPosition = Proton.rotateVector3(
+						new Proton.Vector3( 0, 1, 0 ),
+						-( Proton.degToRad( e.movementX / extras.xSensitivity ) ),
 						localPosClone,
 						false,
 						true
@@ -426,7 +424,7 @@ class Proton3DScene {
 				}
 			} );
 			x.priorityExtraFunctions.push( function () {
-				extras.cameraParent.setRotation( undefined, ProtonJS.degToRad( 90 ), undefined );
+				extras.cameraParent.setRotation( undefined, Proton.degToRad( 90 ), undefined );
 				extras.cameraParent.__dirtyRotation = true;
 				x.crosshair.position = x.crosshair.__localPosition.clone().add( extras.cameraParent.getPosition() );
 				var pos = x.crosshair.position.clone();
@@ -439,8 +437,8 @@ class Proton3DScene {
 
 		// 
 		x.crosshair = {};
-		x.crosshair.localPosition = new ProtonJS.Vector3( 0, 0, 1 );
-		x.crosshair.__localPosition = new ProtonJS.Vector3( 0, 0, 0 );
+		x.crosshair.localPosition = new Proton.Vector3( 0, 0, 1 );
+		x.crosshair.__localPosition = new Proton.Vector3( 0, 0, 0 );
 		// 
 
 		if ( !extras.cameraParent.parent ) {
@@ -449,7 +447,7 @@ class Proton3DScene {
 
 		}
 
-		ProtonJS.pause();
+		Proton.pause();
 		returningObject.crosshair = x.crosshair;
 		return returningObject;
 	}
@@ -515,7 +513,7 @@ class Proton3DScene {
 				} );
 
 			}
-			if ( child.__pickupable != true || ProtonJS.cache.keyErrorCheck ) {
+			if ( child.__pickupable != true || Proton.cache.keyErrorCheck ) {
 
 				return;
 
@@ -539,7 +537,7 @@ class Proton3DScene {
 	}
 	resetPickingUp( child, scene, callback = function(){} ) {
 		this.pickingUpObject = undefined;
-		if ( child.__movePosition ) ProtonJS.resetAnimation( child.__movePosition );
+		if ( child.__movePosition ) Proton.resetAnimation( child.__movePosition );
 		//
 		var position = child.getWorldPosition(),
 			rotation = child.getWorldRotation();
@@ -552,12 +550,12 @@ class Proton3DScene {
 		child.applyLocRotChange();
 		child.pickingUp = undefined;
 		//
-		ProtonJS.cache.keyErrorCheck = true;
+		Proton.cache.keyErrorCheck = true;
 		timeout( function () {
 			callback();
 		}, 50 );
 		timeout( function () {
-			ProtonJS.cache.keyErrorCheck = false;
+			Proton.cache.keyErrorCheck = false;
 		}, 500 );
 	}
 	pickUpObject( child ) {
@@ -565,9 +563,9 @@ class Proton3DScene {
 			resetPickingUp = function ( child ) {
 				x.resetPickingUp( child, x );
 			};
-		ProtonJS.cache.keyErrorCheck = true;
+		Proton.cache.keyErrorCheck = true;
 		timeout( function () {
-			ProtonJS.cache.keyErrorCheck = false;
+			Proton.cache.keyErrorCheck = false;
 		}, 250 );
 		// 
 
@@ -725,7 +723,7 @@ class Proton3DObject {
 		var defaultExtras = {
 				// camera
 				type: "firstperson",
-				head: new ProtonJS.Vector3( 0, 0.3, 0 ),
+				head: new Proton.Vector3( 0, 0.3, 0 ),
 				invisible: false,
 				// key controls
 				movementSpeed: undefined,
@@ -736,15 +734,15 @@ class Proton3DObject {
 			if ( extras[ i ] == undefined ) extras[ i ] = defaultExtras[ i ];
 		}
 		// controls
-		ProtonJS.scene.controls = {
-			camera: ProtonJS.scene.setCameraControls( {
+		Proton.scene.controls = {
+			camera: Proton.scene.setCameraControls( {
 				type: extras.type,
-				distance: extras.type == "firstperson"? extras.head : extras.head.clone().add( new ProtonJS.Vector3( 5, 0, 5 ) ),
+				distance: extras.type == "firstperson"? extras.head : extras.head.clone().add( new Proton.Vector3( 5, 0, 5 ) ),
 				invisibleParent: extras.invisible,
 				cameraParent: object,
 				gun: extras.gun
 			} ),
-			key: ProtonJS.scene.setKeyControls( 
+			key: Proton.scene.setKeyControls( 
 				object,
 				extras.movementSpeed,
 				extras.jumpHeight,
@@ -752,7 +750,7 @@ class Proton3DObject {
 			)
 		};
 		// crosshair
-		ProtonJS.crosshair( ProtonJS.scene.crosshair );
+		Proton.crosshair( Proton.scene.crosshair );
 		// gun rotation
 		if ( extras.gunRotation ) {
 
@@ -766,7 +764,7 @@ class Proton3DObject {
 
 		}
 		// misc
-		ProtonJS.player = object;
+		Proton.player = object;
 		// health (in hit points, not percentages nor decimals)
 		object.health = 100;
 		object.maxHealth = 100;
@@ -784,7 +782,7 @@ class Proton3DObject {
 	playAudio ( src, listener ) {
 		return Proton3DInterpreter.Proton3DObject.playAudio( src, listener, this );
 	}
-	applyImpulse( force, offset = new ProtonJS.Vector3( 0, 0, 0 ) ) {
+	applyImpulse( force, offset = new Proton.Vector3( 0, 0, 0 ) ) {
 		return Proton3DInterpreter.Proton3DObject.applyImpulse( force, offset, this );
 	}
 	delete() {
@@ -860,7 +858,7 @@ class Proton3DObject {
 	}
 	animatePosition( x, y, z, time = 1500, step = undefined, callback = undefined ) {
 		var pobject = this,
-			target = new ProtonJS.Vector3( x, y, z );
+			target = new Proton.Vector3( x, y, z );
 		if ( this.__movePosition === undefined ) {
 			
 			this.__movePosition = { 
@@ -868,7 +866,7 @@ class Proton3DObject {
 				y: pobject.position.y,
 				z: pobject.position.z
 			};
-			ProtonJS.animate( pobject.__movePosition, {
+			Proton.animate( pobject.__movePosition, {
 				x: target.x,
 				y: target.y,
 				z: target.z,
@@ -1074,7 +1072,7 @@ class Proton3DMaterial {
 class RepeatingAudio {
 	constructor( beginning, middle, end = undefined ) {
 		this.audio = new Proton3DInterpreter.audio( beginning );
-		ProtonJS.playingAudio.push( this );
+		Proton.playingAudio.push( this );
 		// urls
 		this.beginning = beginning;
 		this.middle = middle;
@@ -1138,9 +1136,9 @@ class RepeatingAudio {
 }
 /*
 	~> loc:5
-	ProtonJS
+	Proton
 */
-var global ProtonJS = {
+window[ "Proton" ] = {
 	version: "beta 1.0",
 	// 
 	cache: {
@@ -1194,7 +1192,7 @@ var global ProtonJS = {
 			return Math.sqrt( deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ );
 		}
 		this.clone = function() {
-			return new ProtonJS.Vector3( this.x, this.y, this.z );
+			return new Proton.Vector3( this.x, this.y, this.z );
 		}
 		this.applyAxisAngle = function ( axis, angle ) {
 
@@ -1252,14 +1250,14 @@ var global ProtonJS = {
 	storage: {
 		name: "mygame",
 		get( name ) {
-			return Proton3DInterpreter.storage.getItem( ProtonJS.storage.name + "-" + name ) || null;
+			return Proton3DInterpreter.storage.getItem( Proton.storage.name + "-" + name ) || null;
 		},
 		set( name, value ) {
-			Proton3DInterpreter.storage.setItem( ProtonJS.storage.name + "-" + name, value );
+			Proton3DInterpreter.storage.setItem( Proton.storage.name + "-" + name, value );
 			return value;
 		},
 		remove( name ) {
-			Proton3DInterpreter.storage.removeItem( ProtonJS.storage.name + "-" + name );
+			Proton3DInterpreter.storage.removeItem( Proton.storage.name + "-" + name );
 		}
 	},
 	paused: false,
@@ -1328,7 +1326,7 @@ var global ProtonJS = {
 	rotateVector3( axis, angle, vector, normalize, cancelAutoAngle ) {
 		if ( cancelAutoAngle == false ) {
 	
-			angle = ProtonJS.degToRad( angle );
+			angle = Proton.degToRad( angle );
 	
 		}
 		if ( normalize ) {
@@ -1340,25 +1338,25 @@ var global ProtonJS = {
 		return vector;
 	},
 	noclip() {
-		if ( ProtonJS.scene.noclip ) {
+		if ( Proton.scene.noclip ) {
 
-			ProtonJS.scene.noclip = false;
-			ProtonJS.player.setLinearFactor( 1, 1, 1 );
-			ProtonJS.player.setLinearVelocity( 0, 0, 0 );
-			ProtonJS.player.setDamping( 0 );
+			Proton.scene.noclip = false;
+			Proton.player.setLinearFactor( 1, 1, 1 );
+			Proton.player.setLinearVelocity( 0, 0, 0 );
+			Proton.player.setDamping( 0 );
 			return;
 
 		} else {
 
-			ProtonJS.scene.noclip = true;
-			ProtonJS.player.setLinearFactor( 0, 0, 0 );
-			ProtonJS.player.setLinearVelocity( 0, 0, 0 );
-			ProtonJS.player.setDamping( 100 );
+			Proton.scene.noclip = true;
+			Proton.player.setLinearFactor( 0, 0, 0 );
+			Proton.player.setLinearVelocity( 0, 0, 0 );
+			Proton.player.setDamping( 100 );
 
 		}
 	},
 	animate( object, properties = {}, parameters = {} /* = { step: function(){}, callback: function(){}, duration: 10 */ ) {
-		if ( object.animatingInterval ) ProtonJS.resetAnimation( object );
+		if ( object.animatingInterval ) Proton.resetAnimation( object );
 		parameters.duration = parameters.duration? parameters.duration : 1000;
 		//
 		var animations = [],

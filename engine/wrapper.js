@@ -1,14 +1,32 @@
 "use strict";
 /*
-	
-	# What does "loc" mean? And why isn't there any documentation for ProtonJS?
-	If you have any of these symptoms, please consult the `README` in the same directory as this script.
+	Proton's wrapper
+	================
+
+	## Description
+	This contains all the boring stuff to get Proton to work, like the Proton3DInterpreter.
+
+	## Table of Contents
+
+	| Section Name               | Location # |
+	| -------------------------- | ---------- |
+	| ???                        | loc:1      |
 
 */
+
 /*
-	~> loc:1
+	
+	# What does "loc" mean? And why isn't there any documentation for Proton?
+	-> If you have any of these symptoms, please consult the `README` in the same directory as this script.
+
+*/
+
+/*
+	~> wrapper/loc:1
 	Loading the default Proton3DInterpreter's dependencies
 */
+
+
 var loadedScripts = 0, maxScripts = 0;
 function importScript( url, isModule = true, callback ) {
 	maxScripts ++;
@@ -36,26 +54,46 @@ function importScript( url, isModule = true, callback ) {
 	} )
 }
 // The part that requires an internet connection:
-	// Stuff for the default Proton3DInterpreter
-		// three.js
-		importScript( "https://threejs.org/build/three.js", true, function () {
-			// proton3d models: three.js
-			importScript( "https://unpkg.com/three@0.108.0/examples/jsm/loaders/GLTFLoader.js", "THREE" );
-			// hdr: three.js
-			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/EffectComposer.js", "THREE" );
-			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/RenderPass.js", "THREE" );
-			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/UnrealBloomPass.js", "THREE" );
-			// 
-			importScript( "https://unpkg.com/three/examples/jsm/shaders/LuminosityShader.js", "THREE" );
-			importScript( "https://unpkg.com/three/examples/jsm/shaders/ToneMapShader.js", "THREE" );
-			importScript( "https://unpkg.com/three/examples/jsm/postprocessing/AdaptiveToneMappingPass.js", "THREE" );
-			// three.js' sky shader, by https://github.com/zz85
-			importScript( "https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js", "THREE" );
-			// proton3d physics: physijs
-			importScript( "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js", true );
-		} );
+// Note that you can set which sources Proton uses to local ones.
+function init ( scripts ) {
+	if ( !scripts ) {
+		
+		scripts = {
+			three: "https://threejs.org/build/three.js",
+			gltfLoader: "https://unpkg.com/three@0.108.0/examples/jsm/loaders/GLTFLoader.js",
+			fbxLoader: "https://raw.githack.com/mrdoob/three.js/dev/examples/jsm/loaders/FBXLoader.js",
+			effectComposer: "https://unpkg.com/three/examples/jsm/postprocessing/EffectComposer.js",
+			renderPass: "https://unpkg.com/three/examples/jsm/postprocessing/RenderPass.js",
+			unrealBloomPass: "https://unpkg.com/three/examples/jsm/postprocessing/UnrealBloomPass.js",
+			luminosityShader: "https://unpkg.com/three/examples/jsm/shaders/LuminosityShader.js",
+			toneMapShader: "https://unpkg.com/three/examples/jsm/shaders/ToneMapShader.js",
+			adaptiveTomeMappingPass: "https://unpkg.com/three/examples/jsm/postprocessing/AdaptiveToneMappingPass.js",
+			sky: "https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js",
+			physijs: "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/physi.js"
+		}
+
+	}
+	//three.js
+	importScript( scripts.three, true, function () {
+		// proton3d models: three.js
+		importScript( scripts.gltfLoader, "THREE" );
+		importScript( scripts.fbxLoader, "THREE" );
+		// hdr: three.js
+		importScript( scripts.effectComposer, "THREE" );
+		importScript( scripts.renderPass, "THREE" );
+		importScript( scripts.unrealBloomPass, "THREE" );
+		// 
+		importScript( scripts.luminosityShader, "THREE" );
+		importScript( scripts.toneMapShader, "THREE" );
+		importScript( scripts.adaptiveTomeMappingPass, "THREE" );
+		// three.js' sky shader, by https://github.com/zz85
+		importScript( scripts.sky, "THREE" );
+		// proton3d physics: physijs
+		importScript( scripts.physijs, true );
+	} );
+}
 /*
-	~> loc:2
+	~> wrapper/loc:2
 	Enhancing window.setTimeout and window.setInterval
 */
 window.timeoutList = [];
@@ -87,7 +125,7 @@ window.clearTimeout = function ( id ) {
 }
 window.setInterval = function ( code, delay ) {
 	function newCode() {
-		if ( ProtonJS.paused ) {
+		if ( Proton.paused ) {
 
 			return;
 
@@ -122,7 +160,7 @@ window.clearInterval = function ( id ) {
 	return val;
 }
 /*
-	~> loc:3
+	~> wrapper/loc:3
 	Clauses and Provisions
 */
 // bringing back object.watch from user Eli Grey on:
@@ -159,7 +197,7 @@ Object.defineProperty( Object.prototype, "watch", {
 	}
 } );
 /*
-	loc:4.3
+	wrapper/loc:4.3
 	Proton3DInterpreter
 */
 var meshes = []
@@ -381,7 +419,7 @@ const Proton3DInterpreter = {
 				if ( child.shadow ) {
 				
 					var originalWidth = child.shadow.mapSize.width;
-					child.shadow.mapSize.width = child.shadow.mapSize.height = getShadowLOD( ProtonJS.scene.camera.getWorldPosition().distanceTo( child.position ) )
+					child.shadow.mapSize.width = child.shadow.mapSize.height = getShadowLOD( Proton.scene.camera.getWorldPosition().distanceTo( child.position ) )
 					if ( child.shadow.mapSize.width != originalWidth && child.shadow.map ) {
 					
 						child.shadow.map.dispose();
@@ -518,7 +556,7 @@ const Proton3DInterpreter = {
 	},
 	updateScene( scene ) {
 		// pausing
-		if ( ProtonJS && ProtonJS.paused ) {
+		if ( Proton && Proton.paused ) {
 
 			requestAnimationFrame( function() {
 				Proton3DInterpreter.updateScene( scene )
@@ -644,7 +682,7 @@ const Proton3DInterpreter = {
 		if ( material[0] != null ) {
 
 			material.forEach( function (m, i) {
-				Proton3DInterpreter.initPBR( m, object, i, scene, skipPBRReplacement, m.name, pbr );
+				Proton3DInterpreter.updateObjectMaterials( m, object, i, scene, skipPBRReplacement, m.name, pbr );
 			} )
 
 		} else {
@@ -796,7 +834,7 @@ const Proton3DInterpreter = {
 		meshes.forEach( function( mesh ) { if ( mesh.__dirtyPosition === false ) mesh.__dirtyPosition = true } )
 		this.objects.simulate();
 		// rendering -- three.js
-		this.composer? this.composer.render() : this.renderer.render( this.objects, getMeshByName( ProtonJS.scene.camera.name ) );
+		this.composer? this.composer.render() : this.renderer.render( this.objects, getMeshByName( Proton.scene.camera.name ) );
 	},
 	resume() {
 		this.objects.onSimulationResume();
@@ -1260,6 +1298,7 @@ const Proton3DInterpreter = {
 	Proton3DObject: {
 		makeInvisible( P3DObject ) {
 			Object.defineProperty( getMeshByName( P3DObject.name ).material, "visible", { configurable: false, writable: false, value: false } );
+			Object.defineProperty( getMeshByName( P3DObject.name ), "visible", { configurable: false, writable: false, value: false } );
 		},
 		getShadowOptions( P3DObject ) {
 			return {
@@ -1496,16 +1535,29 @@ const Proton3DInterpreter = {
 		this.animations = [];
 		this.raw = null;
 
-		// gets the loader and loads the file
-		extras.fileType = "gltf";
-		if ( extras.path != undefined ) extras.gltfPath = extras.path
-		loader = new THREE.GLTFLoader( extras.loadManager );
-		loader.load( extras.gltfPath, function ( object ) {
-			finishLoad( object )
-		} );
+		// Gets the loader and loads the file:
+		// Sets extras.type (what the loader should expect to be loading)
+		if ( extras.type == undefined ) extras.type = "gltf";
+		extras.type = extras.type.toLowerCase();
+		// Decides whether the file is a glTF or FBX file and loads it, and then sends that information to a unified load-finish function.
+		if ( extras.type == "gltf" ) {
+		
+			loader = new THREE.GLTFLoader( extras.loadManager );
+			loader.load( extras.path, function ( object ) {
+				finishLoad( object )
+			} );
+
+		} else {
+
+			loader = new THREE.FBXLoader( extras.loadManager );
+			loader.load( extras.path, function ( object ) {
+				finishLoad( object )
+			} );
+
+		}
 		// gets the loaded objects and completes the function
 		function finishLoad( load ) {
-			scene = load.scene || load.detail.loaderRootNode;
+			scene = extras.type == "gltf" ? load.scene : load
 			// "registers" each object as a physics object
 			if ( extras.noPhysics != true ) {
 
@@ -1550,7 +1602,7 @@ const Proton3DInterpreter = {
 				if ( c.children ) c.children.forEach( castShadow )
 			}
 			// animations
-			if ( extras.fileType.toLowerCase() === "gltf" && load.animations && load.animations.length ) {
+			if ( load.animations && load.animations.length ) {
 
 				if ( extras.starterPos ) {
 
@@ -1749,9 +1801,9 @@ const Proton3DInterpreter = {
 			x.raw = scene;
 			// 
 			x.objects.forEach( function( object ) {
-				ProtonJS.scene.add( object )
+				Proton.scene.add( object )
 			} )
-			ProtonJS.scene.add( scene )
+			Proton.scene.add( scene )
 			if ( extras.onload ) {
 
 				extras.onload( scene );
@@ -1818,7 +1870,7 @@ const Proton3DInterpreter = {
 			// adds the object to the output of objects
 			x.objects.push( object );
 			meshes.push( mesh )
-			Proton3DInterpreter.initToScene( object, ProtonJS.scene )
+			Proton3DInterpreter.initToScene( object, Proton.scene )
 		}
 		function loadObjectPhysics( child, i ) {
 			var m = "Box", c = child;
@@ -1920,7 +1972,7 @@ const Proton3DInterpreter = {
 				// adds the armature to the object list
 				child.children[ child.children.length - 1 ].armature = child;
 				child.children[ child.children.length - 1 ].__physicsArmatureParent = physicalObject
-				child.rotation.y += ProtonJS.degToRad( 180 )
+				child.rotation.y += Proton.degToRad( 180 )
 				c = child.children[ child.children.length - 1 ];
 				
 				return;
@@ -2040,22 +2092,22 @@ const Proton3DInterpreter = {
 
 			door.isOpen = !door.isOpen;
 			var checkForRotations = P3DScene.priorityExtraFunctions.push(function(){
-				if ( Math.abs( parseInt( ProtonJS.radToDeg( door.rotation.y - door.initialRotation ) ) -  parseInt( ProtonJS.radToDeg( door.oldRotation - door.initialRotation ) ) ) > 5 ) {
+				if ( Math.abs( parseInt( Proton.radToDeg( door.rotation.y - door.initialRotation ) ) -  parseInt( Proton.radToDeg( door.oldRotation - door.initialRotation ) ) ) > 5 ) {
 
 					P3DScene.priorityExtraFunctions.splice( checkForRotations - 1, 1 );
 					door.checkForEnding = function () {
 						var rotation = door.rotation.clone().y;
-						if ( parseInt( ProtonJS.radToDeg( door.rotation.y - door.initialRotation ) ) <= 2 && parseInt( ProtonJS.radToDeg( door.rotation.y - door.initialRotation ) ) >= -2 ||
+						if ( parseInt( Proton.radToDeg( door.rotation.y - door.initialRotation ) ) <= 2 && parseInt( Proton.radToDeg( door.rotation.y - door.initialRotation ) ) >= -2 ||
 							door.position.distanceTo( door.initialPosition ) < 0.1 ) {
 							// 
-							if( parseInt( ProtonJS.radToDeg( door.rotation.y ) ) < 2 && parseInt( ProtonJS.radToDeg( door.rotation.y ) ) > -2 ) {
+							if( parseInt( Proton.radToDeg( door.rotation.y ) ) < 2 && parseInt( Proton.radToDeg( door.rotation.y ) ) > -2 ) {
 
 								rotation = radian(0.1);
 
 							}
-							if ( parseInt( ProtonJS.radToDeg( door.rotation.y - door.initialRotation ) ) <= 91 && parseInt( ProtonJS.radToDeg( door.rotation.y - door.initialRotation ) ) >= 89 ||
+							if ( parseInt( Proton.radToDeg( door.rotation.y - door.initialRotation ) ) <= 91 && parseInt( Proton.radToDeg( door.rotation.y - door.initialRotation ) ) >= 89 ||
 
-								parseInt( ProtonJS.radToDeg( door.rotation.y - door.initialRotation)) <= -89 && parseInt( ProtonJS.radToDeg( door.rotation.y - door.initialRotation ) ) >= -91 ) {
+								parseInt( Proton.radToDeg( door.rotation.y - door.initialRotation)) <= -89 && parseInt( Proton.radToDeg( door.rotation.y - door.initialRotation ) ) >= -91 ) {
 
 							}
 							// 
@@ -2109,21 +2161,21 @@ const Proton3DInterpreter = {
 		door.setPickup( true, true );
 		// gets (and rotates) the door's contraint's position
 		var vector = new THREE.Vector3( ( width / 2 ), -1, 0 );
-		vector = ProtonJS.rotateVector3(
+		vector = Proton.rotateVector3(
 			new THREE.Vector3( 0, 1, 0 ),
 			door.getRotation().y,
 			vector,
 			false,
 			true
 		);
-		vector = ProtonJS.rotateVector3(
+		vector = Proton.rotateVector3(
 			new THREE.Vector3( 1, 0, 0 ),
 			door.getRotation().x,
 			vector,
 			false,
 			true
 		);
-		vector = ProtonJS.rotateVector3(
+		vector = Proton.rotateVector3(
 			new THREE.Vector3( 0, 0, 1 ),
 			door.getRotation().z,
 			vector,
@@ -2132,14 +2184,14 @@ const Proton3DInterpreter = {
 		).add( door.getPosition() );
 		// gets the "opening velocity" (see line 2722 in toggleDoor for more info)
 		door.getOpeningVelocity = function ( velocity = new THREE.Vector3( 1, 1, 1 ), addExtraStuff = true ) {
-			velocity = ProtonJS.rotateVector3(
+			velocity = Proton.rotateVector3(
 				new THREE.Vector3( 1, 0, 0 ),
 				door.getRotation().x,
 				velocity,
 				false,
 				true
 			);
-			velocity = ProtonJS.rotateVector3(
+			velocity = Proton.rotateVector3(
 				new THREE.Vector3( 0, 0, 1 ),
 				door.getRotation().z,
 				velocity,
@@ -2492,17 +2544,26 @@ const Proton3DInterpreter = {
 	/*physijs version of ammo = "https://cdn.jsdelivr.net/gh/chandlerprall/Physijs@master/examples/js/ammo.js"; latest version of ammo = "https://cdn.jsdelivr.net/gh/kripken/ammo.js@master/builds/ammo.js"*/
 }
 /*
-	~> loc:4.5
+	~> wrapper/loc:4.5
 	Proton3D Tools
 */
-// starting games when all scripts have been loaded
-// DEPRECATED: Use MapScript instead.
 class GameCode {
 	constructor( code ) {
 		this.code = code
 	}
+	load( url ) {
+		import( url )
+	}
 	run() {
-		this.code();
+		if ( typeof this.code == "string" ) {
+			
+			eval( this.code );
+
+		} else {
+			
+			this.code();
+
+		}
 	}
 	autoStart() {
 		var code = this,
@@ -2516,162 +2577,4 @@ class GameCode {
 				}
 			}, 1500 )
 	}
-}
-/*
-	~> loc:6
-	MapScript
-*/
-class MapScript {
-	constructor( code ) {
-		this.code_mapscript = code;
-		this.code_javascript = "";
-	}
-	load( url ) {
-		var file = new XMLHttpRequest(),
-			x = this,
-			loaded = false,
-			events = {};
-		this.url = url;
-		file.open( "GET", url, false );
-		file.onreadystatechange = function () {
-			if( file.readyState == 4 ) {
-				
-				if( file.status == 200 || file.status == 0 ) {
-					
-					x.code_mapscript = file.responseText;
-					loaded = true;
-					if ( events.callback ) events.callback();
-
-				}
-
-			}
-		}
-		file.send( null );
-		
-		return {
-			then: function( fn ) {
-				if ( !loaded ) { 
-					
-					events.callback = fn
-
-				} else {
-
-					fn()
-
-				}
-			}
-		}
-	}
-	compile() {
-		var completed,
-			events = {},
-			x = this;
-		this.code_javascript = this.code_mapscript
-		// functions
-		this.code_javascript = this.code_javascript.replace( /init/ig, "init" )
-
-		// keywords
-			// "var global"
-			this.code_javascript = this.code_javascript.replace( /(?<=var global )(.*)(?= =)/ig, function () { return '["' + arguments[ 0 ] + '"] ' } );
-			this.code_javascript = this.code_javascript.replace( /var global/ig, "window" )
-			// "toggle"
-			this.code_javascript = this.code_javascript.replace( /toggle /ig, "!" )
-
-		// extras
-			// comments
-			this.code_javascript = this.code_javascript.split( "\n" );
-			this.code_javascript.forEach( function( string, i ) {
-				if ( string.includes( "// " ) ) x.code_javascript[ i ] = string.slice( 0, string.indexOf( "// " ) )
-			} )
-			this.code_javascript = this.code_javascript.join( "\n" );
-			//classes
-			var toAdd = "";
-			this.code_javascript = this.code_javascript.replace( /(?<=class)(.*)(?={)/ig, function () { toAdd += "\n" + "window['" + arguments[ 0 ].replace( / /ig, "" ) + "'] =" + arguments[ 0 ]; return arguments[ 0 ] } );
-			this.code_javascript += toAdd;
-		// complete!
-		completed = true
-		return {
-			then: function( fn ) {
-				if ( !completed ) { 
-					
-					events.callback = fn
-
-				} else {
-
-					fn()
-
-				}
-			}
-		}
-	}
-	run() {
-		window.init = function( graphicsRating, sky ) {
-			ProtonJS.scene.init( {
-				graphicsRating: graphicsRating,
-				sky: sky
-			} )
-		}
-		window.importObject = function( extras ) {
-			var object = new ProtonJS.importObject( {
-				gltfPath: extras.src,
-				mass: extras.mass,
-				objectType: extras.objectType,
-				armature: extras.armature,
-				onload: function() {
-					if ( extras.onload ) extras.onload();
-					object.objects.forEach( function ( child ) {
-						child.setPickup( extras.interactable, !extras.pickupable );
-						child.onUse = extras.onuse;
-					} );
-				}
-			} );
-			return object;
-		}
-		window.degToRad = function( value ) {
-			return ProtonJS.degToRad( value )
-		}
-		window.radToDeg = function( value ) {
-			return ProtonJS.radToDeg( value )
-		}
-		window.cls = function( properties ) {
-			return class {
-				constructor() {
-					for( var i in properties ) {
-
-						this[ i ] = properties[ i ]
-
-					}
-					if ( this.init ) {
-
-						this.init()
-
-					}
-				}
-			}
-		}
-		window.interval = window.setInterval;
-		window.timeout = window.setTimeout;
-		window.print = console.log;
-		var geval = eval;
-		geval( this.code_javascript );
-	}
-	autoRun( callback ) {
-		var code = this,
-			interval = oldSetInterval( function() {
-				code.loadingPercentage = ( loadedScripts / maxScripts ) * 100
-				if ( code.loadingPercentage == 100 ) {
-
-					clearInterval( interval );
-					code.run();
-					if ( callback ) callback()
-
-				}
-			}, 1500 )
-	}
-}
-function Proton( url, callback = undefined ) {
-	window.Proton = new MapScript();
-	Proton.load( url );
-	Proton.compile();
-	Proton.autoRun( callback );
 }
