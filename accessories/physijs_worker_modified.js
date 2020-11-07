@@ -3,7 +3,7 @@ var
 	transferableMessage = self.webkitPostMessage || self.postMessage,
 	
 	//???
-	Module = { TOTAL_MEMORY: 256*1024*1024 },
+	Module = { TOTAL_MEMORY: 512*1024*1024 },
 
 	// enum
 	MESSAGE_TYPES = {
@@ -244,8 +244,8 @@ createShape = function( description ) {
 
 public_functions.init = function( params ) {
 	importScripts( params.ammo );
-	if ( typeof Ammo == "function" ) Ammo();
-	console.log( "Ammo =", Ammo )
+	Ammo()
+	console.log( "Ammo = ", Ammo )
 	_transform = new Ammo.btTransform;
 	_vec3_1 = new Ammo.btVector3(0,0,0);
 	_vec3_2 = new Ammo.btVector3(0,0,0);
@@ -935,7 +935,7 @@ public_functions.simulate = function simulate( params ) {
 			if ( last_simulation_time ) {
 				params.timeStep = 0;
 				while ( params.timeStep + last_simulation_duration <= fixedTimeStep ) {
-					params.timeStep = ( Date.now() - last_simulation_time ) / 1000; // time since last simulation
+					params.timeStep = ( Date.now() - last_simulation_time ) / 2000; // time since last simulation
 				}
 			} else {
 				params.timeStep = fixedTimeStep; // handle first frame
