@@ -18,7 +18,7 @@ const { X_OK } = require("constants");
 */
 class Proton3DScene {
 
-	constructor() {
+	constructor( attachInterpreter ) {
 
 		this.mappedKeys = {
 			forward: 87, // W
@@ -35,6 +35,9 @@ class Proton3DScene {
 		this.priorityExtraFunctions = [];
 		this.extraKeyControls = [];
 
+		// creating the interpreter
+		this.interpreter = new Proton3DInterpreter();
+
 	}
 	init( extras = {} ) {
 
@@ -45,18 +48,22 @@ class Proton3DScene {
 			viewportHeight: extras.height
 		} );
 		this.camera.changeFar( 1000 );
-		// creating a scene
-		Proton3DInterpreter.create3DScene( extras, this );
+		
+		// initializing the interpreter
+		this.interpreter.init( extras, this )
+		
+		
 		// extraFunctions
 		this.runExtraFunctions = false;
+		
 		// objectList
 		this.objectList = [];
 
 	}
 	update() {
 
-		// rendering using Proton3DInterpreter.render
-		Proton3DInterpreter.render( this );
+		// rendering using Proton.scene.interpreter.render
+		Proton.scene.interpreter.render( this );
 		// extraFunctions
 		// priorityExtraFunctions = functions that must run each rendering cycle
 		// extraFunctions = functions that fun every 2nd cycle
@@ -89,19 +96,19 @@ class Proton3DScene {
 	}
 	add( object ) {
 
-		return Proton3DInterpreter.addToScene( object, this );
+		return Proton.scene.interpreter.addToScene( object, this );
 
 	}
 	remove( object ) {
 
-		return Proton3DInterpreter.removeFromScene( object, this );
+		return Proton.scene.interpreter.removeFromScene( object, this );
 
 	}
 	setKeyControls( obj, movementSpeed = 2.5, jumpHeight, extras = {} ) {
 
 		var x = this,
 			gunMoveFrame = 0;
-		Proton3DInterpreter.onKeyDown( function ( keyCode ) {
+		Proton.scene.interpreter.onKeyDown( function ( keyCode ) {
 
 			x.keys[ keyCode ] = true;
 			// flashlight
@@ -112,7 +119,7 @@ class Proton3DScene {
 			}
 
 		} );
-		Proton3DInterpreter.onKeyUp( function ( keyCode ) {
+		Proton.scene.interpreter.onKeyUp( function ( keyCode ) {
 
 			x.keys[ keyCode ] = false;
 			// gun animations, like in source!
@@ -351,7 +358,7 @@ class Proton3DScene {
 	}
 	makeDoor( door, width = door.width || 2.5, faceInwards = true ) {
 
-		Proton3DInterpreter.makeDoor( door, width, faceInwards, this );
+		Proton.scene.interpreter.makeDoor( door, width, faceInwards, this );
 
 	}
 	setCameraControls( extras = {} ) {
@@ -366,9 +373,9 @@ class Proton3DScene {
 
 		returningObject.init = function () {
 
-			Proton3DInterpreter.hidePointer();
+			Proton.scene.interpreter.hidePointer();
 			Proton.resume();
-			Proton3DInterpreter.setAudioControls( Proton.scene );
+			Proton.scene.interpreter.setAudioControls( Proton.scene );
 			init();
 
 		};
@@ -447,7 +454,7 @@ class Proton3DScene {
 
 			}
 
-			Proton3DInterpreter.onMouseMove( function ( e ) {
+			Proton.scene.interpreter.onMouseMove( function ( e ) {
 
 				if ( ! Proton.paused ) {
 
@@ -496,11 +503,11 @@ class Proton3DScene {
 			} );
 			x.priorityExtraFunctions.push( function () {
 
-				extras.cameraParent.setRotation( undefined, Proton.degToRad( 90 ), undefined );
+				//extras.cameraParent.setRotation( undefined, Proton.degToRad( 90 ), undefined );
 				x.crosshair.position = x.crosshair.__localPosition.clone().add( extras.cameraParent.getPosition() );
 				var pos = x.crosshair.position.clone();
 				pos.y = extras.cameraParent.getPosition().y;
-				extras.cameraParent.lookAt( pos.x, pos.y, pos.z );
+				//extras.cameraParent.lookAt( pos.x, pos.y, pos.z );
 				x.camera.lookAt( x.crosshair.position.x, x.crosshair.position.y, x.crosshair.position.z );
 
 			} );
@@ -578,7 +585,7 @@ class Proton3DScene {
 
 		} );
 
-		Proton3DInterpreter.onKeyUp( function () {
+		Proton.scene.interpreter.onKeyUp( function () {
 
 			x.getObjectList().forEach( function ( child ) {
 
@@ -753,7 +760,7 @@ class Proton3DObject {
 		// gives the decision to skip a material replacement when initializing pbr
 		this.skipPBRReplacement = false;
 		// creates a mesh
-		Proton3DInterpreter.create3DObject( extras, this );
+		Proton.scene.interpreter.create3DObject( extras, this );
 		if ( extras.type && ( extras.type == "sky" || extras.type.includes( "light" ) || extras.type.includes( "camera" ) ) ) {
 
 			this.setLinearVelocity = null;
@@ -929,144 +936,144 @@ class Proton3DObject {
 	// the accessors' corresponding functions
 	makeInvisible() {
 
-		return Proton3DInterpreter.Proton3DObject.makeInvisible( this );
+		return Proton.scene.interpreter.Proton3DObject.makeInvisible( this );
 
 	}
 	getShadowOptions() {
 
-		return Proton3DInterpreter.Proton3DObject.getShadowOptions( this );
+		return Proton.scene.interpreter.Proton3DObject.getShadowOptions( this );
 
 	}
 	setShadowOptions( cast = null, receive = null ) {
 
-		return Proton3DInterpreter.Proton3DObject.setShadowOptions( cast, receive, this );
+		return Proton.scene.interpreter.Proton3DObject.setShadowOptions( cast, receive, this );
 
 	}
 	playAudio( src, listener ) {
 
-		return Proton3DInterpreter.Proton3DObject.playAudio( src, listener, this );
+		return Proton.scene.interpreter.Proton3DObject.playAudio( src, listener, this );
 
 	}
 	applyImpulse( force, offset = new Proton.Vector3( 0, 0, 0 ) ) {
 
-		return Proton3DInterpreter.Proton3DObject.applyImpulse( force, offset, this );
+		return Proton.scene.interpreter.Proton3DObject.applyImpulse( force, offset, this );
 
 	}
 	delete() {
 
-		return Proton3DInterpreter.Proton3DObject.delete( this );
+		return Proton.scene.interpreter.Proton3DObject.delete( this );
 
 	}
 	setMass( value ) {
 
-		return Proton3DInterpreter.Proton3DObject.setMass( value, this );
+		return Proton.scene.interpreter.Proton3DObject.setMass( value, this );
 
 	}
 	getMass() {
 
-		return Proton3DInterpreter.Proton3DObject.getMass( this );
+		return Proton.scene.interpreter.Proton3DObject.getMass( this );
 
 	}
 	setOnUse( useFunction ) {
 
-		return Proton3DInterpreter.Proton3DObject.setOnUse( useFunction, this );
+		return Proton.scene.interpreter.Proton3DObject.setOnUse( useFunction, this );
 
 	}
 	setOnNear( nearFunction ) {
 
-		return Proton3DInterpreter.Proton3DObject.setOnNear( nearFunction, this );
+		return Proton.scene.interpreter.Proton3DObject.setOnNear( nearFunction, this );
 
 	}
 	setPickupDistance( value ) {
 
-		return Proton3DInterpreter.Proton3DObject.setPickupDistance( value, this );
+		return Proton.scene.interpreter.Proton3DObject.setPickupDistance( value, this );
 
 	}
 	setPickup( pickupness, returnAfterUse ) {
 
-		return Proton3DInterpreter.Proton3DObject.setPickup( pickupness, returnAfterUse, this );
+		return Proton.scene.interpreter.Proton3DObject.setPickup( pickupness, returnAfterUse, this );
 
 	}
 	getOnUse() {
 
-		return Proton3DInterpreter.Proton3DObject.getOnUse( this );
+		return Proton.scene.interpreter.Proton3DObject.getOnUse( this );
 
 	}
 	getOnNear() {
 
-		return Proton3DInterpreter.Proton3DObject.getOnNear( this );
+		return Proton.scene.interpreter.Proton3DObject.getOnNear( this );
 
 	}
 	getPickupDistance() {
 
-		return Proton3DInterpreter.Proton3DObject.getPickupDistance( this );
+		return Proton.scene.interpreter.Proton3DObject.getPickupDistance( this );
 
 	}
 	getPickup() {
 
-		return Proton3DInterpreter.Proton3DObject.getPickup( this );
+		return Proton.scene.interpreter.Proton3DObject.getPickup( this );
 
 	}
 	makeListeningObject() {
 
-		return Proton3DInterpreter.Proton3DObject.makeListeningObject( this );
+		return Proton.scene.interpreter.Proton3DObject.makeListeningObject( this );
 
 	}
 	setLinearVelocity( x = 0, y = 0, z = 0 ) {
 
-		return Proton3DInterpreter.Proton3DObject.setLinearVelocity( x, y, z, this );
+		return Proton.scene.interpreter.Proton3DObject.setLinearVelocity( x, y, z, this );
 
 	}
 	setAngularVelocity( x = 0, y = 0, z = 0 ) {
 
-		return Proton3DInterpreter.Proton3DObject.setAngularVelocity( x, y, z, this );
+		return Proton.scene.interpreter.Proton3DObject.setAngularVelocity( x, y, z, this );
 
 	}
 	setDamping( linear = 0, angular = 0 ) {
 
-		return Proton3DInterpreter.Proton3DObject.setDamping( linear, angular, this );
+		return Proton.scene.interpreter.Proton3DObject.setDamping( linear, angular, this );
 
 	}
 	setLinearFactor( x = 0, y = 0, z = 0 ) {
 
-		return Proton3DInterpreter.Proton3DObject.setLinearFactor( x, y, z, this );
+		return Proton.scene.interpreter.Proton3DObject.setLinearFactor( x, y, z, this );
 
 	}
 	addLinearVelocity( x = 0, y = 0, z = 0 ) {
 
 		var velocity = this.getLinearVelocity();
-		return Proton3DInterpreter.Proton3DObject.setLinearVelocity( x + velocity.x, y + velocity.y, z + velocity.z, this );
+		return Proton.scene.interpreter.Proton3DObject.setLinearVelocity( x + velocity.x, y + velocity.y, z + velocity.z, this );
 
 	}
 	addAngularVelocity( x = 0, y = 0, z = 0 ) {
 
 		var velocity = this.getAngularVelocity();
-		return Proton3DInterpreter.Proton3DObject.setAngularVelocity( x + velocity.x, y + velocity.y, z + velocity.z, this );
+		return Proton.scene.interpreter.Proton3DObject.setAngularVelocity( x + velocity.x, y + velocity.y, z + velocity.z, this );
 
 	}
 	setAngularFactor( x = 0, y = 0, z = 0 ) {
 
-		return Proton3DInterpreter.Proton3DObject.setAngularFactor( x, y, z, this );
+		return Proton.scene.interpreter.Proton3DObject.setAngularFactor( x, y, z, this );
 
 	}
 	addEventListener( name, callback ) {
 
-		return Proton3DInterpreter.Proton3DObject.addEventListener( name, callback, this );
+		return Proton.scene.interpreter.Proton3DObject.addEventListener( name, callback, this );
 
 	}
 	removeEventListener( name, callback ) {
 
-		return Proton3DInterpreter.Proton3DObject.removeEventListener( name, callback, this );
+		return Proton.scene.interpreter.Proton3DObject.removeEventListener( name, callback, this );
 
 	}
 	setRotation( x, y, z ) {
 
-		return Proton3DInterpreter.Proton3DObject.setRotation( x, y, z, this );
+		return Proton.scene.interpreter.Proton3DObject.setRotation( x, y, z, this );
 
 	}
 	setPosition( x, y, z ) {
 
-		return Proton3DInterpreter.Proton3DObject.setPosition( x, y, z, this );
+		return Proton.scene.interpreter.Proton3DObject.setPosition( x, y, z, this );
 
 	}
 	animatePosition( x, y, z, time = 1500, step = undefined, callback = undefined ) {
@@ -1119,67 +1126,67 @@ class Proton3DObject {
 	}
 	getRotation() {
 
-		return Proton3DInterpreter.Proton3DObject.getRotation( this );
+		return Proton.scene.interpreter.Proton3DObject.getRotation( this );
 
 	}
 	getPosition() {
 
-		return Proton3DInterpreter.Proton3DObject.getPosition( this );
+		return Proton.scene.interpreter.Proton3DObject.getPosition( this );
 
 	}
 	applyLocRotChange() {
 
-		return Proton3DInterpreter.Proton3DObject.applyLocRotChange( this );
+		return Proton.scene.interpreter.Proton3DObject.applyLocRotChange( this );
 
 	}
 	getLinearVelocity() {
 
-		return Proton3DInterpreter.Proton3DObject.getLinearVelocity( this );
+		return Proton.scene.interpreter.Proton3DObject.getLinearVelocity( this );
 
 	}
 	getAngularVelocity() {
 
-		return Proton3DInterpreter.Proton3DObject.getAngularVelocity( this );
+		return Proton.scene.interpreter.Proton3DObject.getAngularVelocity( this );
 
 	}
 	isMesh( object ) {
 
-		return Proton3DInterpreter.Proton3DObject.isMesh( object, this );
+		return Proton.scene.interpreter.Proton3DObject.isMesh( object, this );
 
 	}
 	getWorldDirection() {
 
-		return Proton3DInterpreter.Proton3DObject.getWorldDirection( this );
+		return Proton.scene.interpreter.Proton3DObject.getWorldDirection( this );
 
 	}
 	lookAt( x = 0, y = 0, z = 0 ) {
 
-		return Proton3DInterpreter.Proton3DObject.lookAt( x, y, z, this );
+		return Proton.scene.interpreter.Proton3DObject.lookAt( x, y, z, this );
 
 	}
 	getWorldPosition() {
 
-		return Proton3DInterpreter.Proton3DObject.getWorldPosition( this );
+		return Proton.scene.interpreter.Proton3DObject.getWorldPosition( this );
 
 	}
 	getWorldRotation() {
 
-		return Proton3DInterpreter.Proton3DObject.getWorldRotation( this );
+		return Proton.scene.interpreter.Proton3DObject.getWorldRotation( this );
 
 	}
 	getCollidingObjects() {
 
-		return Proton3DInterpreter.Proton3DObject.getCollidingObjects( this );
+		return Proton.scene.interpreter.Proton3DObject.getCollidingObjects( this );
 
 	}
 	add( object ) {
 
-		return Proton3DInterpreter.Proton3DObject.add( object, this );
+		return Proton.scene.interpreter.Proton3DObject.add( object, this );
 
 	}
 	remove( object ) {
 
-		return Proton3DInterpreter.Proton3DObject.remove( object, this );
+		return Proton.scene.interpreter.Proton3DObject.remove( object, this );
 
 	}
 
@@ -1212,7 +1219,7 @@ class Proton3DMaterial {
 		}
 
 		// creates the material
-		Proton3DInterpreter.create3DMaterial( extras, this, parentObject );
+		Proton.scene.interpreter.create3DMaterial( extras, this, parentObject );
 		// accessors
 		Object.defineProperty( this, "color", {
 			get: function () {
@@ -1303,77 +1310,77 @@ class Proton3DMaterial {
 	}
 	setEmissiveColor( color ) {
 
-		return Proton3DInterpreter.Proton3DMaterial.setEmissiveColor( color, this );
+		return Proton.scene.interpreter.Proton3DMaterial.setEmissiveColor( color, this );
 
 	}
 	getEmissiveColor() {
 
-		return Proton3DInterpreter.Proton3DMaterial.getEmissiveColor( this );
+		return Proton.scene.interpreter.Proton3DMaterial.getEmissiveColor( this );
 
 	}
 	setWireframe( value ) {
 
-		return Proton3DInterpreter.Proton3DMaterial.setWireframe( value, this );
+		return Proton.scene.interpreter.Proton3DMaterial.setWireframe( value, this );
 
 	}
 	getWireframe() {
 
-		return Proton3DInterpreter.Proton3DMaterial.getWireframe( this );
+		return Proton.scene.interpreter.Proton3DMaterial.getWireframe( this );
 
 	}
 	setEmissive( value ) {
 
-		return Proton3DInterpreter.Proton3DMaterial.setEmissive( value, this );
+		return Proton.scene.interpreter.Proton3DMaterial.setEmissive( value, this );
 
 	}
 	getEmissive() {
 
-		return Proton3DInterpreter.Proton3DMaterial.getEmissive( this );
+		return Proton.scene.interpreter.Proton3DMaterial.getEmissive( this );
 
 	}
 	setColor( hexString ) {
 
-		return Proton3DInterpreter.Proton3DMaterial.setColor( hexString, this );
+		return Proton.scene.interpreter.Proton3DMaterial.setColor( hexString, this );
 
 	}
 	getColor() {
 
-		return Proton3DInterpreter.Proton3DMaterial.getColor( this );
+		return Proton.scene.interpreter.Proton3DMaterial.getColor( this );
 
 	}
 	setRoughness( value ) {
 
-		return Proton3DInterpreter.Proton3DMaterial.setRoughness( value, this );
+		return Proton.scene.interpreter.Proton3DMaterial.setRoughness( value, this );
 
 	}
 	setMetalness( value ) {
 
-		return Proton3DInterpreter.Proton3DMaterial.setMetalness( value, this );
+		return Proton.scene.interpreter.Proton3DMaterial.setMetalness( value, this );
 
 	}
 	getRoughness( value ) {
 
-		return Proton3DInterpreter.Proton3DMaterial.getRoughness( value, this );
+		return Proton.scene.interpreter.Proton3DMaterial.getRoughness( value, this );
 
 	}
 	getMetalness( value ) {
 
-		return Proton3DInterpreter.Proton3DMaterial.getMetalness( value, this );
+		return Proton.scene.interpreter.Proton3DMaterial.getMetalness( value, this );
 
 	}
 	setOpacity( value ) {
 
-		return Proton3DInterpreter.Proton3DMaterial.setOpacity( value, this );
+		return Proton.scene.interpreter.Proton3DMaterial.setOpacity( value, this );
 
 	}
 	getOpacity() {
 
-		return Proton3DInterpreter.Proton3DMaterial.getOpacity( this );
+		return Proton.scene.interpreter.Proton3DMaterial.getOpacity( this );
 
 	}
 	makeTransparent( value ) {
 
-		return Proton3DInterpreter.Proton3DMaterial.makeTransparent( value, this );
+		return Proton.scene.interpreter.Proton3DMaterial.makeTransparent( value, this );
 
 	}
 
@@ -1383,7 +1390,7 @@ class RepeatingAudio {
 
 	constructor( beginning, middle, end = undefined ) {
 
-		this.audio = new Proton3DInterpreter.audio( beginning );
+		this.audio = new Proton.scene.interpreter.audio( beginning );
 		Proton.playingAudio.push( this );
 		// urls
 		this.beginning = beginning;
@@ -1468,18 +1475,18 @@ class RepeatingAudio {
 	~> loc:5
 	Proton
 */
-const Proton = {
+let Proton = {
 	cache: {
 		// ...
 	},
 	degToRad( deg ) {
 
-		return deg * ( Proton3DInterpreter.PI / 180 );
+		return deg * ( Proton.scene.interpreter.PI / 180 );
 
 	},
 	radToDeg( rad ) {
 
-		return rad * ( 180 / Proton3DInterpreter.PI );
+		return rad * ( 180 / Proton.scene.interpreter.PI );
 
 	},
 	// port of THREE.Vector3
@@ -1615,23 +1622,28 @@ const Proton = {
 		name: "mygame",
 		get( name ) {
 
-			return Proton3DInterpreter.storage.getItem( Proton.storage.name + "-" + name ) || null;
+			return Proton.scene.interpreter.storage.getItem( Proton.storage.name + "-" + name ) || null;
 
 		},
 		set( name, value ) {
 
-			Proton3DInterpreter.storage.setItem( Proton.storage.name + "-" + name, value );
+			Proton.scene.interpreter.storage.setItem( Proton.storage.name + "-" + name, value );
 			return value;
 
 		},
 		remove( name ) {
 
-			Proton3DInterpreter.storage.removeItem( Proton.storage.name + "-" + name );
+			Proton.scene.interpreter.storage.removeItem( Proton.storage.name + "-" + name );
 
 		}
 	},
 	paused: false,
-	import: Proton3DInterpreter.importObject,
+	import: function( params ) {
+
+		params.interpreter = Proton.scene.interpreter;
+		return Proton.scene.interpreter.importObject( params );
+
+	},
 	loadingManager: function ( extras = {} ) {
 
 		this.value = 0;
@@ -1691,7 +1703,7 @@ const Proton = {
 
 		}
 
-		Proton3DInterpreter.resume();
+		Proton.scene.interpreter.resume();
 		if ( this.onresume ) {
 
 			this.onresume();
@@ -1701,7 +1713,7 @@ const Proton = {
 	},
 	crosshair( crosshair ) {
 
-		var crosshairElement = Proton3DInterpreter.crosshair();
+		var crosshairElement = Proton.scene.interpreter.crosshair();
 		crosshair.hide = crosshairElement.hide;
 		crosshair.show = crosshairElement.show;
 		crosshair.element = crosshairElement;
@@ -1823,7 +1835,13 @@ const Proton = {
 		object.__isAnimating = noCallback ? - 1 : 0;
 
 	},
-	//
-	scene: new Proton3DScene()
 
-};
+	// Initiate Proton
+	init( params ) {
+
+		Proton.scene = new Proton3DScene();
+		Proton.scene.init( params )
+
+	}
+	
+}

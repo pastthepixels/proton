@@ -244,69 +244,72 @@ createShape = function( description ) {
 
 public_functions.init = function( params ) {
 	importScripts( params.ammo );
-	Ammo()
-	console.log( "Ammo = ", Ammo )
-	_transform = new Ammo.btTransform;
-	_vec3_1 = new Ammo.btVector3(0,0,0);
-	_vec3_2 = new Ammo.btVector3(0,0,0);
-	_vec3_3 = new Ammo.btVector3(0,0,0);
-	_quat = new Ammo.btQuaternion(0,0,0,0);
+	Ammo( { locateFile: () => params.wasm } ).then( ( Ammo ) => {
+	
+		console.log( "Ammo = ", Ammo );
+		_transform = new Ammo.btTransform;
+		_vec3_1 = new Ammo.btVector3(0,0,0);
+		_vec3_2 = new Ammo.btVector3(0,0,0);
+		_vec3_3 = new Ammo.btVector3(0,0,0);
+		_quat = new Ammo.btQuaternion(0,0,0,0);
 
-	REPORT_CHUNKSIZE = params.reportsize || 50;
-	if ( SUPPORT_TRANSFERABLE ) {
-		// Transferable messages are supported, take advantage of them with TypedArrays
-		worldreport = new Float32Array(2 + REPORT_CHUNKSIZE * WORLDREPORT_ITEMSIZE); // message id + # of objects to report + chunk size * # of values per object
-		collisionreport = new Float32Array(2 + REPORT_CHUNKSIZE * COLLISIONREPORT_ITEMSIZE); // message id + # of collisions to report + chunk size * # of values per object
-		vehiclereport = new Float32Array(2 + REPORT_CHUNKSIZE * VEHICLEREPORT_ITEMSIZE); // message id + # of vehicles to report + chunk size * # of values per object
-		constraintreport = new Float32Array(2 + REPORT_CHUNKSIZE * CONSTRAINTREPORT_ITEMSIZE); // message id + # of constraints to report + chunk size * # of values per object
-	} else {
-		// Transferable messages are not supported, send data as normal arrays
-		worldreport = [];
-		collisionreport = [];
-		vehiclereport = [];
-		constraintreport = [];
-	}
-	worldreport[0] = MESSAGE_TYPES.WORLDREPORT;
-	collisionreport[0] = MESSAGE_TYPES.COLLISIONREPORT;
-	vehiclereport[0] = MESSAGE_TYPES.VEHICLEREPORT;
-	constraintreport[0] = MESSAGE_TYPES.CONSTRAINTREPORT;
+		REPORT_CHUNKSIZE = params.reportsize || 50;
+		if ( SUPPORT_TRANSFERABLE ) {
+			// Transferable messages are supported, take advantage of them with TypedArrays
+			worldreport = new Float32Array(2 + REPORT_CHUNKSIZE * WORLDREPORT_ITEMSIZE); // message id + # of objects to report + chunk size * # of values per object
+			collisionreport = new Float32Array(2 + REPORT_CHUNKSIZE * COLLISIONREPORT_ITEMSIZE); // message id + # of collisions to report + chunk size * # of values per object
+			vehiclereport = new Float32Array(2 + REPORT_CHUNKSIZE * VEHICLEREPORT_ITEMSIZE); // message id + # of vehicles to report + chunk size * # of values per object
+			constraintreport = new Float32Array(2 + REPORT_CHUNKSIZE * CONSTRAINTREPORT_ITEMSIZE); // message id + # of constraints to report + chunk size * # of values per object
+		} else {
+			// Transferable messages are not supported, send data as normal arrays
+			worldreport = [];
+			collisionreport = [];
+			vehiclereport = [];
+			constraintreport = [];
+		}
+		worldreport[0] = MESSAGE_TYPES.WORLDREPORT;
+		collisionreport[0] = MESSAGE_TYPES.COLLISIONREPORT;
+		vehiclereport[0] = MESSAGE_TYPES.VEHICLEREPORT;
+		constraintreport[0] = MESSAGE_TYPES.CONSTRAINTREPORT;
 
-	var collisionConfiguration = new Ammo.btDefaultCollisionConfiguration,
-		dispatcher = new Ammo.btCollisionDispatcher( collisionConfiguration ),
-		solver = new Ammo.btSequentialImpulseConstraintSolver,
-		broadphase;
+		var collisionConfiguration = new Ammo.btDefaultCollisionConfiguration,
+			dispatcher = new Ammo.btCollisionDispatcher( collisionConfiguration ),
+			solver = new Ammo.btSequentialImpulseConstraintSolver,
+			broadphase;
 
-	if ( !params.broadphase ) params.broadphase = { type: 'dynamic' };
-	switch ( params.broadphase.type ) {
-		case 'sweepprune':
+		if ( !params.broadphase ) params.broadphase = { type: 'dynamic' };
+		switch ( params.broadphase.type ) {
+			case 'sweepprune':
 
-			_vec3_1.setX(params.broadphase.aabbmin.x);
-			_vec3_1.setY(params.broadphase.aabbmin.y);
-			_vec3_1.setZ(params.broadphase.aabbmin.z);
+				_vec3_1.setX(params.broadphase.aabbmin.x);
+				_vec3_1.setY(params.broadphase.aabbmin.y);
+				_vec3_1.setZ(params.broadphase.aabbmin.z);
 
-			_vec3_2.setX(params.broadphase.aabbmax.x);
-			_vec3_2.setY(params.broadphase.aabbmax.y);
-			_vec3_2.setZ(params.broadphase.aabbmax.z);
+				_vec3_2.setX(params.broadphase.aabbmax.x);
+				_vec3_2.setY(params.broadphase.aabbmax.y);
+				_vec3_2.setZ(params.broadphase.aabbmax.z);
 
-			broadphase = new Ammo.btAxisSweep3(
-				_vec3_1,
-				_vec3_2
-			);
+				broadphase = new Ammo.btAxisSweep3(
+					_vec3_1,
+					_vec3_2
+				);
 
-			break;
+				break;
 
-		case 'dynamic':
-		default:
-			broadphase = new Ammo.btDbvtBroadphase;
-			break;
-	}
+			case 'dynamic':
+			default:
+				broadphase = new Ammo.btDbvtBroadphase;
+				break;
+		}
 
-	world = new Ammo.btDiscreteDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration );
+		world = new Ammo.btDiscreteDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration );
 
-	fixedTimeStep = 0
-	rateLimit = params.rateLimit;
+		fixedTimeStep = 0
+		rateLimit = params.rateLimit;
 
-	transferableMessage({ cmd: 'worldReady' });
+		transferableMessage({ cmd: 'worldReady' });
+		
+	} );
 };
 
 public_functions.registerMaterial = function( description ) {
@@ -935,7 +938,7 @@ public_functions.simulate = function simulate( params ) {
 			if ( last_simulation_time ) {
 				params.timeStep = 0;
 				while ( params.timeStep + last_simulation_duration <= fixedTimeStep ) {
-					params.timeStep = ( Date.now() - last_simulation_time ) / 2000; // time since last simulation
+					params.timeStep = ( Date.now() - last_simulation_time ) / 1000; // time since last simulation
 				}
 			} else {
 				params.timeStep = fixedTimeStep; // handle first frame

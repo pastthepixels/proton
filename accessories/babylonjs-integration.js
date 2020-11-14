@@ -1,395 +1,102 @@
-"use strict";
-/*
-	Proton's wrapper
-	================
-
-	## Description
-	This contains all the boring stuff to get Proton to work, like the Proton3DInterpreter.
-
-	## Table of Contents
-
-	| Section Name               | Location # |
-	| -------------------------- | ---------- |
-	| ???                        | loc:1      |
-
-*/
-
-/*
-
-	# What does "loc" mean? And why isn't there any documentation for Proton?
-	-> If you have any of these symptoms, please consult the `README` in the same directory as this script.
-
-*/
-
-/*
-	~> wrapper/loc:1
-	Loading the default Proton3DInterpreter's dependencies
-*/
-
-
-const scriptStats = { loadedScripts: 0, maxScripts: 10 };
-function importScript( url, isModule = true, callback ) {
-
-	scriptStats.maxScripts ++;
-	if ( ! isModule ) {
-
-		var script = document.createElement( "script" );
-		script.src = url;
-		document.head.appendChild( script );
-		script.onload = function () {
-
-			if ( callback ) callback();
-			scriptStats.loadedScripts ++;
-			if ( scriptStats.loadedScripts >= scriptStats.maxScripts ) window.finishedLoadingScripts = true;
-
-		}
-		;
-
-		return;
-
-	}
-
-	import( url ).then( (value) => {
-
-		if ( isModule === "CANNON" ) window[ "CANNON" ] = value
-		
-		for ( var i in value ) {
-
-			if ( isModule && isModule != "CANNON" ) window[ isModule == true ? "window" : isModule ][ i ] = value[ i ];
-
-		}
-
-		// finished!
-		if ( callback ) callback();
-		scriptStats.loadedScripts++;
-		if ( scriptStats.loadedScripts >= scriptStats.maxScripts ) window.finishedLoadingScripts = true;
-
-	} );
-
-}
-
-// The part that requires an internet connection:
-// Note that you can set which sources Proton uses to local ones.
-function init( scripts ) {
-
-	scriptStats.maxScripts = 0;
-	if ( ! scripts ) {
-
-		scripts = {
-			three: "https://threejs.org/build/three.js",
-			gltfLoader: "https://unpkg.com/three@0.108.0/examples/jsm/loaders/GLTFLoader.js",
-			fbxLoader: "https://raw.githack.com/mrdoob/three.js/dev/examples/jsm/loaders/FBXLoader.js",
-			effectComposer: "https://unpkg.com/three/examples/jsm/postprocessing/EffectComposer.js",
-			renderPass: "https://unpkg.com/three/examples/jsm/postprocessing/RenderPass.js",
-			unrealBloomPass: "https://unpkg.com/three/examples/jsm/postprocessing/UnrealBloomPass.js",
-			luminosityShader: "https://unpkg.com/three/examples/jsm/shaders/LuminosityShader.js",
-			toneMapShader: "https://unpkg.com/three/examples/jsm/shaders/ToneMapShader.js",
-			adaptiveTomeMappingPass: "https://unpkg.com/three/examples/jsm/postprocessing/AdaptiveToneMappingPass.js",
-			sky: "https://unpkg.com/three@0.106.0/examples/js/objects/Sky.js",
-			physijs: "https://rawcdn.githack.com/chandlerprall/Physijs/7a5372647f5af47732e977c153c0d1c2550950a0/physi.js"/*2.0: "https://rawcdn.githack.com/chandlerprall/Physijs/48a1b454c72a4a4baffce3f90ea46af5b2644bc2/dist/physi.js"*/,
-			physijs_worker: "/home/pastthepixels/git/proton/accessories/physijs_worker_modified.js",
-			cannonjs: "https://rawcdn.githack.com/pmndrs/cannon-es/2f32049449bcc98417ff196084fd1e50b5c29686/dist/cannon-es.js",
-			ammojs: "https://rawcdn.githack.com/kripken/ammo.js/a4bec933859e452acd2c18e4152ac2a6a95e806f/builds/ammo.js",
-			ammoJS: "https://rawcdn.githack.com/mrdoob/three.js/60cbc05dfa4ce8c33e7abb5c5119e4e97eea1ea9/examples/js/libs/ammo.wasm.js",
-			threeammo: "https://rawcdn.githack.com/mrdoob/three.js/60cbc05dfa4ce8c33e7abb5c5119e4e97eea1ea9/examples/jsm/physics/AmmoPhysics.js",
-			// BabylonJS
-			babylonjs: "https://cdn.babylonjs.com/babylon.js",
-			babylonjs_materials: "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.js"
-		};
-
-	}
-	scriptStats.scripts = scripts;
-
-	// Graphics
-	importScript( scripts.three, true, function () {
-
-		// Importing models
-		importScript( scripts.gltfLoader, "THREE" );
-		importScript( scripts.fbxLoader, "THREE" );
-		
-		// HDR
-		importScript( scripts.effectComposer, "THREE" );
-		importScript( scripts.renderPass, "THREE" );
-		importScript( scripts.unrealBloomPass, "THREE" );
-		
-		// Shaders
-		importScript( scripts.luminosityShader, "THREE" );
-		importScript( scripts.toneMapShader, "THREE" );
-		importScript( scripts.adaptiveTomeMappingPass, "THREE" );
-		
-		// Sky shader by https://github.com/zz85
-		importScript( scripts.sky, "THREE" );
-		
-		// Physijs
-		importScript( scripts.physijs, false, function () {
-			//2.0 only: window[ "Physijs" ] = physijs
-		} );
-
-		// Physics
-		importScript( scripts.ammoJS, false );
-		importScript( scripts.threeammo, "THREE", function() {
-			console.log( true )
-		} );
-
-		// BabylonJS
-		importScript( scripts.babylonjs, true, function() {
-			importScript( scripts.babylonjs_materials, true );
-		} );
-
-	} );
-
-}
-/*
-	wrapper/loc:4.3
-	Proton3DInterpreter
-*/
-const meshes = [];
-const materials = [];
-function getMeshByName( name ) {
-
-	return meshes.find( function ( x ) {
-
-		return x.name === name;
-
-	} );
-
-}
-
-function getMaterialByName( name ) {
-
-	return materials.find( function ( x ) {
-
-		return x.name === name;
-
-	} );
-
-}
-
-//\\//\\//\\//\\//\\//\\//\\//\\//\\//
-//\\ Proton3DInterpreter		    //
-//\\//\\//\\//\\//\\//\\//\\//\\//\\//
-// 	README
-// 		[!] All functions shown below that have parameters and that
-// 				are not called by other functions in the Interpreter
-// 				must have the same parameters when being
-// 				rewritten or overwritten by a user.
-//
-// 				[!] -> Since some functions use "extras" for a parameter,
-// 							keep in mind that these functions may be called by
-// 							proton.js and not by the user. As such, they will
-// 							always retain the same structure unless otherwise stated.
-//
-// 		[!] The same goes for returned functions: if a function returns
-// 				a value (even if that function is inside of a parent function,
-// 				especially if that parent function returns the child function),
-// 				that value must have the same structure as when it was found by
-// 				the user.
-//
-class Proton3DInterpreter {
+Proton3DInterpreter = class {
 
 	init( extras, scene ) {
+
+		var interpreter = this;
 
 		// Auto graphics
 		switch ( extras.graphicsRating ) {
 
 			case 1 / 10:
-				if ( extras.pbr == undefined ) extras.pbr = false;
-				if ( extras.livePBR == undefined ) extras.livePBR = false;
-				if ( extras.hdr == undefined ) extras.hdr = false;
-				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = false;
-				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = true;
 				break;
 
 			case 2 / 10:
-				if ( extras.pbr == undefined ) extras.pbr = false;
-				if ( extras.livePBR == undefined ) extras.livePBR = false;
-				if ( extras.hdr == undefined ) extras.hdr = false;
-				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = true;
-				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = true;
 				break;
 
 			case 3 / 10:
-				if ( extras.pbr == undefined ) extras.pbr = true;
-				if ( extras.livePBR == undefined ) extras.livePBR = false;
-				if ( extras.hdr == undefined ) extras.hdr = false;
-				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = true;
-				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = true;
 				break;
 
 			case 4 / 10:
-				if ( extras.pbr == undefined ) extras.pbr = true;
-				if ( extras.livePBR == undefined ) extras.livePBR = false;
-				if ( extras.hdr == undefined ) extras.hdr = false;
-				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = true;
-				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = true;
 				break;
 
 			case 5 / 10:
-				if ( extras.pbr == undefined ) extras.pbr = true;
-				if ( extras.livePBR == undefined ) extras.livePBR = false;
-				if ( extras.hdr == undefined ) extras.hdr = false;
-				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = false;
-				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = false;
-				if ( extras.shadowLOD == undefined ) extras.shadowLOD = 512;
 				break;
 
 			case 6 / 10:
-				if ( extras.pbr == undefined ) extras.pbr = true;
-				if ( extras.livePBR == undefined ) extras.livePBR = false;
-				if ( extras.hdr == undefined ) extras.hdr = false;
-				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = true;
-				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = false;
-				if ( extras.shadowLOD == undefined ) extras.shadowLOD = 512;
 				break;
 
 			case 7 / 10:
-				if ( extras.pbr == undefined ) extras.pbr = true;
-				if ( extras.livePBR == undefined ) extras.livePBR = false;
-				if ( extras.hdr == undefined ) extras.hdr = true;
-				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = true;
-				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = false;
-				if ( extras.shadowLOD == undefined ) extras.shadowLOD = 512;
 				break;
 
 			case 8 / 10:
-				if ( extras.pbr == undefined ) extras.pbr = true;
-				if ( extras.livePBR == undefined ) extras.livePBR = false;
-				if ( extras.hdr == undefined ) extras.hdr = true;
-				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = true;
-				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = false;
-				if ( extras.shadowLOD == undefined ) extras.shadowLOD = 512;
 				break;
 
 			case 9 / 10:
-				if ( extras.pbr == undefined ) extras.pbr = true;
-				if ( extras.livePBR == undefined ) extras.livePBR = false;
-				if ( extras.hdr == undefined ) extras.hdr = true;
-				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = true;
-				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = false;
-				if ( extras.ssao == undefined ) extras.ssao = true;
-				if ( extras.shadowLOD == undefined ) extras.shadowLOD = 512;
 				break;
 
 			case 10 / 10:
-				if ( extras.pbr == undefined ) extras.pbr = true;
-				if ( extras.livePBR == undefined ) extras.livePBR = true;
-				if ( extras.hdr == undefined ) extras.hdr = true;
-				if ( extras.anisotropicFiltering == undefined ) extras.anisotropicFiltering = true;
-				if ( extras.dynamicResolution == undefined ) extras.dynamicResolution = false;
-				if ( extras.ssao == undefined ) extras.ssao = true;
 				break;
 
 		}
 
 		// Sets up the scene
-		scene.usePBR = extras.pbr;
 		this.dynamicResize( scene );
+
 		this.element = document.createElement( "scene" );
 		this.canvas = document.createElement( "canvas" );
-		this.context = this.canvas.getContext( "webgl2" );
-		this.renderer = new THREE[ "WebGLRenderer" ]( {
-			canvas: this.canvas,
-			context: this.context,
-			antialias: false
-		} );
-		this.renderer.setPixelRatio( window.devicePixelRatio );
-		this.frame = 0;
-		this.fpsMeasurements = [];
-		this.renderer.setSize( window.innerWidth, window.innerHeight );
-		this.renderer.shadowMap.enabled = true;
-		this.renderer.shadowMap.type = extras.pcfSoftShadows ? THREE.PCFSoftShadowMap : THREE.VSMShadowMap;
+		this.engine = new BABYLON.Engine( 
+			this.canvas,
+			true,
+			{ preserveDrawingBuffer: true, stencil: true }
+		);
+		this.scene = new BABYLON.Scene( this.engine );
+		this.scene.clearColor = new BABYLON.Color4( 0, 0, 0, 0 );
 
-		// Sets up Physijs
-		Physijs.scripts.worker = scriptStats.scripts.physijs_worker;
-		Physijs.scripts.ammo = scriptStats.scripts.ammojs;
-		this.objects = new Physijs.Scene();
-		this.physicsFramerate = 6;
+		// Sky
+		var sky = BABYLON.Mesh.CreateBox( "skybox", 1000, this.scene, false, BABYLON.Mesh.BACKSIDE );
+		sky.material = new BABYLON.SkyMaterial( "sky", this.scene );
+		sky.material.inclination = -0.35;
+
+
+		//Creates a camera - remove this later
+		var camera = new BABYLON.FreeCamera( "camera", new BABYLON.Vector3( 0, 5, -10 ), this.scene );
+		camera.setTarget( BABYLON.Vector3.Zero() );
+		camera.attachControl( this.canvas, false );
+
+		/*var ssr = new BABYLON.ScreenSpaceReflectionPostProcess(
+			"ssr", // The name of the post-process
+			this.scene, // The scene where to add the post-process
+			1.0, // The ratio of the post-process
+			camera // To camera to attach the post-process
+			);*/
+
+		// Spotlight
+		var light = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(0, 10, 5), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 2, this.scene);
+		light.setDirectionToTarget( new BABYLON.Vector3( 0, 0, 0 ) );
+
+		// Shadows
+		var shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
+		shadowGenerator.setDarkness(0.5);
+		shadowGenerator.usePercentageCloserFiltering = true;
+		shadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_MEDIUM;
+
+		// Sphere
+
+		//light.shadowMaxZ = 20;
+		//light.shadowMinZ = 3;/???
+
+		// glTF files!
+		//???
 
 		// Sets up the canvas
 		this.element.appendChild( this.canvas );
 		document.body.appendChild( this.element );
 
 		// Updates the scene
-		this.render( scene );
-
-		// sky
-		if ( extras.sky ) {
-
-			scene.sky = new Proton3DObject( { type: "sky", sunPosition: new THREE.Vector3( 0, 100, 0 ) } );
-			this.objects.add( getMeshByName( scene.sky.name ) );
-
-		}
-
-		// Super HDR stuff
-		var hdrRenderTarget = new THREE.WebGLMultisampleRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, stencilBuffer: false } );
-		var scenePass = new THREE.RenderPass( this.objects, getMeshByName( scene.camera.name ) );
-		this.composer = new THREE.EffectComposer( this.renderer, hdrRenderTarget );
-		this.composer.addPass( scenePass );
-		this.renderer.toneMapping = THREE.ReinhardToneMapping;
-		this.renderer.toneMappingExposure = 2;
-
-		// Bloom + adaptive tone mapping
-		if ( extras.hdr ) {
-
-			extras.bloom = true;
-			extras.dynamicToneMapping = true;
-
-		}
-
-		if ( extras.bloom ) {
-
-			var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 0.3, 1, 0.99 /*0.3, 1, 0.985*/ );
-			//
-			this.composer.addPass( bloomPass );
-
-		}
-
-		if ( extras.dynamicToneMapping ) {
-
-			var adaptToneMappingPass = new THREE.AdaptiveToneMappingPass( true, 32 );
-			adaptToneMappingPass.needsSwap = true;
-			//
-			this.composer.addPass( adaptToneMappingPass );
-
-		}
-
-		// Anisotropic filtering
-		if ( extras.anisotropicFiltering ) {
-
-			this.anisotropicFiltering = this.renderer.capabilities.getMaxAnisotropy();
-
-		}
-
-		// Hemisphere light
-		this.hemisphereLight = new THREE.HemisphereLight( 0xf1f1f1, 0x080808, 1 );
-		this.objects.add( this.hemisphereLight );
-
-		// Dynamic resolution
-		if ( extras.dynamicResolution ) {
-
-			var interpreter = this;
-			setInterval( function () {
-
-				interpreter.composer.setPixelRatio( ( interpreter.fps / 60 ) / ( extras.dynamicResolutionFactor || 4 ) );
-				interpreter.renderer.setPixelRatio( ( interpreter.fps / 60 ) / ( extras.dynamicResolutionFactor || 4 ) );
-
-			}, 500 );
-			scene.priorityExtraFunctions.push( function () {
-
-				// getting the fps, slightly modified from https://www.growingwiththeweb.com/2017/12/fast-simple-js-fps-counter.html
-				const now = performance.now();
-				while ( interpreter.fpsMeasurements.length > 0 && interpreter.fpsMeasurements[ 0 ] <= now - 1000 ) {
-
-					interpreter.fpsMeasurements.shift();
-
-				}
-
-				interpreter.fpsMeasurements.push( now );
-				interpreter.fps = interpreter.fpsMeasurements.length;
-
-			} );
-
-		}
+		this.engine.runRenderLoop( function(){
+			interpreter.engine.resize();
+			interpreter.scene.render();
+		} );
 
 		// Starts the scene
 		this.updateScene( scene );
@@ -441,6 +148,11 @@ class Proton3DInterpreter {
 
 	}
 
+	// "Render" -- an empty function
+	render() {
+
+	}
+
 	// Dynamically resizes the scene when the page is resized
 	dynamicResize( scene ) {
 
@@ -448,13 +160,7 @@ class Proton3DInterpreter {
 		
 		window.addEventListener( "resize", function () {
 
-			scene.camera.changeAspectRatio( window.innerWidth / window.innerHeight );
-			intepreter.renderer.setSize( window.innerWidth, window.innerHeight );
-			if ( interpreter.composer ) {
-
-				interpreter.composer.setSize( window.innerWidth, window.innerHeight );
-
-			}
+			interpreter.engine.resize();
 
 		} );
 		scene.camera.changeAspectRatio( window.innerWidth / window.innerHeight );
@@ -688,22 +394,6 @@ class Proton3DInterpreter {
 	removeFromScene( object ) {
 
 		this.objects.remove( getMeshByName( object.name ) || object );
-
-	}
-
-	// Renders a scene
-	render() {
-
-		// physics -- physijs
-		meshes.forEach( function ( mesh ) {
-
-			if ( mesh.__dirtyPosition === false ) mesh.__dirtyPosition = true;
-
-		} );
-		if ( this.ready ) this.objects.simulate();
-
-		// rendering -- three.js
-		this.composer ? this.composer.render() : this.renderer.render( this.objects, getMeshByName( Proton.scene.camera.name ) );
 
 	}
 
@@ -2584,50 +2274,3 @@ class Proton3DInterpreter {
 	audio = Audio
 	storage = localStorage
 };
-/*
-	~> wrapper/loc:4.5
-	Proton3D Tools
-*/
-class GameCode {
-
-	constructor( code ) {
-
-		this.code = code;
-
-	}
-	load( url ) {
-
-		import( url );
-
-	}
-	run() {
-
-		if ( typeof this.code == "string" ) {
-
-			eval( this.code );
-
-		} else {
-
-			this.code();
-
-		}
-
-	}
-	autoStart() {
-
-		var code = this,
-			interval = setInterval( function () {
-
-				code.loadingPercentage = ( scriptStats.loadedScripts / scriptStats.maxScripts ) * 100;
-				if ( code.loadingPercentage == 100 ) {
-
-					clearInterval( interval );
-					code.run();
-
-				}
-
-			}, 1500 );
-
-	}
-
-}
