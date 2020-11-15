@@ -89,12 +89,12 @@ function init( scripts ) {
 			physijs: "https://rawcdn.githack.com/chandlerprall/Physijs/7a5372647f5af47732e977c153c0d1c2550950a0/physi.js"/*2.0: "https://rawcdn.githack.com/chandlerprall/Physijs/48a1b454c72a4a4baffce3f90ea46af5b2644bc2/dist/physi.js"*/,
 			physijs_worker: "/home/pastthepixels/git/proton/accessories/physijs_worker_modified.js",
 			cannonjs: "https://rawcdn.githack.com/pmndrs/cannon-es/2f32049449bcc98417ff196084fd1e50b5c29686/dist/cannon-es.js",
-			ammojs: "https://rawcdn.githack.com/kripken/ammo.js/a4bec933859e452acd2c18e4152ac2a6a95e806f/builds/ammo.js",
-			ammoJS: "https://rawcdn.githack.com/mrdoob/three.js/60cbc05dfa4ce8c33e7abb5c5119e4e97eea1ea9/examples/js/libs/ammo.wasm.js",
+			ammojs: "https://cdn.babylonjs.com/ammo.js",
 			threeammo: "https://rawcdn.githack.com/mrdoob/three.js/60cbc05dfa4ce8c33e7abb5c5119e4e97eea1ea9/examples/jsm/physics/AmmoPhysics.js",
 			// BabylonJS
 			babylonjs: "https://cdn.babylonjs.com/babylon.js",
-			babylonjs_materials: "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.js"
+			babylonjs_materials: "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.js",
+			babylonjs_loaders: "https://preview.babylonjs.com/loaders/babylonjs.loaders.js"
 		};
 
 	}
@@ -126,7 +126,7 @@ function init( scripts ) {
 		} );
 
 		// Physics
-		importScript( scripts.ammoJS, false );
+		importScript( scripts.ammojs, false );
 		importScript( scripts.threeammo, "THREE", function() {
 			console.log( true )
 		} );
@@ -134,6 +134,7 @@ function init( scripts ) {
 		// BabylonJS
 		importScript( scripts.babylonjs, true, function() {
 			importScript( scripts.babylonjs_materials, true );
+			importScript( scripts.babylonjs_loaders, true );
 		} );
 
 	} );
@@ -700,7 +701,7 @@ class Proton3DInterpreter {
 			if ( mesh.__dirtyPosition === false ) mesh.__dirtyPosition = true;
 
 		} );
-		if ( this.ready ) this.objects.simulate();
+		this.objects.simulate();
 
 		// rendering -- three.js
 		this.composer ? this.composer.render() : this.renderer.render( this.objects, getMeshByName( Proton.scene.camera.name ) );

@@ -68,11 +68,24 @@ Proton3DInterpreter = class {
 			this.scene, // The scene where to add the post-process
 			1.0, // The ratio of the post-process
 			camera // To camera to attach the post-process
-			);*/
+		);*/
 
+		new BABYLON.HemisphericLight( "Potato", new BABYLON.Vector3( 0, 1, 0 ), this.scene )
 		// Spotlight
 		var light = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(0, 10, 5), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 2, this.scene);
 		light.setDirectionToTarget( new BABYLON.Vector3( 0, 0, 0 ) );
+
+		// Postprocessing
+		/*var defaultPipeline = new BABYLON.DefaultRenderingPipeline("default", true, this.scene, [ camera ]);
+		defaultPipeline.chromaticAberrationEnabled = true;
+		defaultPipeline.chromaticAberration.aberrationAmount = 3;
+		defaultPipeline.grainEnabled = true;
+		defaultPipeline.grain.animated = true;
+		defaultPipeline.grain.intensity = 3;
+		defaultPipeline.fxaaEnabled = true;
+		defaultPipeline.bloomEnabled = true;
+		defaultPipeline.depthOfFieldEnabled = true;
+		defaultPipeline.depthOfField.focusDistance = 10000;*/
 
 		// Shadows
 		var shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
@@ -80,13 +93,96 @@ Proton3DInterpreter = class {
 		shadowGenerator.usePercentageCloserFiltering = true;
 		shadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_MEDIUM;
 
-		// Sphere
+		
+		// Ground
+		var ground = BABYLON.MeshBuilder.CreateBox( "ground", { width: 10, height: .5, depth: 10 }, this.scene );
+		ground.receiveShadows = true;
+		//box.material = new BABYLON.StandardMaterial( "boxmaterial", this.scene );
 
-		//light.shadowMaxZ = 20;
-		//light.shadowMinZ = 3;/???
+		// Physics
+		var gravityVector = new BABYLON.Vector3(0,-9.81, 0);
+		var physicsPlugin = new BABYLON.AmmoJSPlugin();
+		this.scene.enablePhysics(gravityVector, physicsPlugin);
+
+		// Box
+		window.cube = function() {
+
+			var box = BABYLON.MeshBuilder.CreateBox( "box", { height: 1, width: 1, depth: 1 }, interpreter.scene );
+			box.position.y = 5;
+			//box.material = new BABYLON.StandardMaterial( "boxmaterial", this.scene );
+			shadowGenerator.addShadowCaster( box )
+			box.physicsImpostor = new BABYLON.PhysicsImpostor( box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0.1 }, interpreter.scene );
+
+		}
+		ground.physicsImpostor = new BABYLON.PhysicsImpostor( ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0 }, this.scene );
 
 		// glTF files!
-		//???
+		var makePhysicsObject = (newMeshes, scene, scaling)=>{
+			// Create physics root and position it to be the center of mass for the imported mesh
+			var physicsRoot = new BABYLON.Mesh("physicsRoot", scene);
+			physicsRoot.position.y -= 0.9;
+		
+			// For all children labeled box (representing colliders), make them invisible and add them as a child of the root object
+			newMeshes.forEach((m, i)=>{
+				if(m.name.indexOf("box") != -1){
+					m.isVisible = false
+					physicsRoot.addChild(m)
+				}
+			})
+		
+			// Add all root nodes within the loaded gltf to the physics root
+			newMeshes.forEach((m, i)=>{
+				if(m.parent == null){
+					physicsRoot.addChild(m)
+				}
+			})
+		
+			// Make every collider into a physics impostor
+			physicsRoot.getChildMeshes().forEach((m)=>{
+				if(m.name.indexOf("box") != -1){
+					m.scaling.x = Math.abs(m.scaling.x)
+					m.scaling.y = Math.abs(m.scaling.y)
+					m.scaling.z = Math.abs(m.scaling.z)
+					m.physicsImpostor = new BABYLON.PhysicsImpostor(m, BABYLON.PhysicsImpostor.ConvexHullImpostor, { mass: 0.1 }, scene);
+				}
+			})
+			
+			// Scale the root object and turn it into a physics impsotor
+			physicsRoot.scaling.scaleInPlace(scaling)
+			physicsRoot.physicsImpostor = new BABYLON.PhysicsImpostor(physicsRoot, BABYLON.PhysicsImpostor.NoImpostor, { mass: 3 }, scene);
+			
+			return physicsRoot
+		}
+		function mergeSameMaterials( objects, name ) {
+
+			var similarMeshes = [];
+			var similarMaterials = [];
+			objects.forEach( ( object ) => {
+
+				console.log( object )				
+				if ( object.name && object.name.includes( name ) ) {
+
+					similarMeshes.push( object )
+					similarMaterials.push( object.material )
+
+				}
+
+			} );
+
+			return BABYLON.Mesh.MergeMeshes( similarMeshes, undefined, undefined, undefined, undefined, similarMaterials );
+
+		}
+		window.wizard = async function () {
+		
+			var mesh = ( await BABYLON.SceneLoader.ImportMeshAsync( "", /* Super secret URL */, "", interpreter.scene ) );
+			var m = mergeSameMaterials( mesh.meshes, "wiz" );
+			m.position.y = 10;
+			m.parent = undefined;
+			m.physicsImpostor = new BABYLON.PhysicsImpostor( m, BABYLON.PhysicsImpostor.ConvexHullImpostor, { mass: 3 }, interpreter.scene );
+			shadowGenerator.addShadowCaster( m );
+
+		}
+		wizard();
 
 		// Sets up the canvas
 		this.element.appendChild( this.canvas );
