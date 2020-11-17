@@ -41,16 +41,11 @@ class Proton3DScene {
 	}
 	init( extras = {} ) {
 
-		// variables
-		this.camera = new Proton3DObject( {
-			type: "perspectivecamera",
-			viewportWidth: extras.width,
-			viewportHeight: extras.height
-		} );
-		this.camera.changeFar( 1000 );
-		
 		// initializing the interpreter
 		this.interpreter.init( extras, this )
+
+		// variables
+		this.camera = this.interpreter.camera // Should be a Proton3DObject
 		
 		
 		// extraFunctions
@@ -757,18 +752,8 @@ class Proton3DObject {
 
 		// gives children to the mesh
 		this.children = extras.children || [];
-		// gives the decision to skip a material replacement when initializing pbr
-		this.skipPBRReplacement = false;
 		// creates a mesh
 		Proton.scene.interpreter.create3DObject( extras, this );
-		if ( extras.type && ( extras.type == "sky" || extras.type.includes( "light" ) || extras.type.includes( "camera" ) ) ) {
-
-			this.setLinearVelocity = null;
-			this.setLinearVelocity = null;
-			this.getAngularVelocity = null;
-			this.getAngularVelocity = null;
-
-		}
 
 		// sets the mesh's position + rotation to any predefined values
 		this.setPosition( extras.x, extras.y, extras.z );
