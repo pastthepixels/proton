@@ -10,8 +10,6 @@
 
 */
 
-const { X_OK } = require("constants");
-
 /*
 	~> loc:1
 	Proton3D
@@ -364,13 +362,13 @@ class Proton3DScene {
 		extras.distance = extras.distance || new Proton.Vector3();
 		extras.xSensitivity = extras.xSensitivity || 10;
 		extras.ySensitivity = extras.ySensitivity || 10;
+		extras.scene = this;
 		//
 
 		returningObject.init = function () {
 
-			Proton.scene.interpreter.hidePointer();
+			//Proton.scene.interpreter.hidePointer();
 			Proton.resume();
-			Proton.scene.interpreter.setAudioControls( Proton.scene );
 			init();
 
 		};
@@ -378,17 +376,17 @@ class Proton3DScene {
 		//
 
 		function init() {
-
+			
 			var localPosClone = x.crosshair.localPosition.clone();
 
 			if ( ! extras.alreadyInitialized ) {
 
 				// physics
-				extras.cameraParent.setAngularFactor( 0, 0, 0 );
-				extras.cameraParent.setLinearFactor( 1.2, 1.2, 1.2 );
+				//extras.cameraParent.setAngularFactor( 0, 0, 0 );
+				//extras.cameraParent.setLinearFactor( 1.2, 1.2, 1.2 );
 
 				// everything else
-				extras.cameraParent.add( x.camera );
+				//extras.cameraParent.add( x.camera );
 				extras.cameraParent.cameraRotation = new Proton.Vector3();
 				extras.alreadyInitialized = true;
 
@@ -449,63 +447,7 @@ class Proton3DScene {
 
 			}
 
-			Proton.scene.interpreter.onMouseMove( function ( e ) {
-
-				if ( ! Proton.paused ) {
-
-					x.crosshair.__localPosition = Proton.rotateVector3(
-						new Proton.Vector3( 0, 1, 0 ),
-						- ( Proton.degToRad( e.movementX / extras.xSensitivity ) ),
-						localPosClone,
-						false,
-						true
-					);
-
-					//
-					var crosshairPos = ( e.movementY / ( extras.ySensitivity * 40 ) ) * ( x.crosshair.__localPosition.distanceTo( x.camera.getPosition() ) );
-					if (
-						// If it's third person and the camera is within a certain range
-						(
-							( x.cameraType === "thirdperson" || extras.type === "thirdperson" ) &&
-							(
-								( x.camera.getPosition().y - e.movementY / extras.ySensitivity ) > - 9 ||
-								( x.camera.getPosition().y - e.movementY / extras.ySensitivity ) < 9
-							)
-						) ||
-
-						//  If it's first person and the camera's within a certain range
-						(
-							x.cameraType != "thirdperson" &&
-							(
-								( x.crosshair.__localPosition.y - crosshairPos ) > - 8 &&
-								( x.crosshair.__localPosition.y - crosshairPos ) < 8
-							)
-						)
-					) {
-
-						x.crosshair.__localPosition.y -= ( e.movementY / ( extras.ySensitivity * 40 ) ) * ( x.crosshair.__localPosition.distanceTo( x.camera.getPosition() ) );
-
-						if ( x.cameraType === "thirdperson" || extras.type === "thirdperson" ) {
-
-							x.camera.setPosition( undefined, ( posY += e.movementY / extras.ySensitivity ), undefined );
-
-						}
-
-					}
-
-				}
-
-			} );
-			x.priorityExtraFunctions.push( function () {
-
-				//extras.cameraParent.setRotation( undefined, Proton.degToRad( 90 ), undefined );
-				x.crosshair.position = x.crosshair.__localPosition.clone().add( extras.cameraParent.getPosition() );
-				var pos = x.crosshair.position.clone();
-				pos.y = extras.cameraParent.getPosition().y;
-				//extras.cameraParent.lookAt( pos.x, pos.y, pos.z );
-				x.camera.lookAt( x.crosshair.position.x, x.crosshair.position.y, x.crosshair.position.z );
-
-			} );
+			Proton.scene.interpreter.setCameraControls( extras );
 			x.setPickingUpControls();
 
 		}
@@ -515,12 +457,6 @@ class Proton3DScene {
 		x.crosshair.localPosition = new Proton.Vector3( 0, 0, 1 );
 		x.crosshair.__localPosition = new Proton.Vector3( 0, 0, 0 );
 		//
-
-		if ( ! extras.cameraParent.parent ) {
-
-			x.add( extras.cameraParent );
-
-		}
 
 		Proton.pause();
 		returningObject.crosshair = x.crosshair;

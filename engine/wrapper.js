@@ -127,9 +127,7 @@ function init( scripts ) {
 
 		// Physics
 		importScript( scripts.ammojs, false );
-		importScript( scripts.threeammo, "THREE", function() {
-			console.log( true )
-		} );
+		importScript( scripts.threeammo, "THREE" );
 
 		// BabylonJS
 		importScript( scripts.babylonjs, true, function() {

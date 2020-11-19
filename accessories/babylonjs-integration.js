@@ -9,34 +9,7 @@ Proton3DInterpreter = class {
 
 			case 1 / 10:
 				break;
-
-			case 2 / 10:
-				break;
-
-			case 3 / 10:
-				break;
-
-			case 4 / 10:
-				break;
-
-			case 5 / 10:
-				break;
-
-			case 6 / 10:
-				break;
-
-			case 7 / 10:
-				break;
-
-			case 8 / 10:
-				break;
-
-			case 9 / 10:
-				break;
-
-			case 10 / 10:
-				break;
-
+			
 		}
 
 		// Sets up the scene
@@ -46,7 +19,7 @@ Proton3DInterpreter = class {
 		this.element = document.createElement( "scene" );
 		this.canvas = document.createElement( "canvas" );
 
-		// Resize break
+		// Take a break to resize the canvas
 		this.canvas.style.width = this.canvas.style.height = "100%";
 		this.canvas.width = window.innerWidth;
 		this.canvas.height = window.innerHeight
@@ -71,102 +44,25 @@ Proton3DInterpreter = class {
 		this.camera.setPosition( 0, 0, 5 )
 
 		// Creates a thing called a "HemisphericLight"
-		new BABYLON.HemisphericLight( "ambientLight", new BABYLON.Vector3( 0, 1, 0 ), this.scene )
+		var hemisphere = new BABYLON.HemisphericLight( "ambientLight", new BABYLON.Vector3( 0, 1, 0 ), this.scene );
+		hemisphere.intensity = .3;
+		hemisphere.specular = new BABYLON.Color3( 0, 0, 0 )
 		
 		// Spotlight
 		var light = new Proton3DObject( { type: "spotlight" } );
 		window.light = light;
-		light.setPosition( 0, 5, 0 )
-		light.lookAt( 0, 0, 1 )
+		light.setPosition( 5, 10, 0 );
+		light.intensity = 100;
+		light.lookAt( 0, 0, 1 );
+
 
 		// Postprocessing
-		/*var defaultPipeline = new BABYLON.DefaultRenderingPipeline("default", true, this.scene, [ camera ]);
-		defaultPipeline.chromaticAberrationEnabled = true;
-		defaultPipeline.chromaticAberration.aberrationAmount = 3;
-		defaultPipeline.grainEnabled = true;
-		defaultPipeline.grain.animated = true;
-		defaultPipeline.grain.intensity = 3;
-		defaultPipeline.fxaaEnabled = true;
-		defaultPipeline.bloomEnabled = true;
-		defaultPipeline.depthOfFieldEnabled = true;
-		defaultPipeline.depthOfField.focusDistance = 10000;
-		var ssao = new BABYLON.SSAORenderingPipeline( "ssaopipeline", this.scene, { ssaoRatio: 1, combineRatio: 1.0 }, [ camera ] );
-		ssao.fallOff = 0.000001;
-		ssao.area = 1;
-		ssao.radius = 0.0001;
-		ssao.totalStrength = 1.0;
-		ssao.base = 0.5;*/
-
-		
-		// Ground
-		var ground = BABYLON.MeshBuilder.CreateBox( "ground", { width: 10, height: .5, depth: 10 }, this.scene );
-		ground.receiveShadows = true;
-		ground.material = new BABYLON.StandardMaterial( "groundmaterial", this.scene );
-		ground.material.diffuseColor = new BABYLON.Color3( 0.1, 0.3, 0.2 );
-		ground.material.roughness = 1;
-		ground.material.metalness = 1;
+		/* var defaultPipeline = new BABYLON.DefaultRenderingPipeline("default", true, this.scene, [ camera ]); */
 
 		// Physics
-		var gravityVector = new BABYLON.Vector3(0,-9.81, 0);
+		var gravityVector = new BABYLON.Vector3( 0,-9.81, 0 );
 		var physicsPlugin = new BABYLON.AmmoJSPlugin();
-		this.scene.enablePhysics(gravityVector, physicsPlugin);
-
-		// Box
-		var height = 10;
-		window.cube = function() {
-
-			var box = BABYLON.MeshBuilder.CreateBox( "box", { height: 1, width: 1, depth: 1 }, interpreter.scene );
-			box.position.y = height;
-			box.material = new BABYLON.StandardMaterial( "boxmaterial", interpreter.scene );
-			box.receiveShadows = true;
-			//shadowGenerator.addShadowCaster( box )
-			box.physicsImpostor = new BABYLON.PhysicsImpostor( box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0.1 }, interpreter.scene );
-
-		}
-		ground.physicsImpostor = new BABYLON.PhysicsImpostor( ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0 }, this.scene );
-
-		// glTF files!
-		function mergeSameMaterials( objects ) {
-
-			var similarNames = [];
-			var newObjects = [];
-			objects.forEach( ( object ) => {
-
-				if ( object.name.includes( "_primitive" ) ) {
-
-					object.realName = object.name.substr( 0, object.name.indexOf( "_primitive" ) );
-					if ( similarNames.indexOf( object.realName ) == -1 ) similarNames.push( object.realName )
-
-				}
-
-			} );
-
-			similarNames.forEach( ( name ) => {
-				//
-				var similarMeshes = [];
-				var similarMaterials = [];
-				objects.forEach( ( object ) => {
-
-					if ( object.name && object.name.includes( name ) ) {
-
-						similarMeshes.push( object )
-						similarMaterials.push( object.material )
-
-					}
-
-				} );
-
-				newObjects.push( BABYLON.Mesh.MergeMeshes( similarMeshes, undefined, undefined, undefined, undefined, similarMaterials ) )
-
-			} )
-
-			return newObjects;
-
-		}
-		
-
-
-
+		this.scene.enablePhysics( gravityVector, physicsPlugin );
 
 		// Sets up the canvas
 		this.element.appendChild( this.canvas );
@@ -175,6 +71,7 @@ Proton3DInterpreter = class {
 		// Updates the scene
 		this.engine.runRenderLoop( function() {
 
+			//if ( wiz.objects ) { wiz.objects[ 0 ].setAngularVelocity( 0, 0, 0 ); }
 			interpreter.updateScene( scene )
 
 		} );
@@ -247,12 +144,114 @@ Proton3DInterpreter = class {
 	createShadowGenerator( light ) {
 
 		var shadowGenerator = new BABYLON.ShadowGenerator( 1024, light );
-		shadowGenerator.setDarkness( 0.5 );
 		shadowGenerator.usePercentageCloserFiltering = true;
 		shadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_MEDIUM;
-		shadowGenerator.bias = -0.005;
+		shadowGenerator.bias = 0.005;
 		this.shadowGenerators.push( shadowGenerator )
 
+	}
+
+	// Sets camera controls
+	setCameraControls( params ) {
+		
+		/*switch ( params.type ) {
+
+			case "thirdperson":
+				
+				//extras.camera.lockedTarget = ???;
+				break;
+			
+			default:
+				
+				this.onMouseMove( function ( e ) {
+
+					var pos = getMeshByName( params.scene.camera.name ).getFrontPosition( 1 ).multiply( new BABYLON.Vector3( 2, 2, 2 ) )//.add( params.cameraParent.position );
+					pos.y = params.cameraParent.position.y
+					params.cameraParent.lookAt( pos.x, pos.y, pos.z );
+					params.cameraParent.setRotation( 0, undefined, 0 )
+
+				} );
+				params.scene.priorityExtraFunctions.push( function() {
+
+					var pos = params.cameraParent.position.add( new BABYLON.Vector3( 0, 1.6, 0 ) )			
+					params.scene.camera.setPosition( pos.x, pos.y, pos.z )
+
+				} )
+
+		}
+		this.engine.isPointerLock = true;*/
+		/*
+		var extras = params, x = extras.scene, localPosClone = x.crosshair.localPosition.clone();
+		Proton.scene.interpreter.onMouseMove( function ( e ) {
+
+			if ( ! Proton.paused ) {
+
+				x.crosshair.__localPosition = Proton.rotateVector3(
+					new Proton.Vector3( 0, 1, 0 ),
+					( Proton.degToRad( e.movementX / extras.xSensitivity ) ),
+					localPosClone,
+					false,
+					true
+				);
+
+				//
+				var crosshairPos = ( e.movementY / ( extras.ySensitivity * 40 ) ) * ( x.crosshair.__localPosition.distanceTo( x.camera.getPosition() ) );
+				if (
+					// If it's third person and the camera is within a certain range
+					(
+						( x.cameraType === "thirdperson" || extras.type === "thirdperson" ) &&
+						(
+							( x.camera.getPosition().y - e.movementY / extras.ySensitivity ) > - 9 ||
+							( x.camera.getPosition().y - e.movementY / extras.ySensitivity ) < 9
+						)
+					) ||
+
+					//  If it's first person and the camera's within a certain range
+					(
+						x.cameraType != "thirdperson" &&
+						(
+							( x.crosshair.__localPosition.y - crosshairPos ) > - 8 &&
+							( x.crosshair.__localPosition.y - crosshairPos ) < 8
+						)
+					)
+				) {
+
+					x.crosshair.__localPosition.y -= ( e.movementY / ( extras.ySensitivity * 40 ) ) * ( x.crosshair.__localPosition.distanceTo( x.camera.getPosition() ) );
+
+					if ( x.cameraType === "thirdperson" || extras.type === "thirdperson" ) {
+
+						x.camera.setPosition( undefined, ( posY += e.movementY / extras.ySensitivity ), undefined );
+
+					}
+
+				}
+
+			}
+
+		} );
+		x.priorityExtraFunctions.push( function () {
+
+			//extras.cameraParent.setRotation( undefined, Proton.degToRad( 90 ), undefined );
+			x.crosshair.position = x.crosshair.__localPosition.clone().add( extras.cameraParent.getPosition() );
+			var pos = x.crosshair.position.clone();
+			pos.y = extras.cameraParent.getPosition().y;
+			extras.cameraParent.lookAt( pos.x, pos.y, pos.z );
+			//extras.cameraParent.setAngularVelocity( 0, 0, 0 )
+			x.camera.lookAt( x.crosshair.position.x, x.crosshair.position.y, x.crosshair.position.z );
+			//
+			var pos = params.cameraParent.position.add( new BABYLON.Vector3( 0, 1.6, 0 ) )			
+			params.scene.camera.setPosition( pos.x, pos.y, pos.z )
+
+		} );*/
+		var scene = this.scene;
+		var camera = getMeshByName( params.scene.camera.name );
+		scene.gravity = new BABYLON.Vector3(0, -0.2, 0);
+		scene.collisionsEnabled = true;
+		camera.checkCollisions = true;
+		camera.applyGravity = true;
+        camera.ellipsoid = new BABYLON.Vector3(0.4, 1, 0.4);
+       //camera.maxZ=1000
+        //camera.minZ=0
 	}
 
 
@@ -268,9 +267,11 @@ Proton3DInterpreter = class {
 			case "perspectivecamera":
 				
 				// Creates the camera
-				var camera = new BABYLON.FreeCamera( object.name, new BABYLON.Vector3(0, 0, 1), interpreter.scene);
-				camera.setTarget(BABYLON.Vector3.Zero());
-				camera.attachControl(true);
+				var camera = new BABYLON.UniversalCamera( object.name, new BABYLON.Vector3( 0, 0, 1 ), interpreter.scene );
+				camera.inertia = 0;
+				camera.angularSensitivity = 100;
+				camera.setTarget( BABYLON.Vector3.Zero() );
+				camera.attachControl( true );
 				meshes.push( camera );
 
 				// Adds Proton functions
@@ -363,9 +364,14 @@ Proton3DInterpreter = class {
 
 				// Makes the cube
 				var cube = BABYLON.MeshBuilder.CreateBox( object.name, { width: extras.width, height: extras.height, depth: extras.depth }, this.scene );
-				cube.receiveShadows = true;
-				cube.name = object.name;
 				meshes.push( cube );
+				cube.name = object.name;
+
+				// Shadows
+				cube.receiveShadows = true;
+
+				// Physics: initiates after a short timeout (no idea why there is a timeout needed)
+				if ( extras.noPhysics != true ) setTimeout( () => cube.physics = new BABYLON.PhysicsImpostor( cube, BABYLON.PhysicsImpostor.BoxImpostor, { mass: extras.mass || 0.1 }, this.scene ), 500 )
 
 				// cube stuff
 				object.width = extras.width;
@@ -389,8 +395,17 @@ Proton3DInterpreter = class {
 				
 				extras.type = "sphere";
 				
-				// Creates the sphere
-				//??
+				// Makes the sphere
+				var sphere = BABYLON.MeshBuilder.CreateBox( object.name, { radius: extras.radius }, this.scene );
+				meshes.push( sphere );
+				sphere.name = object.name;
+
+				// Shadows
+				sphere.receiveShadows = true;
+
+				// Physics
+				if ( extras.noPhysics != true ) setTimeout( () => sphere.physics = new BABYLON.PhysicsImpostor( sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: extras.mass || 0.1 }, this.scene ), 500 )
+
 
 				sphere.name = object.name;
 				meshes.push( sphere );
@@ -497,6 +512,9 @@ Proton3DInterpreter = class {
 				};
 			
 		}
+
+		// Shadows
+		if ( getMeshByName( object.name ).geometry && extras.type != "sky" ) interpreter.shadowGenerators.forEach( ( generator ) => generator.addShadowCaster( getMeshByName( object.name ) ) );
 
 		// Sets the rotation if there is none
 		getMeshByName( object.name ).rotation = getMeshByName( object.name ).rotation || BABYLON.Vector3.Zero();
@@ -627,12 +645,12 @@ Proton3DInterpreter = class {
 		},
 		setLinearFactor( x = 0, y = 0, z = 0, P3DObject ) {
 
-			getMeshByName( P3DObject.name ).setLinearFactor( new BABYLON.Vector3( x, y, z ) );
+			getMeshByName( P3DObject.name ).physics.setLinearFactor( new BABYLON.Vector3( x, y, z ) );
 
 		},
 		setAngularFactor( x = 0, y = 0, z = 0, P3DObject ) {
 
-			getMeshByName( P3DObject.name ).setAngularFactor( new BABYLON.Vector3( x, y, z ) );
+			getMeshByName( P3DObject.name ).physics.setAngularFactor( new BABYLON.Vector3( x, y, z ) );
 
 		},
 		addEventListener( name, callback, P3DObject ) {
@@ -761,6 +779,12 @@ Proton3DInterpreter = class {
 			
 			}
 
+			if ( getMeshByName( P3DObject.name ).setTarget ) {
+			
+				getMeshByName( P3DObject.name ).setTarget( new BABYLON.Vector3( x, y, z ) );
+			
+			}
+
 			if ( getMeshByName( P3DObject.name ).lookAt ) {
 
 				getMeshByName( P3DObject.name ).lookAt( new BABYLON.Vector3( x, y, z ) );
@@ -822,584 +846,152 @@ Proton3DInterpreter = class {
 
 	importObject( extras ) {
 
-		// variables
-		var loader,
-			// The object itself
-			x = {},
-			interpreter = extras.interpreter,
-			scene;
-		// output stuff
-		x.objects = [];
-		x.animations = [];
-		x.raw = null;
+		// Variables
+		var object = {},
+			interpreter = extras.interpreter;
 
-		// Gets the loader and loads the file:
-		// Sets extras.type (what the loader should expect to be loading)
-		if ( extras.type == undefined ) extras.type = "gltf";
-		extras.type = extras.type.toLowerCase();
-		// Decides whether the file is a glTF or FBX file and loads it, and then sends that information to a unified load-finish function.
-		if ( extras.type == "gltf" ) {
+		// Supports glTF only right now
+		load();
+		async function load() {
+			
+			// Loads the mesh
+			var mesh = await BABYLON.SceneLoader.ImportMeshAsync( "", extras.path, "", interpreter.scene );
+			var meshes = mergeSameMaterials( mesh.meshes );
+			
+			// Loads shadows
+			loadShadows( meshes );
 
-			loader = new THREE.GLTFLoader( extras.loadManager );
-			loader.load( extras.path, function ( object ) {
+			// Turns the loaded mesh to a Proton3DObject
+			object.objects = meshToProton( meshes );
 
-				finishLoad( object );
+			// Loads physics
+			if ( ! extras.noPhysics ) loadPhysics( meshes );
 
-			} );
+			// Sets the starter position (if any)
+			if ( extras.position )  {
+				
+				object.objects.forEach( ( P3DObject ) => { 
+					
+					var pos = P3DObject.getPosition().add( new BABYLON.Vector3( extras.position.x, extras.position.y, extras.position.z ) );
+					P3DObject.setPosition( pos.x, pos.y, pos.z );
 
-		} else {
-
-			loader = new THREE.FBXLoader( extras.loadManager );
-			loader.load( extras.path, function ( object ) {
-
-				finishLoad( object );
-
-			} );
-
-		}
-
-		// gets the loaded objects and completes the function
-		function finishLoad( load ) {
-
-			scene = extras.type == "gltf" ? load.scene : load;
-			// "registers" each object as a physics object
-			if ( extras.noPhysics != true ) {
-
-				scene.children.forEach( loadObjectPhysics );
-
-			} else {
-
-				if ( extras.starterPos ) {
-
-					scene.position.add( extras.starterPos );
-
-				}
-
-				scene.children.forEach( function ( child ) {
-
-					if ( extras.starterPos && child.position ) {
-
-						child.position.add( extras.starterPos );
-
-					}
-
-					// armature
-					if ( child.name.toLowerCase().includes( "armature" ) && extras.armature ) {
-
-						child.children[ child.children.length - 1 ].armature = child;
-
-					}
-
-				} );
-
+				} )
 
 			}
 
-			// shadows
-			scene.children.forEach( castShadow );
-			function castShadow( c ) {
-
-				if ( extras.castShadow != false ) {
-
-					c.castShadow = true;
-
-				}
-
-				if ( extras.receiveShadow != false ) {
-
-					c.receiveShadow = true;
-
-				}
-
-				if ( c.children ) c.children.forEach( castShadow );
-
-			}
-
-			// animations
-			if ( load.animations && load.animations.length ) {
-
-				if ( extras.starterPos ) {
-
-					scene.position.set( extras.starterPos.x, extras.starterPos.y, extras.starterPos.z );
-
-				}
-
-				var mixer = new THREE.AnimationMixer( scene ),
-					clock = 1 / 60;
-				for ( var i in load.animations ) {
-
-					var animation = {
-						rootAction: mixer.clipAction( load.animations[ i ] ),
-						repeat: false,
-						playing: false,
-						play: function ( animatingObjects = [], presetPosition = undefined, presetRotation = undefined ) {
-
-							// 	presetPosition = new THREE.Vector3( 0, 0, 0 )
-							if ( this.playing ) {
-
-								console.error( "An animation is currently in progress. Stop the current animation before playing it again." );
-								return;
-
-							}
-
-							// variables
-							var x = this,
-								tracks = [];
-							this.animatingObjects = animatingObjects;
-							// creating a new action and making its values relative to an object
-							this.action = { ...this.rootAction };
-							this.animatingObjects.forEach( function ( P3DObject ) {
-
-								var object = getMeshByName( P3DObject.name );
-								x.action._clip.tracks.forEach( function ( track, i ) {
-
-									if ( track.name.includes( object.name.replace( /_copy/ig, "" ) ) ) {
-
-										if ( track.name.includes( "position" ) ) {
-
-											var xyz = 0, values = [], position = presetPosition || object.position;
-											track.values.forEach( function ( value ) {
-
-												var result = value;
-												if ( xyz == 0 ) {
-
-													result = value + position.x;
-
-												}
-
-												if ( xyz == 1 ) {
-
-													result = value + position.y;
-
-												}
-
-												if ( xyz == 2 ) {
-
-													result = value + position.z;
-
-												}
-
-												values.push( result );
-												//
-												xyz ++;
-												if ( xyz == 3 ) xyz = 0;
-
-											} );
-											tracks[ i ] = new THREE.KeyframeTrack( track.name, track.times, values );
-
-										}
-
-										if ( track.name.includes( "quaternion" ) ) {
-
-											var wxyz = 0, values = [], quaternion = presetRotation || object.quaternion;
-											track.values.forEach( function ( value ) {
-
-												var result = value;
-												if ( wxyz == 0 ) {
-
-													result = value + quaternion.x;
-
-												}
-
-												if ( wxyz == 1 ) {
-
-													result = value + quaternion.y;
-
-												}
-
-												if ( wxyz == 2 ) {
-
-													result = value + quaternion.z;
-
-												}
-
-												if ( wxyz == 3 ) {
-
-													// 	result = value + quaternion.w
-
-												}
-
-												values.push( result );
-												//
-												wxyz ++;
-												if ( wxyz == 4 ) wxyz = 0;
-
-											} );
-											tracks[ i ] = new THREE.KeyframeTrack( track.name, track.times, values );
-
-										}
-
-									}
-
-								} );
-
-							} );
-							this.action._clip = new THREE.AnimationClip( x.action._clip.name, x.action._clip.duration, tracks );
-							this.action = mixer.clipAction( this.action._clip );
-							//
-							var x = this,
-								actionMatches = [
-									"clampwhenfinished",
-									"enabled",
-									"loop",
-									"paused",
-									"repetitions",
-									"time",
-									"timescale",
-									"weight",
-									"zeroslopeatend",
-									"zeroslopeatstart"
-								];
-							for ( var i in action ) {
-
-								if ( actionMatches.indexOf( i.toLowerCase() ) != - 1 ) x.action[ i ] = action[ i ];
-
-							}
-
-							//
-							this.action.clampWhenFinished = true;
-							this.action.repetitions = this.repeat ? Infinity : 0;
-							this.action.enabled = true;
-							this.action.paused = false;
-							this.playing = true;
-							this.action.play();
-							var action = this.action;
-							this.animation = setInterval( function () {
-
-								if ( action.paused ) {
-
-									x.stop();
-									return;
-
-								}
-
-								// update all animating objects
-								mixer.update( clock );
-								// add the position of all animating objects with its initial position
-								x.animatingObjects.forEach( function ( object ) {
-
-									object.applyLocRotChange();
-									object.__animationLastPosition = object.position.clone();
-									object.__animationLastRotation = getMeshByName( object.name ).quaternion.clone();
-
-								} );
-
-							}, 30 );
-
-						},
-						stop: function () {
-
-							this.action.stop();
-							this.action.reset();
-							this.rootAction.stop();
-							this.rootAction.reset();
-							this.action.paused = true;
-							this.playing = false;
-							if ( this.animation ) {
-
-								clearInterval( this.animation );
-
-							}
-
-							if ( this.animatingObjects ) {
-
-								this.animatingObjects.forEach( function ( object ) {
-
-									if ( object.__animationLastPosition ) {
-
-										object.setPosition(
-											object.__animationLastPosition.x,
-											object.__animationLastPosition.y,
-											object.__animationLastPosition.z
-										);
-										object.applyLocRotChange();
-
-									}
-
-									if ( object.__animationLastRotation ) {
-
-										getMeshByName( object.name ).quaternion.copy( object.__animationLastRotation );
-										object.applyLocRotChange();
-
-									}
-
-									object.__animationLastPosition = undefined;
-									object.__animationLastRotation = undefined;
-
-								} );
-
-							}
-
-						}
-					};
-					animation.name = animation.rootAction._clip.name;
-					animation.rootAction.paused = true;
-					x.animations[ i ] = animation;
-
-				}
-
-				x.animations.stopAll = function () {
-
-					x.animations.forEach( function ( animation ) {
-
-						animation.stop();
-
-					} );
-					mixer.stopAllAction();
-
-				};
-
-			}
-
-			// creating Proton3D objects
-			scene.children.forEach( convertObjectToProton3D );
-			x.getObjectByName = function ( name ) {
-
-				return x.objects.find( function ( child ) {
-
-					return child.name.includes( name );
-
-				} );
-
-			}
-			;
-
-			x.raw = scene;
-			//
-			x.objects.forEach( function ( object ) {
-
-				Proton.scene.add( object );
-
-			} );
-			Proton.scene.add( scene );
+			// Now you can do onload stuff
 			if ( extras.onload ) {
 
-				extras.onload( scene );
-
-			}
-
-			if ( x.onload ) {
-
-				x.onload( scene );
+				object.onload = extras.onload;
+				object.onload()
 
 			}
 
 		}
 
-		function convertObjectToProton3D( mesh ) {
+		// Merges materials for glTF files
+		function mergeSameMaterials( objects ) {
 
-			if ( mesh.children ) {
+			var similarNames = [];
+			var newObjects = [];
+			objects.forEach( ( object ) => {
 
-				mesh.children.forEach( convertObjectToProton3D );
+				// Alters the material before doing anything else to it
+				if ( object.material ) object.material.usePhysicalLightFalloff = false;
+				
+				if ( object.name.includes( "_primitive" ) ) {
 
-			}
-
-			if ( ! mesh.material && ! mesh.geometry ) {
-
-				return;
-
-			}
-
-			// build the 3d object
-			var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } );
-
-			if ( mesh.__physicsArmatureParent ) {
-
-				// sets the skeleton in the P3DObject to that in the three.js object.
-				object.armature = mesh.armature;
-				object.skeleton = mesh.skeleton;
-				mesh.__physicsArmatureParent.object = object;
-
-			}
-
-			if ( object.armature ) {
-
-				if ( mesh.__physicsArmatureParent ) {
-
-					// sets the position of the mesh to be 0, 0, and 0.
-					mesh.position.set( 0, 0, 0 );
-
-					// "hides" the physics object
-					delete mesh.__physicsArmatureParent.material.visible;
-					Object.defineProperty( mesh.__physicsArmatureParent.material, "visible", { configurable: false, writable: false, value: false } );
-
-					// sets the P3DMaterial in the physics object to be rerouting to the material in the armature
-					mesh.__physicsArmatureParent.p3dParent.material = object.material;
-
-					// adds the armature to the physics object
-					mesh.__physicsArmatureParent.add( object.armature );
-					mesh.armatureObject = true;
-					mesh.__physicsArmatureParent.p3dParent.physicsObject = true;
-					object.armature.add( getMeshByName( object.name ) );
+					object.realName = object.name.substr( 0, object.name.indexOf( "_primitive" ) );
+					if ( similarNames.indexOf( object.realName ) == -1 ) similarNames.push( object.realName )
 
 				} else {
 
-					object.armature.add( getMeshByName( object.name ) );
+					if ( object.parent && object.parent.name && object.parent.name.includes( "root" ) ) object.parent = undefined;// If the object is somehow tied to this "root" thing, get rid of the root object.
+					newObjects.push( object );
 
 				}
 
-			}
+			} );
 
-			// adds the object to the output of objects
-			x.objects.push( object );
-			meshes.push( mesh );
-			interpreter.initToScene( object, Proton.scene );
+			similarNames.forEach( ( name ) => {
+				//
+				var similarMeshes = [];
+				var similarMaterials = [];
+				objects.forEach( ( object ) => {
 
-		}
+					if ( object.name && object.name.includes( name ) ) {
 
-		function loadObjectPhysics( child, i ) {
 
-			var m = "Box", c = child;
-			// armature
-			if ( child.name.toLowerCase().includes( "armature" ) && extras.armature ) {
+						similarMeshes.push( object );
+						similarMaterials.push( object.material );
 
-				c = child.children[ child.children.length - 1 ].clone();
-				extras.accountForExtraProperties = true;
-
-			}
-
-			// geometry stuff
-			if ( c.isMesh && c.geometry != undefined ) {
-
-				// 'bakes' the scale into the geometry
-				c.geometry = c.geometry.type.toLowerCase() == "buffergeometry" ? new THREE.Geometry().fromBufferGeometry( c.geometry ) : c.geometry;
-				c.geometry.vertices.forEach( function ( vertex ) {
-
-					vertex.multiply( c.scale );
+					}
 
 				} );
-				// adds the starter position to the object's position.
-				if ( extras.starterPos ) {
 
-					c.position.add( extras.starterPos );
+				newObjects.push( BABYLON.Mesh.MergeMeshes( similarMeshes, undefined, undefined, undefined, undefined, similarMaterials ) )
 
-				}
+			} )
 
-			} else {
-
-				// if the object is not a mesh, forget about it.
-				if ( c.children ) {
-
-					c.children.forEach( loadObjectPhysics );
-
-				}
-
-				if ( c.position && extras.starterPos ) {
-
-					c.position.add( extras.starterPos );
-
-				}
-
-				return;
-
-			}
-
-			// if the object has a --noPhysics flag in its name, forget about it.
-			if ( c.name && c.name.includes( " --noPhysics" ) ) {
-
-				return;
-
-			}
-
-			// makes the geometry type (m) equal extras.objectType
-			if ( extras.objectType ) m = extras.objectType.charAt( 0 ).toUpperCase() + extras.objectType.slice( 1 );
-			// if the object has a --geometry flag in its name, extras.objectType will be overridden with this.
-			if ( c.name && c.name.includes( "--geometry-" ) ) {
-
-				m = c.name.slice( c.name.indexOf( "--geometry-" ) + 11, c.name.length );
-				m = m.charAt( 0 ).toUpperCase() + m.slice( 1 );
-				if ( m.includes( "_" ) ) {
-
-					m = m.slice( 0, m.indexOf( "_" ) );
-
-				}
-
-			}
-
-			// same as above, but for mass.
-			var mass = extras.mass || 0;
-			// same as above, but with a flag.
-			if ( c.name && c.name.includes( "--mass" ) ) {
-
-				mass = c.name.slice( c.name.indexOf( "--mass-" ) + 7, c.name.length );
-				if ( mass.includes( "_" ) ) {
-
-					mass = mass.slice( 0, mass.indexOf( "_" ) );
-
-				}
-
-				mass = parseFloat( mass );
-
-			}
-
-			// creates a physijs object
-			var physicalObject = new Physijs[ m + "Mesh" ](
-				c.geometry,
-				c.material,
-				mass,
-				{ mass: mass, friction: extras.friction, restitution: extras.restitution }
-			);
-			// sets the physics object's position, rotation and mass
-			physicalObject.position.copy( c.position );
-			physicalObject.quaternion.copy( c.quaternion );
-			physicalObject.rotation.copy( c.rotation );
-			physicalObject.__dirtyPosition = true;
-			physicalObject.__dirtyRotation = true;
-			// armature
-			if ( extras.armature ) {
-
-				// clones the physics object's material
-				physicalObject.material = physicalObject.material.clone();
-
-				// adds the physics object to the object list
-				scene.add( physicalObject );
-				scene.add( child );
-
-				// adds the armature to the object list
-				child.children[ child.children.length - 1 ].armature = child;
-				child.children[ child.children.length - 1 ].__physicsArmatureParent = physicalObject;
-				child.rotation.y += Proton.degToRad( 180 );
-				c = child.children[ child.children.length - 1 ];
-
-				return;
-
-			}
-
-			// gives the properties of the physics object to the child
-			physicalObject.children = c.children;
-			var propertiesToOmit = [
-				// the object's position, rotation, and scale
-				"position",
-				"rotation",
-				"quaternion",
-				"scale",
-				// the object's uuid, id, type, and name
-				"uuid",
-				"id",
-				"type",
-				"name",
-				// the object's parent and children
-				"parent",
-				"children"
-			];
-			for ( var i in physicalObject ) {
-
-				// if the property is not a property we should omit...
-				if ( propertiesToOmit.indexOf( i.toLowerCase() ) == - 1 ) {
-
-					// ...set that property in the child (initial) object.
-					c[ i ] = physicalObject[ i ];
-
-				}
-
-			}
-
-			c.scale.copy( physicalObject.scale );
-			// done
+			return newObjects;
 
 		}
 
-		return x;
+		// Loads physics for imported meshes
+		function loadPhysics( meshes ) {
+			
+			meshes.forEach( ( mesh ) => {
+				
+				mesh.physics = new BABYLON.PhysicsImpostor( mesh, BABYLON.PhysicsImpostor[ extras.physicsImpostor != undefined? extras.physicsImpostor : "ConvexHullImpostor" ], { mass: extras.mass == undefined? 1 : extras.mass }, interpreter.scene );
+
+			} )
+			
+		}
+
+		// Loads shadows for imported meshes
+		function loadShadows( meshes ) {
+			
+			meshes.forEach( ( mesh ) => {
+				
+				mesh.receiveShadows = true;
+				interpreter.shadowGenerators.forEach( ( generator ) => generator.addShadowCaster( mesh ) );
+
+			} )
+			
+		}
+
+		// Converts the meshes to Proton object
+		function meshToProton( meshes ) {
+
+			var objects = [];
+			meshes.forEach( ( mesh ) => {
+
+				if ( mesh.children ) {
+
+					mesh.children.forEach( convertObjectToProton3D );
+	
+				}
+	
+				if ( ! mesh.material && ! mesh.geometry ) {
+	
+					return;
+	
+				}
+
+				// Builds the 3DObject
+				var position = mesh.position.clone();
+				var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } );
+				object.setPosition( position.x, position.y, position.z );
+	
+				// Adds the object to the output of objects
+				objects.push( object )
+
+			} );
+			return objects;
+
+		}
+
+		return object;
 
 	}
 
