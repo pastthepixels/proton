@@ -269,7 +269,6 @@ Proton3DInterpreter = class {
 				// Creates the camera
 				var camera = new BABYLON.UniversalCamera( object.name, new BABYLON.Vector3( 0, 0, 1 ), interpreter.scene );
 				camera.inertia = 0;
-				camera.angularSensitivity = 100;
 				camera.setTarget( BABYLON.Vector3.Zero() );
 				camera.attachControl( true );
 				meshes.push( camera );
@@ -929,9 +928,9 @@ Proton3DInterpreter = class {
 
 				} );
 
-				newObjects.push( BABYLON.Mesh.MergeMeshes( similarMeshes, undefined, undefined, undefined, undefined, similarMaterials ) )
+				newObjects.push( BABYLON.Mesh.MergeMeshes( similarMeshes, true, true, undefined, false, true ) )
 
-			} )
+			} );
 
 			return newObjects;
 
@@ -998,26 +997,28 @@ Proton3DInterpreter = class {
 	// creating and modifing Proton3DMaterials
 	create3DMaterial( extras, P3DMaterial, parentObject ) {
 
-		if ( ! extras.material ) {
+		if ( extras.material == undefined ) {
 
-			var material = eval( "new THREE.Mesh" + ( extras.materialType ? ( extras.materialType.charAt( 0 ).toUpperCase() + extras.materialType.slice( 1 ) ) : "Standard" ) + "Material()" );
+			var material = new BABYLON.PBRMaterial( P3DMaterial.name, this.scene );
+			material.usePhysicalLightFalloff = false;
 			material.name = P3DMaterial.name;
-			material.transparent = true;
 			materials.push( material );
-			// 	parentObject.material = material;
+			parentObject.material = material;
 
 		} else {
 
 			extras.material.name = P3DMaterial.name;
-			extras.material.transparent = true;
 			materials.push( extras.material );
-			if ( extras.materialLocation != undefined || extras.materialLocation != null ) {
+			if ( extras.material.subMaterials ) {
 
-				parentObject.material[ extras.materialLocation ] = extras.material;
+				P3DMaterial.subMaterials = [];
+				extras.material.subMaterials.forEach( function( material ) {
 
-			} else {
+					P3DMaterial.subMaterials.push( new Proton3DMaterial( parentObject, {
+						material: material
+					}  ) )
 
-				parentObject.material = extras.material;
+				} )
 
 			}
 
@@ -1028,22 +1029,22 @@ Proton3DInterpreter = class {
 	Proton3DMaterial = {
 		setEmissiveColor( color, P3DMaterial ) {
 
-			getMaterialByName( P3DMaterial.name ).emissive = new THREE.Color( color );
+			getMaterialByName( P3DMaterial.name ).emissiveColor = new BABYLON.Color3.FromHexString( color );
 
 		},
 		getEmissiveColor( P3DMaterial ) {
 
-			return getMaterialByName( P3DMaterial.name ).emissive.getStyle();
+			return getMaterialByName( P3DMaterial.name ).emissiveColor.toHexString();
 
 		},
 		setWireframe( value, P3DMaterial ) {
 
-			getMaterialByName( P3DMaterial.name ).wireframeIntensity = value;
+			getMaterialByName( P3DMaterial.name ).wireframe = value;
 
 		},
 		getWireframe( P3DMaterial ) {
 
-			return getMaterialByName( P3DMaterial.name ).wireframeIntensity;
+			return getMaterialByName( P3DMaterial.name ).wireframe;
 
 		},
 		setEmissive( value, P3DMaterial ) {
@@ -1058,12 +1059,12 @@ Proton3DInterpreter = class {
 		},
 		setColor( hexString, P3DMaterial ) {
 
-			getMaterialByName( P3DMaterial.name ).color = new THREE.Color( hexString );
+			getMaterialByName( P3DMaterial.name ).albedoColor = new BABYLON.Color3.FromHexString( hexString );
 
 		},
 		getColor( P3DMaterial ) {
 
-			return getMaterialByName( P3DMaterial.name ).color.getStyle();
+			return getMaterialByName( P3DMaterial.name ).albedoColor.toHexString();
 
 		},
 		setRoughness( value, P3DMaterial ) {
@@ -1088,310 +1089,19 @@ Proton3DInterpreter = class {
 		},
 		setOpacity( value, P3DMaterial ) {
 
-			getMaterialByName( P3DMaterial.name ).transparent = true;
-			getMaterialByName( P3DMaterial.name ).opacity = value;
+			getMaterialByName( P3DMaterial.name ).forceAlphaTest = true;
+			getMaterialByName( P3DMaterial.name ).alpha = value;
 
 		},
 		getOpacity( P3DMaterial ) {
 
-			return getMaterialByName( P3DMaterial.name ).opacity;
+			return getMaterialByName( P3DMaterial.name ).alpha;
 
 		},
 		makeTransparent( value, P3DMaterial ) {
 
-			getMaterialByName( P3DMaterial.name ).opacity = 0.001;
-			getMaterialByName( P3DMaterial.name ).depthWrite = false;
-
+			P3DMaterial.setOpacity( 0 )
 		}
-	}
-
-	// changing mesh geometry and materials
-	createMeshGeometry( obj, extras = {} ) {
-
-		switch ( extras.type.toLowerCase() ) {
-
-			case "sphere":
-				var geoParameters = ( obj || {
-					radius: ( extras.radius || 1 ),
-					widthSegments: ( extras.sphereSegments || 16 ),
-					heightSegments: ( extras.sphereSegments || 16 ),
-					depthSegments: ( extras.sphereSegments || 16 )
-				} );
-				if ( extras.sphereSegments ) {
-
-					geoParameters.widthSegments = extras.sphereSegments;
-					geoParameters.heightSegments = extras.sphereSegments;
-					geoParameters.depthSegments = extras.sphereSegments;
-
-				}
-
-				if ( obj && obj.sphereSegments ) {
-
-					geoParameters.widthSegments = obj.sphereSegments;
-					geoParameters.heightSegments = obj.sphereSegments;
-					geoParameters.depthSegments = obj.sphereSegments;
-
-				}
-
-				// finish the function (  important  )
-				var geometry = new THREE.SphereGeometry( geoParameters.radius, geoParameters.widthSegments, geoParameters.heightSegments, geoParameters.depthSegments );
-				if ( extras.useBufferGeometry ) {
-
-					geometry = new THREE.SphereBufferGeometry( geoParameters.radius, geoParameters.widthSegments, geoParameters.heightSegments, geoParameters.depthSegments );
-
-				}
-
-				//
-				return {
-					geometry: geometry,
-					parameters: geoParameters
-				};
-
-			case "cylinder":
-				var geoParameters = ( obj || {
-					radiusTop: ( extras.radiusTop || 1 ),
-					radiusBottom: ( extras.radiusBottom || 1 ),
-					radialSegments: ( extras.cylinderSegments || 100 ),
-					heightSegments: ( extras.cylinderSegments || 100 ),
-					height: ( extras.height || 1 )
-				} );
-				for ( var i in extras ) {
-
-					if ( geoParameters[ i ] ) {
-
-						geoParameters[ i ] = extras[ i ];
-
-					}
-
-				}
-
-				if ( extras.cylinderSegments ) {
-
-					geoParameters.radialSegments = extras.cylinderSegments;
-					geoParameters.heightSegments = extras.cylinderSegments;
-
-				}
-
-				if ( obj && obj.cylinderSegments ) {
-
-					geoParameters.radialSegments = obj.cylinderSegments;
-					geoParameters.heightSegments = obj.cylinderSegments;
-
-				}
-
-				// finish the function (  important  )
-				var geometry = new THREE.CylinderGeometry( geoParameters.radiusTop, geoParameters.radiusBottom, geoParameters.height, geoParameters.radialSegments, geoParameters.heightSegments );
-				if ( ! extras.useBufferGeometry ) {
-
-					geometry = new THREE.CylinderBufferGeometry( geoParameters.radiusTop, geoParameters.radiusBottom, geoParameters.height, geoParameters.radialSegments, geoParameters.heightSegments );
-
-				}
-
-				//
-				return {
-					geometry: geometry,
-					parameters: geoParameters
-				};
-
-			case "cube":
-				var geoParameters = ( obj || {
-					width: ( extras.width || 1 ),
-					height: ( extras.height || 1 ),
-					depth: ( extras.depth || 1 ),
-					widthSegments: extras.wireframeSegments,
-					heightSegments: extras.wireframeSegments,
-					depthSegments: extras.wireframeSegments
-				} );
-				if ( extras.wireframeSegments ) {
-
-					geoParameters.widthSegments = extras.wireframeSegments;
-					geoParameters.heightSegments = extras.wireframeSegments;
-					geoParameters.depthSegments = extras.wireframeSegments;
-
-				}
-
-				if ( obj && obj.wireframeSegments ) {
-
-					geoParameters.widthSegments = obj.wireframeSegments;
-					geoParameters.heightSegments = obj.wireframeSegments;
-					geoParameters.depthSegments = obj.wireframeSegments;
-
-				}
-
-				// finish the function (important)
-				var geometry = new THREE.BoxGeometry( geoParameters.width, geoParameters.height, geoParameters.depth, geoParameters.widthSegments, geoParameters.heightSegments, geoParameters.depthSegments );
-				if ( extras.useBufferGeometry ) {
-
-					geometry = new THREE.BoxBufferGeometry( geoParameters.width, geoParameters.height, geoParameters.depth, geoParameters.widthSegments, geoParameters.heightSegments, geoParameters.depthSegments );
-
-				}
-
-				//
-				return {
-					geometry: geometry,
-					parameters: geoParameters
-				}
-
-		}
-
-	}
-
-	// Creates a material in three.js
-	createMeshMaterial( extras = {} ) {
-
-		extras = extras || {};
-		var materialParameters = {
-			color: new THREE.Color( extras.color || "#fff" ),
-			map: null,
-			wireframe: ( extras.wireframe || false )
-		};
-		if ( extras.bumpMap ) {
-
-			var bump = new THREE.TextureLoader( extras.loadManager ).load( extras.bumpMap );
-			bump.wrapS = THREE.RepeatWrapping;
-			bump.wrapT = THREE.RepeatWrapping;
-			bump.repeat.set( ( extras.bumpMapRepeat || 1 ), ( extras.bumpMapRepeat || 1 ) );
-			materialParameters.bumpMap = bump;
-
-		}
-
-		if ( extras.normalMap ) {
-
-			var normal = new THREE.TextureLoader( extras.loadManager ).load( extras.normalMap );
-			normal.wrapS = THREE.RepeatWrapping;
-			normal.wrapT = THREE.RepeatWrapping;
-			normal.repeat.set( ( extras.normalMapRepeat || 1 ), ( extras.normalMapRepeat || 1 ) );
-			materialParameters.normalMap = normal;
-
-		}
-
-		if ( extras.roughnessMap ) {
-
-			var rough = new THREE.TextureLoader( extras.loadManager ).load( extras.roughnessMap );
-			rough.wrapS = THREE.RepeatWrapping;
-			rough.wrapT = THREE.RepeatWrapping;
-			rough.repeat.set( ( extras.roughMapRepeat || 1 ), ( extras.roughMapRepeat || 1 ) );
-			materialParameters.roughnessMap = rough;
-
-		}
-
-		if ( extras.displacementMap ) {
-
-			var displacement = new THREE.TextureLoader( extras.loadManager ).load( extras.displacementMap );
-			displacement.wrapS = THREE.RepeatWrapping;
-			displacement.wrapT = THREE.RepeatWrapping;
-			displacement.repeat.set( ( extras.displacementMapRepeat || 1 ), ( extras.displacementMapRepeat || 1 ) );
-			materialParameters.displacementMap = displacement;
-
-		}
-
-		if ( extras.texture ) {
-
-			var texture = new THREE.TextureLoader( extras.loadManager ).load( extras.texture );
-			texture.wrapS = THREE.RepeatWrapping;
-			texture.wrapT = THREE.RepeatWrapping;
-			texture.repeat.set( ( extras.textureRepeat || 1 ), ( extras.textureRepeat || 1 ) );
-			if ( extras.pixelatedTexture ) {
-
-				texture.magFilter = THREE.NearestFilter;
-				texture.minFilter = THREE.LinearMipMapLinearFilter;
-
-			}
-
-			materialParameters.map = texture;
-
-		}
-
-		// finish the function (  important  )
-		var material;
-		switch ( extras.materialType ) {
-
-			case "standard":
-
-				material = new THREE.MeshStandardMaterial( materialParameters );
-				return finish( extras );
-				break;
-
-			case "toon":
-
-				material = new THREE.MeshToonMaterial( materialParameters );
-				return finish( extras );
-				break;
-
-			case "physical":
-
-				material = new THREE.MeshPhysicalMaterial( materialParameters );
-				return finish( extras );
-				break;
-
-			case "phong":
-
-				material = new THREE.MeshPhongMaterial( materialParameters );
-				return finish( extras );
-				break;
-
-			case "normal":
-
-				material = new THREE.MeshNormalMaterial( materialParameters );
-				return finish( extras );
-				break;
-
-			case "matcap":
-
-				material = new THREE.MeshMatcapMaterial( materialParameters );
-				return finish( extras );
-				break;
-
-			case "lambert":
-
-				material = new THREE.MeshLambertMaterial( materialParameters );
-				return finish( extras );
-				break;
-
-			case "distance":
-
-				material = new THREE.MeshDistanceMaterial( materialParameters );
-				return finish( extras );
-				break;
-
-			case "depth":
-
-				material = new THREE.MeshDepthMaterial( materialParameters );
-				return finish( extras );
-				break;
-
-			case "basic":
-
-				material = new THREE.MeshBasicMaterial( materialParameters );
-				return finish( extras );
-				break;
-
-			default:
-				material = new THREE.MeshLambertMaterial( materialParameters );
-				return finish( extras );
-
-		}
-
-		function finish( extras = {} ) {
-
-			if ( extras.mesh ) {
-
-				extras.mesh.material = material;
-				if ( extras.onmaterialupdate ) {
-
-					extras.onmaterialupdate();
-
-				}
-
-			}
-
-			return {
-				material: material,
-				parameters: materialParameters
-			};
-
-		}
-
 	}
 
 	// Listens for key events
@@ -1417,7 +1127,7 @@ Proton3DInterpreter = class {
 
 	}
 
-	// Hides the pointer through [element].requestPointerLock
+	// Hides the pointer through requestPointerLock
 	hidePointer() {
 
 		document.body.requestPointerLock();
@@ -1463,7 +1173,7 @@ Proton3DInterpreter = class {
 	}
 
 	// Some nonessential variables
-	PI = Math.PI
 	audio = Audio
 	storage = localStorage
+	
 };

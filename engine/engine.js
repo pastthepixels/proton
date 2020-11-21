@@ -1402,12 +1402,12 @@ let Proton = {
 	},
 	degToRad( deg ) {
 
-		return deg * ( Proton.scene.interpreter.PI / 180 );
+		return deg * ( Math.PI / 180 );
 
 	},
 	radToDeg( rad ) {
 
-		return rad * ( 180 / Proton.scene.interpreter.PI );
+		return rad * ( 180 / Math.PI );
 
 	},
 	// port of THREE.Vector3
