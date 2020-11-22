@@ -140,6 +140,39 @@ Proton3DInterpreter = class {
 
 	}
 
+	// Gets objects a mesh is colliding with
+	getCollidingObjects( P3DObject ) {
+
+		function vecToLocal( vector, mesh ) {
+
+			var m = mesh.getWorldMatrix();
+			var v = BABYLON.Vector3.TransformCoordinates( vector, m );
+			return v;
+
+		}
+		
+		var origin = getMeshByName( P3DObject.name ).position;
+
+		var forward = new BABYLON.Vector3( 0, -1, 0 );
+		forward = vecToLocal( forward, getMeshByName( P3DObject.name ) );
+
+		var direction = forward.subtract( origin );
+		direction = BABYLON.Vector3.Normalize( direction );
+
+		var length = 2;
+
+		var ray = new BABYLON.Ray( origin, direction, length );
+
+		var hits = this.scene.multiPickWithRay( ray );
+
+		var returningObject = [];
+
+		hits.forEach( ( hit ) => returningObject.push( hit.pickedMesh.p3dParent ) );
+
+		return returningObject;
+		
+	}
+
 	// Creates a shadow caster
 	createShadowGenerator( light ) {
 
@@ -151,107 +184,84 @@ Proton3DInterpreter = class {
 
 	}
 
+	// Rotates a vector
+	rotateVector3( vector, euler ) {
+
+		// https://www.html5gamedevs.com/topic/15079-rotating-a-vector/
+		var quaternion = BABYLON.Quaternion.FromEulerAngles( euler.x, euler.y, euler.z );
+		var matrix = new BABYLON.Matrix();
+		quaternion.toRotationMatrix( matrix );
+		var rotatedVect = BABYLON.Vector3.TransformCoordinates( vector, matrix );
+		return rotatedVect;
+
+	}
+
 	// Sets camera controls
 	setCameraControls( params ) {
 		
-		/*switch ( params.type ) {
+		var interpreter = this;
 
-			case "thirdperson":
-				
-				//extras.camera.lockedTarget = ???;
-				break;
-			
-			default:
-				
-				this.onMouseMove( function ( e ) {
+		// Creates a fake physics mesh
+		var object = new Proton3DObject( { type: "cube", height: 3, restitution: 1, friction: 1, mass: 1, noPhysics: false } );
+		params.cameraParent.physicsObject = object;
+		params.cameraParent.setPosition( 0, 0, 0 );
+		object.add( params.cameraParent );
+		object.add( params.scene.camera );
 
-					var pos = getMeshByName( params.scene.camera.name ).getFrontPosition( 1 ).multiply( new BABYLON.Vector3( 2, 2, 2 ) )//.add( params.cameraParent.position );
-					pos.y = params.cameraParent.position.y
-					params.cameraParent.lookAt( pos.x, pos.y, pos.z );
-					params.cameraParent.setRotation( 0, undefined, 0 )
-
-				} );
-				params.scene.priorityExtraFunctions.push( function() {
-
-					var pos = params.cameraParent.position.add( new BABYLON.Vector3( 0, 1.6, 0 ) )			
-					params.scene.camera.setPosition( pos.x, pos.y, pos.z )
-
-				} )
-
-		}
-		this.engine.isPointerLock = true;*/
-		/*
-		var extras = params, x = extras.scene, localPosClone = x.crosshair.localPosition.clone();
-		Proton.scene.interpreter.onMouseMove( function ( e ) {
+		// Sets the camera's position
+		var cameraPosition = params.cameraParent.position.add( new BABYLON.Vector3( params.distance.x, params.distance.y, params.distance.z ) );
+		params.scene.camera.setPosition( cameraPosition.x, cameraPosition.y, cameraPosition.z );
+		
+		// Does regular stuff
+		var extras = params, x = extras.scene, localPosClone = new BABYLON.Vector3( 0, 0, 1 )
+		this.onMouseMove( function ( e ) {
 
 			if ( ! Proton.paused ) {
 
-				x.crosshair.__localPosition = Proton.rotateVector3(
-					new Proton.Vector3( 0, 1, 0 ),
-					( Proton.degToRad( e.movementX / extras.xSensitivity ) ),
+				x.crosshair.__localPosition = interpreter.rotateVector3(
 					localPosClone,
-					false,
-					true
+					new BABYLON.Vector3( 0, Proton.degToRad( e.movementX / extras.xSensitivity ), 0 )
 				);
 
+				x.crosshair.__localPosition = interpreter.rotateVector3(
+					localPosClone,
+					new BABYLON.Vector3( e.movementY / extras.ySensitivity / 100, 0, 0 )
+				);
+
+				params.scene.camera.rotation.y += Proton.degToRad( e.movementX / extras.xSensitivity )
+				if ( params.scene.camera.rotation.x + Proton.degToRad( e.movementY / extras.ySensitivity ) < 1.45 && params.scene.camera.rotation.x + Proton.degToRad( e.movementY / extras.ySensitivity ) > -1.45 ) params.scene.camera.rotation.x += Proton.degToRad( e.movementY / extras.ySensitivity )
+
+				localPosClone = x.crosshair.__localPosition.clone();
+
 				//
-				var crosshairPos = ( e.movementY / ( extras.ySensitivity * 40 ) ) * ( x.crosshair.__localPosition.distanceTo( x.camera.getPosition() ) );
-				if (
-					// If it's third person and the camera is within a certain range
-					(
-						( x.cameraType === "thirdperson" || extras.type === "thirdperson" ) &&
-						(
-							( x.camera.getPosition().y - e.movementY / extras.ySensitivity ) > - 9 ||
-							( x.camera.getPosition().y - e.movementY / extras.ySensitivity ) < 9
-						)
-					) ||
-
-					//  If it's first person and the camera's within a certain range
-					(
-						x.cameraType != "thirdperson" &&
-						(
-							( x.crosshair.__localPosition.y - crosshairPos ) > - 8 &&
-							( x.crosshair.__localPosition.y - crosshairPos ) < 8
-						)
-					)
-				) {
-
-					x.crosshair.__localPosition.y -= ( e.movementY / ( extras.ySensitivity * 40 ) ) * ( x.crosshair.__localPosition.distanceTo( x.camera.getPosition() ) );
-
-					if ( x.cameraType === "thirdperson" || extras.type === "thirdperson" ) {
-
-						x.camera.setPosition( undefined, ( posY += e.movementY / extras.ySensitivity ), undefined );
-
-					}
-
-				}
 
 			}
 
 		} );
 		x.priorityExtraFunctions.push( function () {
 
-			//extras.cameraParent.setRotation( undefined, Proton.degToRad( 90 ), undefined );
-			x.crosshair.position = x.crosshair.__localPosition.clone().add( extras.cameraParent.getPosition() );
-			var pos = x.crosshair.position.clone();
-			pos.y = extras.cameraParent.getPosition().y;
-			extras.cameraParent.lookAt( pos.x, pos.y, pos.z );
-			//extras.cameraParent.setAngularVelocity( 0, 0, 0 )
-			x.camera.lookAt( x.crosshair.position.x, x.crosshair.position.y, x.crosshair.position.z );
-			//
-			var pos = params.cameraParent.position.add( new BABYLON.Vector3( 0, 1.6, 0 ) )			
-			params.scene.camera.setPosition( pos.x, pos.y, pos.z )
+			// Sets the crosshair's position
+			x.crosshair.localPosition = params.scene.camera.getWorldDirection();
+			x.crosshair.position = object.position.clone().add( x.crosshair.localPosition );
 
-		} );*/
-		var scene = this.scene;
-		var camera = getMeshByName( params.scene.camera.name );
-		scene.gravity = new BABYLON.Vector3(0, -0.2, 0);
-		scene.collisionsEnabled = true;
-		camera.checkCollisions = true;
-		camera.applyGravity = true;
-        camera.ellipsoid = new BABYLON.Vector3(0.4, 1, 0.4);
-       //camera.maxZ=1000
-        //camera.minZ=0
+			// Sets the rotation of the player mesh
+			//var pos = x.crosshair.position.clone();
+			//pos.y = extras.cameraParent.getPosition().y;
+			extras.cameraParent.rotation.y = params.scene.camera.rotation.y;
+
+			//extras.cameraParent.setAngularVelocity( 0, 0, 0 )
+			//x.camera.lookAt( x.crosshair.position.x, x.crosshair.position.y, x.crosshair.position.z );
+			//
+			//var pos = params.cameraParent.position.add( new BABYLON.Vector3( 0, 1.6, 0 ) )			
+			//params.scene.camera.setPosition( pos.x, pos.y, pos.z );
+
+			if ( getMeshByName( object.name ).physics ) object.setAngularFactor( 0, 0, 0 )
+			//extras.cameraParent.setPosition( object.position.x, object.position.y, object.position.z )
+			
+
+		} );
+
+
 	}
 
 
@@ -270,7 +280,6 @@ Proton3DInterpreter = class {
 				var camera = new BABYLON.UniversalCamera( object.name, new BABYLON.Vector3( 0, 0, 1 ), interpreter.scene );
 				camera.inertia = 0;
 				camera.setTarget( BABYLON.Vector3.Zero() );
-				camera.attachControl( true );
 				meshes.push( camera );
 
 				// Adds Proton functions
@@ -370,7 +379,7 @@ Proton3DInterpreter = class {
 				cube.receiveShadows = true;
 
 				// Physics: initiates after a short timeout (no idea why there is a timeout needed)
-				if ( extras.noPhysics != true ) setTimeout( () => cube.physics = new BABYLON.PhysicsImpostor( cube, BABYLON.PhysicsImpostor.BoxImpostor, { mass: extras.mass || 0.1 }, this.scene ), 500 )
+				if ( extras.noPhysics != true ) setTimeout( () => cube.physics = new BABYLON.PhysicsImpostor( cube, BABYLON.PhysicsImpostor.BoxImpostor, { mass: extras.mass || 0, restitution: extras.restitution || 0.1, friction: extras.friction || 0.1 }, this.scene ), 500 )
 
 				// cube stuff
 				object.width = extras.width;
@@ -403,7 +412,7 @@ Proton3DInterpreter = class {
 				sphere.receiveShadows = true;
 
 				// Physics
-				if ( extras.noPhysics != true ) setTimeout( () => sphere.physics = new BABYLON.PhysicsImpostor( sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: extras.mass || 0.1 }, this.scene ), 500 )
+				if ( extras.noPhysics != true ) setTimeout( () => sphere.physics = new BABYLON.PhysicsImpostor( sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: extras.mass || 0, restitution: extras.restitution || 0.1, friction: extras.friction || 0.1 }, this.scene ), 500 )
 
 
 				sphere.name = object.name;
@@ -627,14 +636,14 @@ Proton3DInterpreter = class {
 			getMeshByName( P3DObject.name ).add( new THREE.AudioListener() );
 
 		},
-		setLinearVelocity( x = getMeshByName( P3DObject.name ).getLinearVelocity().x, y = getMeshByName( P3DObject.name ).getLinearVelocity().y, z = getMeshByName( P3DObject.name ).getLinearVelocity().z, P3DObject ) {
+		setLinearVelocity( x = P3DObject.getLinearVelocity().x, y = P3DObject.getLinearVelocity().y, z = P3DObject.getLinearVelocity().z, P3DObject ) {
 
-			getMeshByName( P3DObject.name ).physics.setLinearVelocity( new BABYLON.Vector3( x, y, z ) );
+			getMeshByName( P3DObject.name ).physics.physicsBody.setLinearVelocity( new Ammo.btVector3( x, y, z ) );
 
 		},
 		setAngularVelocity( x = getMeshByName( P3DObject.name ).getAngularVelocity().x, y = getMeshByName( P3DObject.name ).getAngularVelocity().y, z = getMeshByName( P3DObject.name ).getAngularVelocity().z, P3DObject ) {
 
-			getMeshByName( P3DObject.name ).physics.setAngularVelocity( new BABYLON.Vector3( x, y, z ) );
+			getMeshByName( P3DObject.name ).physics.physicsBody.setAngularVelocity( new Ammo.btVector3( x, y, z ) );
 
 		},
 		setDamping( linear, angular, P3DObject ) {
@@ -644,12 +653,12 @@ Proton3DInterpreter = class {
 		},
 		setLinearFactor( x = 0, y = 0, z = 0, P3DObject ) {
 
-			getMeshByName( P3DObject.name ).physics.setLinearFactor( new BABYLON.Vector3( x, y, z ) );
+			getMeshByName( P3DObject.name ).physics.physicsBody.setLinearFactor( new Ammo.btVector3( x, y, z ) );
 
 		},
 		setAngularFactor( x = 0, y = 0, z = 0, P3DObject ) {
 
-			getMeshByName( P3DObject.name ).physics.setAngularFactor( new BABYLON.Vector3( x, y, z ) );
+			getMeshByName( P3DObject.name ).physics.physicsBody.setAngularFactor( new Ammo.btVector3( x, y, z ) );
 
 		},
 		addEventListener( name, callback, P3DObject ) {
@@ -716,6 +725,11 @@ Proton3DInterpreter = class {
 			getMeshByName( P3DObject.name ).__dirtyPosition = true;
 
 		},
+		isPhysicsReady( P3DObject ) {
+			
+			return getMeshByName( P3DObject.name ).physics != undefined;
+
+		},
 		getRotation( P3DObject ) {
 
 			return getMeshByName( P3DObject.name ).rotation;
@@ -752,20 +766,14 @@ Proton3DInterpreter = class {
 
 			if ( getMeshByName( P3DObject.name ).getWorldDirection ) {
 
-				return getMeshByName( P3DObject.name ).getWorldDirection( new THREE.Vector3() );
+				return getMeshByName( P3DObject.name ).getWorldDirection();
 
 			} else {
 
-				var point = new THREE.Mesh(
-						new THREE.BoxBufferGeometry( 0.001, 0.001, 0.001 ),
-						new THREE.MeshBasicMaterial()
-					),
-					mesh = getMeshByName( P3DObject.name );
-				point.position.set( 0, 0.5, 2 );
-				mesh.add( point );
-				var position = ( new THREE.Vector3() ).setFromMatrixPosition( point.matrixWorld );
-				mesh.remove( point );
-				return position.sub( getMeshByName( P3DObject.name ).position );
+				return Proton3DInterpreter.prototype.rotateVector3(
+					new BABYLON.Vector3( 0, 0, 1 ),
+					new BABYLON.Vector3( 0, P3DObject.rotation.y, 0 )
+				)
 
 			}
 
@@ -794,7 +802,13 @@ Proton3DInterpreter = class {
 		},
 		getWorldPosition( P3DObject ) {
 
-			return ( new THREE.Vector3() ).setFromMatrixPosition( getMeshByName( P3DObject.name ).matrixWorld );
+			// https://forum.babylonjs.com/t/understanding-how-to-get-set-world-position-rotation-and-scale-in-a-hierarchy/5087
+			var worldMatrix = getMeshByName( P3DObject.name ).getWorldMatrix();
+			var quatRotation =  new BABYLON.Quaternion();
+			var position = new BABYLON.Vector3();
+			var scale = new BABYLON.Vector3();
+			worldMatrix.decompose( scale, quatRotation, position );
+			return position;
 
 		},
 		getWorldRotation( P3DObject ) {
@@ -941,7 +955,7 @@ Proton3DInterpreter = class {
 			
 			meshes.forEach( ( mesh ) => {
 				
-				mesh.physics = new BABYLON.PhysicsImpostor( mesh, BABYLON.PhysicsImpostor[ extras.physicsImpostor != undefined? extras.physicsImpostor : "ConvexHullImpostor" ], { mass: extras.mass == undefined? 1 : extras.mass }, interpreter.scene );
+				mesh.physics = new BABYLON.PhysicsImpostor( mesh, BABYLON.PhysicsImpostor[ extras.physicsImpostor != undefined? extras.physicsImpostor : "ConvexHullImpostor" ], { mass: extras.mass || 0, restitution: extras.restitution || 0.1, friction: extras.friction || 0.1 }, interpreter.scene );
 
 			} )
 			
@@ -1175,5 +1189,5 @@ Proton3DInterpreter = class {
 	// Some nonessential variables
 	audio = Audio
 	storage = localStorage
-	
+
 };

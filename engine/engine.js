@@ -49,8 +49,8 @@ class Proton3DScene {
 		// extraFunctions
 		this.runExtraFunctions = false;
 		
-		// objectList
-		this.objectList = [];
+		// Lists objects in the scene
+		this.children = [];
 
 	}
 	update() {
@@ -84,7 +84,7 @@ class Proton3DScene {
 	}
 	getObjectList() {
 
-		return this.objectList;
+		return this.children;
 
 	}
 	add( object ) {
@@ -100,7 +100,8 @@ class Proton3DScene {
 	setKeyControls( obj, movementSpeed = 2.5, jumpHeight, extras = {} ) {
 
 		var x = this,
-			gunMoveFrame = 0;
+			gunMoveFrame = 0,
+			physicsObject = obj.physicsObject;
 		Proton.scene.interpreter.onKeyDown( function ( keyCode ) {
 
 			x.keys[ keyCode ] = true;
@@ -152,25 +153,23 @@ class Proton3DScene {
 			type: "spotlight"
 		} );
 		x.camera.add( x.camera.flashlight );
-		x.camera.flashlight.setTargetPosition( 0, 0, 1 );
+		x.camera.flashlight.lookAt( 0, 0, 1 );
 		x.camera.flashlight.canBeEnabled = true;
-		x.camera.flashlight.changeAngle( 0.4 );
+		//x.camera.flashlight.changeAngle( 0.4 );
 		x.camera.flashlight.enable = function () {
 
 			x.camera.flashlight.setTargetPosition( 0, 0, - 1 );
-			x.camera.flashlight.changeIntensity( 0.5 );
+			//x.camera.flashlight.changeIntensity( 0.5 );
 			x.camera.flashlight.enabled = true;
 
-		}
-		;
+		};
 
 		x.camera.flashlight.disable = function () {
 
-			x.camera.flashlight.changeIntensity( 0 );
+			//x.camera.flashlight.changeIntensity( 0 );
 			x.camera.flashlight.enabled = false;
 
-		}
-		;
+		};
 
 		x.camera.flashlight.disable();
 		// movement
@@ -206,12 +205,10 @@ class Proton3DScene {
 				// moving left and right
 				if ( x.keys[ x.mappedKeys.left ] ) {
 
-					var y = Proton.rotateVector3(
-						new Proton.Vector3( 0, 1, 0 ),
-						45,
-						obj.getWorldDirection().multiply( new Proton.Vector3( 1, 0, 1, ) ),
-						true
-					).add( new Proton.Vector3( 0, obj.getPosition().y, 0 ) );
+					var y = Proton.scene.interpreter.rotateVector3(
+						obj.getWorldDirection(),
+						new Proton.Vector3( 0, 80, 0 )
+					)
 					//
 					move( y, speed - 0.5, undefined, undefined, false );
 					return;
@@ -220,12 +217,10 @@ class Proton3DScene {
 
 				if ( x.keys[ x.mappedKeys.right ] ) {
 
-					var y = Proton.rotateVector3(
-						new Proton.Vector3( 0, 1, 0 ),
-						- 45,
-						obj.getWorldDirection().multiply( new Proton.Vector3( 1, 0, 1, ) ),
-						true
-					).add( new Proton.Vector3( 0, obj.getPosition().y, 0 ) );
+					var y = Proton.scene.interpreter.rotateVector3(
+						obj.getWorldDirection(),
+						new Proton.Vector3( 0, -80, 0 )
+					)
 					//
 					move( y, speed - 0.5, undefined, undefined, false );
 					return;
@@ -242,12 +237,10 @@ class Proton3DScene {
 				// moving left and right
 				if ( x.keys[ x.mappedKeys.left ] ) {
 
-					var y = Proton.rotateVector3(
-						new Proton.Vector3( 0, 1, 0 ),
-						- 45,
-						obj.getWorldDirection().multiply( new Proton.Vector3( 1, 0, 1, ) ),
-						true
-					).add( new Proton.Vector3( 0, obj.getPosition().y, 0 ) );
+					var y = Proton.scene.interpreter.rotateVector3(
+						obj.getWorldDirection(),
+						new Proton.Vector3( 0, 80, 0 )
+					)
 					//
 					move( y, speed - 0.5, true, undefined, false );
 					return;
@@ -256,12 +249,10 @@ class Proton3DScene {
 
 				if ( x.keys[ x.mappedKeys.right ] ) {
 
-					var y = Proton.rotateVector3(
-						new Proton.Vector3( 0, 1, 0 ),
-						45,
-						obj.getWorldDirection().multiply( new Proton.Vector3( 1, 0, 1, ) ),
-						true
-					).add( new Proton.Vector3( 0, obj.getPosition().y, 0 ) );
+					var y = Proton.scene.interpreter.rotateVector3(
+						obj.getWorldDirection(),
+						new Proton.Vector3( 0, -80, 0 )
+					)
 					//
 					move( y, speed - 0.5, true, undefined, false );
 					return;
@@ -272,33 +263,27 @@ class Proton3DScene {
 
 			if ( x.keys[ x.mappedKeys.left ] ) {
 
-				var y = Proton.rotateVector3(
-					new Proton.Vector3( 0, 1, 0 ),
-					90,
-					obj.getWorldDirection().multiply( new Proton.Vector3( 1, 0, 1, ) ),
-					true
-				).add( new Proton.Vector3( 0, obj.getPosition().y, 0 ) );
-				//
+				var y = Proton.scene.interpreter.rotateVector3(
+					obj.getWorldDirection(),
+					new Proton.Vector3( 0, 80, 0 )
+				)
 				move( y, speed - 0.5 );
 
 			}
 
 			if ( x.keys[ x.mappedKeys.right ] ) {
 
-				var y = Proton.rotateVector3(
-					new Proton.Vector3( 0, 1, 0 ),
-					- 90,
+				var y = Proton.scene.interpreter.rotateVector3(
 					obj.getWorldDirection(),
-					true
-				).add( new Proton.Vector3( 0, obj.getPosition().y, 0 ) );
-				//
+					new Proton.Vector3( 0, -80, 0 )
+				)
 				move( y, speed - 0.5 );
 
 			}
 
-			if ( x.keys[ x.mappedKeys.jump ] && obj.getLinearVelocity().y <= 0.5 && obj.getCollidingObjects().length > 0 ) {
-
-				obj.setLinearVelocity(
+			if ( x.keys[ x.mappedKeys.jump ] && obj.physicsObject.getLinearVelocity().y <= 0.5 && Proton.scene.interpreter.getCollidingObjects( obj.physicsObject ).length > 2 ) {
+		
+				obj.physicsObject.setLinearVelocity(
 					undefined,
 					jumpHeight,
 					undefined
@@ -310,6 +295,11 @@ class Proton3DScene {
 
 		function move( y, speed, negatise = false, forward = false, gunAnimation = true ) {
 
+			if ( ! obj.physicsObject.isPhysicsReady() ) {
+
+				return;
+
+			}
 			if ( x.noclip ) {
 
 				var pos = obj.position.clone().add( new THREE.Vector3( y.x * ( speed / 500 ) * ( negatise ? - 1 : 1 ), forward ? ( x.camera.getWorldDirection().y * ( speed / 500 ) * ( negatise ? - 1 : 1 ) ) : 0, y.z * ( speed / 500 ) * ( negatise ? - 1 : 1 ) ) );
@@ -318,14 +308,14 @@ class Proton3DScene {
 
 			} else {
 
-				if ( ( x.keys[ x.mappedKeys.forward ] || x.keys[ x.mappedKeys.backward ] ) && x.keys[ x.keys.jump ] && obj.getLinearVelocity().y <= 0.5 /*&& obj.getCollidingObjects().length > 0*/ ) {
+				if ( ( x.keys[ x.mappedKeys.forward ] || x.keys[ x.mappedKeys.backward ] ) && x.keys[ x.keys.jump ] && obj.physicsObject.getLinearVelocity().y <= 0.5 /*&& obj.getCollidingObjects().length > 0*/ ) {
 
 					y.x *= 1.1;
 					y.z *= 1.1;
 
 				}
 
-				obj.setLinearVelocity( y.x * speed * ( negatise ? - 1 : 1 ), obj.getLinearVelocity().y, y.z * speed * ( negatise ? - 1 : 1 ) );
+				obj.physicsObject.setLinearVelocity( y.x * speed * ( negatise ? - 1 : 1 ), obj.physicsObject.getLinearVelocity().y, y.z * speed * ( negatise ? - 1 : 1 ) );
 
 			}
 
@@ -393,7 +383,7 @@ class Proton3DScene {
 				if ( extras.invisibleParent ) {
 
 					extras.cameraParent.material.opacity = 0.001;
-					if ( extras.cameraParent.material && extras.cameraParent.material[ 0 ] ) {
+					if ( extras.cameraParent.material && extras.cameraParent.material.subMaterials ) {
 
 						extras.cameraParent.material.forEach( function ( material ) {
 
@@ -414,8 +404,8 @@ class Proton3DScene {
 
 				case "thirdperson":
 
-					x.camera.setPosition( 0, 0, - ( extras.distance.z || 5 ) );
-					x.camera.lookAt( x.camera.parent.getPosition().x, x.camera.parent.getPosition().y, x.camera.parent.getPosition().z );
+					//x.camera.setPosition( 0, 0, - ( extras.distance.z || 5 ) );
+					//x.camera.lookAt( x.camera.parent.getPosition().x, x.camera.parent.getPosition().y, x.camera.parent.getPosition().z );
 					break;
 
 				default:
@@ -697,6 +687,13 @@ class Proton3DObject {
 		//
 		this.position = null;
 		this.rotation = null;
+
+		// Adds this to the complete list of objects
+		Proton.objects.push( this );
+
+		// Does an event if it has one for creating an object
+		if ( Proton3DObject.prototype.onCreation != undefined ) this.onCreation();
+
 		// the accessors
 		Object.defineProperty( this, "castShadow", {
 			get: function () {
@@ -1075,6 +1072,11 @@ class Proton3DObject {
 		return Proton.scene.interpreter.Proton3DObject.isMesh( object, this );
 
 	}
+	isPhysicsReady() {
+
+		return Proton.scene.interpreter.Proton3DObject.isPhysicsReady( this );
+
+	}
 	getWorldDirection() {
 
 		return Proton.scene.interpreter.Proton3DObject.getWorldDirection( this );
@@ -1397,6 +1399,7 @@ class RepeatingAudio {
 	Proton
 */
 let Proton = {
+	objects: [],
 	cache: {
 		// ...
 	},
@@ -1639,24 +1642,6 @@ let Proton = {
 		crosshair.show = crosshairElement.show;
 		crosshair.element = crosshairElement;
 		return crosshair;
-
-	},
-	rotateVector3( axis, angle, vector, normalize, cancelAutoAngle ) {
-
-		if ( cancelAutoAngle == false ) {
-
-			angle = Proton.degToRad( angle );
-
-		}
-
-		if ( normalize ) {
-
-			vector.normalize();
-
-		}
-
-		vector.applyAxisAngle( axis, angle );
-		return vector;
 
 	},
 	noclip() {
