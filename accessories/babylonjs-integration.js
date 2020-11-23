@@ -202,8 +202,16 @@ Proton3DInterpreter = class {
 		var interpreter = this;
 
 		// Creates a fake physics mesh
-		var object = new Proton3DObject( { type: "cube", height: 3, restitution: 1, friction: 1, mass: 1, noPhysics: false } );
+		var object = new Proton3DObject( {
+			type: "cube",
+			height: 3,
+			restitution: 1,
+			friction: 1,
+			mass: 1,
+			castShadow: false
+		} );
 		params.cameraParent.physicsObject = object;
+		params.cameraParent.material.makeTransparent();
 		params.cameraParent.setPosition( 0, 0, 0 );
 		object.add( params.cameraParent );
 		object.add( params.scene.camera );
@@ -378,9 +386,6 @@ Proton3DInterpreter = class {
 				// Shadows
 				cube.receiveShadows = true;
 
-				// Physics: initiates after a short timeout (no idea why there is a timeout needed)
-				if ( extras.noPhysics != true ) setTimeout( () => cube.physics = new BABYLON.PhysicsImpostor( cube, BABYLON.PhysicsImpostor.BoxImpostor, { mass: extras.mass || 0, restitution: extras.restitution || 0.1, friction: extras.friction || 0.1 }, this.scene ), 500 )
-
 				// cube stuff
 				object.width = extras.width;
 				object.height = extras.height;
@@ -410,10 +415,6 @@ Proton3DInterpreter = class {
 
 				// Shadows
 				sphere.receiveShadows = true;
-
-				// Physics
-				if ( extras.noPhysics != true ) setTimeout( () => sphere.physics = new BABYLON.PhysicsImpostor( sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: extras.mass || 0, restitution: extras.restitution || 0.1, friction: extras.friction || 0.1 }, this.scene ), 500 )
-
 
 				sphere.name = object.name;
 				meshes.push( sphere );
@@ -522,8 +523,8 @@ Proton3DInterpreter = class {
 		}
 
 		// Shadows
-		if ( getMeshByName( object.name ).geometry && extras.type != "sky" ) interpreter.shadowGenerators.forEach( ( generator ) => generator.addShadowCaster( getMeshByName( object.name ) ) );
-
+		if ( getMeshByName( object.name ).geometry && extras.type != "sky" && extras.castShadow != false ) interpreter.shadowGenerators.forEach( ( generator ) => generator.addShadowCaster( getMeshByName( object.name ) ) );
+		
 		// Sets the rotation if there is none
 		getMeshByName( object.name ).rotation = getMeshByName( object.name ).rotation || BABYLON.Vector3.Zero();
 
@@ -545,6 +546,29 @@ Proton3DInterpreter = class {
 		if ( extras.invisible ) object.makeInvisible();
 
 	}
+
+	init3DObject( extras, object ) {
+
+		switch ( extras.type ) {
+
+			case "cube":
+
+				var cube = getMeshByName( object.name )
+				// Physics
+				if ( extras.noPhysics != true ) cube.physics = new BABYLON.PhysicsImpostor( cube, BABYLON.PhysicsImpostor.BoxImpostor, { mass: extras.mass || 0, restitution: extras.restitution || 0.1, friction: extras.friction || 0.1 }, this.scene )
+				break;
+
+			case "sphere":
+				
+				var sphere = getMeshByName( object.name )
+				// Physics
+				if ( extras.noPhysics != true ) sphere.physics = new BABYLON.PhysicsImpostor( sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: extras.mass || 0, restitution: extras.restitution || 0.1, friction: extras.friction || 0.1 }, this.scene )
+		
+		}
+		if ( extras.onReady ) extras.onReady();
+
+	}
+
 	Proton3DObject = {
 		makeInvisible( P3DObject ) {
 
@@ -564,6 +588,15 @@ Proton3DInterpreter = class {
 
 			// Casting will be set when an object is added to a scene
 			getMeshByName( P3DObject.name ).receiveShadow = receive != undefined ? receive : getMeshByName( P3DObject.name ).receiveShadow;
+			if ( cast ) {
+
+				Proton.scene.interpreter.shadowGenerators.forEach( ( generator ) => generator.addShadowCaster( getMeshByName( P3DObject.name ) ) );
+
+			} else {
+
+				Proton.scene.interpreter.shadowGenerators.forEach( ( generator ) => generator.removeShadowCaster( getMeshByName( P3DObject.name ) ) );
+
+			}
 
 		},
 		playAudio( src, listener = new THREE.AudioListener(), P3DObject ) {
@@ -872,6 +905,7 @@ Proton3DInterpreter = class {
 			var meshes = mergeSameMaterials( mesh.meshes );
 			
 			// Loads shadows
+			if ( extras.noShadows ) extras.receiveShadows = extras.castShadow = false;
 			loadShadows( meshes );
 
 			// Turns the loaded mesh to a Proton3DObject
@@ -966,8 +1000,8 @@ Proton3DInterpreter = class {
 			
 			meshes.forEach( ( mesh ) => {
 				
-				mesh.receiveShadows = true;
-				interpreter.shadowGenerators.forEach( ( generator ) => generator.addShadowCaster( mesh ) );
+				mesh.receiveShadows = extras.receiveShadows != undefined? extras.receiveShadows : true;
+				if ( extras.castShadow != false) interpreter.shadowGenerators.forEach( ( generator ) => generator.addShadowCaster( mesh ) );
 
 			} )
 			
@@ -1123,6 +1157,7 @@ Proton3DInterpreter = class {
 
 		window.addEventListener( "keydown", function ( e ) {
 
+			if ( e.keyCode == 27 ) document.exitPointerLock()
 			if ( e.keyCode == 32 ) e.preventDefault();
 			callback( e.keyCode );
 

@@ -192,7 +192,7 @@ class Proton3DScene {
 			// sprinting
 			if ( x.keys[ x.mappedKeys.sprint ] ) {
 
-				speed += 10;
+				speed += 5;
 
 			}
 
@@ -357,7 +357,7 @@ class Proton3DScene {
 
 		returningObject.init = function () {
 
-			//Proton.scene.interpreter.hidePointer();
+			Proton.scene.interpreter.hidePointer();
 			Proton.resume();
 			init();
 
@@ -367,16 +367,8 @@ class Proton3DScene {
 
 		function init() {
 			
-			var localPosClone = x.crosshair.localPosition.clone();
-
 			if ( ! extras.alreadyInitialized ) {
 
-				// physics
-				//extras.cameraParent.setAngularFactor( 0, 0, 0 );
-				//extras.cameraParent.setLinearFactor( 1.2, 1.2, 1.2 );
-
-				// everything else
-				//extras.cameraParent.add( x.camera );
 				extras.cameraParent.cameraRotation = new Proton.Vector3();
 				extras.alreadyInitialized = true;
 
@@ -385,7 +377,7 @@ class Proton3DScene {
 					extras.cameraParent.material.opacity = 0.001;
 					if ( extras.cameraParent.material && extras.cameraParent.material.subMaterials ) {
 
-						extras.cameraParent.material.forEach( function ( material ) {
+						extras.cameraParent.material.subMaterials.forEach( function ( material ) {
 
 							material.makeTransparent();
 
@@ -694,6 +686,9 @@ class Proton3DObject {
 		// Does an event if it has one for creating an object
 		if ( Proton3DObject.prototype.onCreation != undefined ) this.onCreation();
 
+		// Does any extra stuff to the object
+		Proton.scene.interpreter.init3DObject( extras, this );
+
 		// the accessors
 		Object.defineProperty( this, "castShadow", {
 			get: function () {
@@ -828,8 +823,10 @@ class Proton3DObject {
 				{ gunAnimations: true }
 			)
 		};
-		// crosshair
+
+		// Crosshair
 		Proton.crosshair( Proton.scene.crosshair );
+
 		// gun rotation
 		if ( extras.gunRotation ) {
 
@@ -837,15 +834,21 @@ class Proton3DObject {
 
 		}
 
-		// making an invisible player
+		// Immersive stuff
 		if ( extras.invisible ) {
 
 			object.makeInvisible();
 
 		}
+		if ( extras.noShadows ) {
 
-		// misc
+			object.setShadowOptions( false, false )
+
+		}
+
+		// misc.
 		Proton.player = object;
+
 		// health (in hit points, not percentages nor decimals)
 		object.health = 100;
 		object.maxHealth = 100;
