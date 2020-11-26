@@ -16,7 +16,7 @@
 */
 class Proton3DScene {
 
-	constructor( attachInterpreter ) {
+	constructor() {
 
 		this.mappedKeys = {
 			forward: 87, // W
@@ -33,29 +33,29 @@ class Proton3DScene {
 		this.priorityExtraFunctions = [];
 		this.extraKeyControls = [];
 
-		// creating the interpreter
+		// Creating the interpreter
 		this.interpreter = new Proton3DInterpreter();
 
 	}
 	init( extras = {} ) {
 
-		// initializing the interpreter
+		// Initializing the interpreter
 		this.interpreter.init( extras, this )
 
-		// variables
+		// Variables
 		this.camera = this.interpreter.camera // Should be a Proton3DObject
 		
 		
-		// extraFunctions
+		// Functions to be called after a render
 		this.runExtraFunctions = false;
 		
-		// Lists objects in the scene
+		// Objects in the scene
 		this.children = [];
 
 	}
 	update() {
 
-		// rendering using Proton.scene.interpreter.render
+		// Rendering using Proton.scene.interpreter.render
 		Proton.scene.interpreter.render( this );
 		// extraFunctions
 		// priorityExtraFunctions = functions that must run each rendering cycle
@@ -65,7 +65,7 @@ class Proton3DScene {
 			e();
 
 		} );
-		if ( this.runExtraFunctions = ! this.runExtraFunctions ) {
+		if ( this.runExtraFunctions = !this.runExtraFunctions ) {
 
 			this.extraFunctions.forEach( function ( e ) {
 
@@ -100,8 +100,7 @@ class Proton3DScene {
 	setKeyControls( obj, movementSpeed = 2.5, jumpHeight, extras = {} ) {
 
 		var x = this,
-			gunMoveFrame = 0,
-			physicsObject = obj.physicsObject;
+			gunMoveFrame = 0;
 		Proton.scene.interpreter.onKeyDown( function ( keyCode ) {
 
 			x.keys[ keyCode ] = true;
@@ -143,36 +142,33 @@ class Proton3DScene {
 		} );
 		x.priorityExtraFunctions.push( checkKeys );
 		/*
-			a flashlight!
+			A flashlight!
 		*/
 		x.camera.flashlight = new Proton3DObject( {
-			x: 0,
-			y: 0,
-			z: 1,
 			intensity: 0,
 			type: "spotlight"
 		} );
 		x.camera.add( x.camera.flashlight );
 		x.camera.flashlight.lookAt( 0, 0, 1 );
 		x.camera.flashlight.canBeEnabled = true;
-		//x.camera.flashlight.changeAngle( 0.4 );
+		x.camera.flashlight.setAngle( 1 );
 		x.camera.flashlight.enable = function () {
 
-			x.camera.flashlight.setTargetPosition( 0, 0, - 1 );
-			//x.camera.flashlight.changeIntensity( 0.5 );
+			x.camera.flashlight.setIntensity( 0.5 );
 			x.camera.flashlight.enabled = true;
 
 		};
 
 		x.camera.flashlight.disable = function () {
 
-			//x.camera.flashlight.changeIntensity( 0 );
+			x.camera.flashlight.setIntensity( 0 );
 			x.camera.flashlight.enabled = false;
 
 		};
 
 		x.camera.flashlight.disable();
-		// movement
+		
+		// Movement
 		function checkKeys() {
 
 			var speed = x.playerSpeed || movementSpeed;
@@ -293,6 +289,7 @@ class Proton3DScene {
 
 		}
 
+		// The actual function that moves the player
 		function move( y, speed, negatise = false, forward = false, gunAnimation = true ) {
 
 			if ( ! obj.physicsObject.isPhysicsReady() ) {
@@ -339,21 +336,15 @@ class Proton3DScene {
 		}
 
 	}
-	makeDoor( door, width = door.width || 2.5, faceInwards = true ) {
-
-		Proton.scene.interpreter.makeDoor( door, width, faceInwards, this );
-
-	}
 	setCameraControls( extras = {} ) {
 
 		var x = this,
-			returningObject = {},
-			posY = 0;
+			returningObject = {};
+
 		extras.distance = extras.distance || new Proton.Vector3();
 		extras.xSensitivity = extras.xSensitivity || 10;
 		extras.ySensitivity = extras.ySensitivity || 10;
 		extras.scene = this;
-		//
 
 		returningObject.init = function () {
 
@@ -363,7 +354,6 @@ class Proton3DScene {
 
 		};
 
-		//
 
 		function init() {
 			
@@ -396,8 +386,7 @@ class Proton3DScene {
 
 				case "thirdperson":
 
-					//x.camera.setPosition( 0, 0, - ( extras.distance.z || 5 ) );
-					//x.camera.lookAt( x.camera.parent.getPosition().x, x.camera.parent.getPosition().y, x.camera.parent.getPosition().z );
+					// Add third-person support here.
 					break;
 
 				default:
@@ -434,11 +423,8 @@ class Proton3DScene {
 
 		}
 
-		//
 		x.crosshair = {};
-		x.crosshair.localPosition = new Proton.Vector3( 0, 0, 1 );
-		x.crosshair.__localPosition = new Proton.Vector3( 0, 0, 0 );
-		//
+		x.crosshair.localPosition = new Proton.Vector3( 0, 0, 0 );
 
 		Proton.pause();
 		returningObject.crosshair = x.crosshair;
@@ -461,20 +447,20 @@ class Proton3DScene {
 						var pos = x.pickingUpObject.position.z;
 						child.updateBoundingBox();
 
-						// with the object in an extended position
+						// With the object in an extended position
 						x.pickingUpObject.setPosition( 0, 0, - 5 );
 						x.pickingUpObject.updateBoundingBox();
 						x.pickingUpObject.setPosition( 0, 0, pos );
-						//
+						
 						if ( child.intersectsBoundingBox( x.pickingUpObject.boundingBox ) ) {
 
 							objectCollision = true;
 
 						}
 
-						// with the object in its original position
+						// With the object in its original position
 						x.pickingUpObject.updateBoundingBox();
-						//
+						
 						if ( child.intersectsBoundingBox( x.pickingUpObject.boundingBox ) ) {
 
 							objectCollision = true;
@@ -579,12 +565,7 @@ class Proton3DScene {
 	}
 	pickUpObject( child ) {
 
-		var x = this,
-			resetPickingUp = function ( child ) {
-
-				x.resetPickingUp( child, x );
-
-			};
+		var x = this;
 
 		Proton.cache.keyErrorCheck = true;
 		timeout( function () {
@@ -628,7 +609,7 @@ class Proton3DObject {
 
 	constructor( extras = {} ) {
 
-		// names the mesh
+		// Names the mesh
 		if ( extras.name === "" || extras.name == undefined ) {
 
 			this.name = "Mesh";
@@ -659,37 +640,30 @@ class Proton3DObject {
 
 		}
 
-		// distributes extras.position to just extras
-		if ( extras.position ) {
-
-			extras.x = extras.position.x;
-			extras.y = extras.position.y;
-			extras.z = extras.position.z;
-
-		}
-
-		// gives children to the mesh
+		// Allows the mesh to adopt children
 		this.children = extras.children || [];
-		// creates a mesh
+
+		// Creates the mesh
+		if ( extras.position == undefined ) extras.position = new Proton.Vector3();
+		if ( extras.rotation == undefined ) extras.rotation = new Proton.Vector3();
 		Proton.scene.interpreter.create3DObject( extras, this );
 
-		// sets the mesh's position + rotation to any predefined values
-		this.setPosition( extras.x, extras.y, extras.z );
-		this.setRotation( extras.rotationX, extras.rotationY, extras.rotationZ );
-		//
+		// Sets the mesh's position + rotation to any predefined values
+		this.setPosition( extras.position.x, extras.position.y, extras.position.z );
+		this.setRotation( extras.rotation.x, extras.rotation.y, extras.rotation.z );
 		this.position = null;
 		this.rotation = null;
 
 		// Adds this to the complete list of objects
 		Proton.objects.push( this );
 
-		// Does an event if it has one for creating an object
+		// Does an event if the object has one for creating an object
 		if ( Proton3DObject.prototype.onCreation != undefined ) this.onCreation();
 
 		// Does any extra stuff to the object
 		Proton.scene.interpreter.init3DObject( extras, this );
 
-		// the accessors
+		// The Accessors
 		Object.defineProperty( this, "castShadow", {
 			get: function () {
 
@@ -788,15 +762,15 @@ class Proton3DObject {
 		} );
 
 	}
-	// making the object the player
+	// Making the object... the player
 	makePlayer( extras ) {
 
 		var defaultExtras = {
-				// camera
+				// Camera
 				type: "firstperson",
 				head: new Proton.Vector3( 0, 0.3, 0 ),
 				invisible: false,
-				// key controls
+				// Key controls
 				movementSpeed: undefined,
 				jumpHeight: 4
 			},
@@ -807,7 +781,7 @@ class Proton3DObject {
 
 		}
 
-		// controls
+		// Controls
 		Proton.scene.controls = {
 			camera: Proton.scene.setCameraControls( {
 				type: extras.type,
@@ -827,14 +801,14 @@ class Proton3DObject {
 		// Crosshair
 		Proton.crosshair( Proton.scene.crosshair );
 
-		// gun rotation
+		// Rotates a weapon. Crowbars are included, too.
 		if ( extras.gunRotation ) {
 
 			extras.gun.setRotation( extras.gunRotation.x, extras.gunRotation.y, extras.gunRotation.z );
 
 		}
 
-		// Immersive stuff
+		// Immersive stuff to increase immersion
 		if ( extras.invisible ) {
 
 			object.makeInvisible();
@@ -842,19 +816,20 @@ class Proton3DObject {
 		}
 		if ( extras.noShadows ) {
 
+			// Must already be on a mesh loaded with noShadows = true
 			object.setShadowOptions( false, false )
 
 		}
 
-		// misc.
+		// Clauses and Provisions
 		Proton.player = object;
 
-		// health (in hit points, not percentages nor decimals)
+		// Health (/ 100)
 		object.health = 100;
 		object.maxHealth = 100;
 
 	}
-	// the accessors' corresponding functions
+	// The accessors' corresponding functions:
 	makeInvisible() {
 
 		return Proton.scene.interpreter.Proton3DObject.makeInvisible( this );
@@ -1125,7 +1100,7 @@ class Proton3DMaterial {
 
 	constructor( parentObject, extras ) {
 
-		// names the material
+		// Names the material
 		if ( extras.name === "" || extras.name == undefined ) {
 
 			this.name = "Material";
@@ -1144,9 +1119,10 @@ class Proton3DMaterial {
 
 		}
 
-		// creates the material
+		// Creates the material
 		Proton.scene.interpreter.create3DMaterial( extras, this, parentObject );
-		// accessors
+		
+		// Accessors
 		Object.defineProperty( this, "color", {
 			get: function () {
 
@@ -1231,7 +1207,7 @@ class Proton3DMaterial {
 
 			}
 		} );
-		// done!
+		// Done!
 
 	}
 	setEmissiveColor( color ) {
@@ -1311,7 +1287,7 @@ class Proton3DMaterial {
 	}
 
 }
-// creating audio that repeats
+// Creating audio... that repeats
 class RepeatingAudio {
 
 	constructor( beginning, middle, end = undefined ) {
@@ -1416,7 +1392,7 @@ let Proton = {
 		return rad * ( 180 / Math.PI );
 
 	},
-	// port of THREE.Vector3
+	// Port of THREE.Vector3
 	Vector3: function ( x, y, z ) {
 
 		this.x = x;
@@ -1429,8 +1405,7 @@ let Proton = {
 			this.z += vector3.z;
 			return this;
 
-		}
-		;
+		};
 
 		this.sub = function ( vector3 ) {
 
@@ -1439,8 +1414,7 @@ let Proton = {
 			this.z -= vector3.z;
 			return this;
 
-		}
-		;
+		};
 
 		this.multiply = function ( vector3 ) {
 
@@ -1449,8 +1423,7 @@ let Proton = {
 			this.z *= vector3.z;
 			return this;
 
-		}
-		;
+		};
 
 		this.divide = function ( vector3 ) {
 
@@ -1459,8 +1432,7 @@ let Proton = {
 			this.z /= vector3.z;
 			return this;
 
-		}
-		;
+		};
 
 		this.set = function ( x, y, z ) {
 
@@ -1469,8 +1441,7 @@ let Proton = {
 			this.z = z;
 			return this;
 
-		}
-		;
+		};
 
 		this.distanceTo = function ( vec3 ) {
 
@@ -1479,15 +1450,13 @@ let Proton = {
 			var deltaZ = this.z - vec3.z;
 			return Math.sqrt( deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ );
 
-		}
-		;
+		};
 
 		this.clone = function () {
 
 			return new Proton.Vector3( this.x, this.y, this.z );
 
-		}
-		;
+		};
 
 		this.applyAxisAngle = function ( axis, angle ) {
 
@@ -1496,7 +1465,7 @@ let Proton = {
 
 					// http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm
 
-					// assumes axis is normalized
+					// Assumes the axis involved is normalized
 
 					var halfAngle = angle / 2,
 						s = Math.sin( halfAngle );
@@ -1513,8 +1482,7 @@ let Proton = {
 
 			return this.applyQuaternion( _quaternion.setFromAxisAngle( axis, angle ) );
 
-		}
-		;
+		};
 
 		this.applyQuaternion = function ( q ) {
 
@@ -1526,14 +1494,14 @@ let Proton = {
 			qz = q.z,
 			qw = q.w;
 
-			// calculate quat * vector
+			// Calculate quat * vector
 
 			var ix = qw * x + qy * z - qz * y,
 				iy = qw * y + qz * x - qx * z,
 				iz = qw * z + qx * y - qy * x,
 				iw = - qx * x - qy * y - qz * z;
 
-			// calculate result * inverse quat
+			// Calculate result * inverse quat
 
 			this.x = ix * qw + iw * - qx + iy * - qz - iz * - qy;
 			this.y = iy * qw + iw * - qy + iz * - qx - ix * - qz;
@@ -1544,7 +1512,7 @@ let Proton = {
 		};
 
 	},
-	// wrapper for localStorage
+	// Wrapper for localStorage
 	storage: {
 		name: "mygame",
 		get( name ) {
@@ -1667,11 +1635,11 @@ let Proton = {
 		}
 
 	},
-	animate( object, properties = {}, parameters = {} /* = { step: function(){}, callback: function(){}, duration: 10 */ ) {
+	animate( object, properties = {}, parameters = {} /* = { step: function(){}, callback: () => {}, duration: 10 */ ) {
 
 		if ( object.animatingInterval ) Proton.resetAnimation( object );
 		parameters.duration = parameters.duration ? parameters.duration : 1000;
-		//
+		
 		var animations = [],
 			frames = 0,
 			frame = 0;
@@ -1745,7 +1713,7 @@ let Proton = {
 
 	},
 
-	// Initiate Proton
+	// Initiate Proton! (Through executing this function.)
 	init( params ) {
 
 		Proton.scene = new Proton3DScene();
