@@ -272,10 +272,16 @@ class Proton3DInterpreter {
 
 	}
 
-	// Does whatever when Proton resumes
+	// Does whatever when Proton resumes/pauses
 	resume() {
 
-		// Whatever
+		this.scene.physicsEnabled = true;
+
+	}
+
+	pause() {
+
+		this.scene.physicsEnabled = false;
 
 	}
 
@@ -342,8 +348,8 @@ class Proton3DInterpreter {
 		var object = new Proton3DObject( {
 			type: "cube",
 			height: 3,
-			restitution: 1,
 			friction: 1,
+			restitution: 0,
 			mass: 1,
 			castShadow: false,
 			// setTimeout is bad.
@@ -519,7 +525,7 @@ class Proton3DInterpreter {
 				extras.type = "sphere";
 				
 				// Makes the sphere
-				var sphere = BABYLON.MeshBuilder.CreateBox( object.name, { radius: extras.radius }, this.scene );
+				var sphere = BABYLON.MeshBuilder.CreateSphere( object.name, { diameter: extras.radius * 2 }, this.scene );
 				meshes.push( sphere );
 				sphere.name = object.name;
 
@@ -635,11 +641,12 @@ class Proton3DInterpreter {
 		// Shadows
 		if ( getMeshByName( object.name ).geometry && extras.type != "sky" && extras.castShadow != false ) interpreter.shadowGenerators.forEach( ( generator ) => generator.addShadowCaster( getMeshByName( object.name ) ) );
 		
+
 		// Sets the rotation if there is none
 		getMeshByName( object.name ).rotation = getMeshByName( object.name ).rotation || BABYLON.Vector3.Zero();
 
 		// creates the mesh's material -- must be at the very end to ensure that the material is initialized with an object
-		if ( getMeshByName( object.name ).material && extras.type != "sky" && ! extras.mesh ) {
+		if ( extras.type != "sky" && extras.type != "camera" && extras.type != undefined ) {
 
 			object.material = extras.material || new Proton3DMaterial( getMeshByName( object.name ), {
 				name: extras.materialName,
@@ -1181,6 +1188,7 @@ class Proton3DInterpreter {
 			var material = new BABYLON.PBRMaterial( P3DMaterial.name, this.scene );
 			material.usePhysicalLightFalloff = false;
 			material.name = P3DMaterial.name;
+			material.roughness = 1;
 			materials.push( material );
 			parentObject.material = material;
 

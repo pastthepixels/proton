@@ -203,10 +203,10 @@ class Proton3DScene {
 
 					var y = Proton.scene.interpreter.rotateVector3(
 						obj.getWorldDirection(),
-						new Proton.Vector3( 0, 80, 0 )
+						new Proton.Vector3( 0, 40, 0 )
 					)
 					//
-					move( y, speed - 0.5, undefined, undefined, false );
+					move( y, speed - 0.5, true, undefined, false );
 					return;
 
 				}
@@ -215,10 +215,10 @@ class Proton3DScene {
 
 					var y = Proton.scene.interpreter.rotateVector3(
 						obj.getWorldDirection(),
-						new Proton.Vector3( 0, -80, 0 )
+						new Proton.Vector3( 0, -40, 0 )
 					)
 					//
-					move( y, speed - 0.5, undefined, undefined, false );
+					move( y, speed - 0.5, true, undefined, false );
 					return;
 
 				}
@@ -235,10 +235,10 @@ class Proton3DScene {
 
 					var y = Proton.scene.interpreter.rotateVector3(
 						obj.getWorldDirection(),
-						new Proton.Vector3( 0, 80, 0 )
+						new Proton.Vector3( 0, -40, 0 )
 					)
 					//
-					move( y, speed - 0.5, true, undefined, false );
+					move( y, speed - 0.5, false, undefined, false );
 					return;
 
 				}
@@ -247,10 +247,10 @@ class Proton3DScene {
 
 					var y = Proton.scene.interpreter.rotateVector3(
 						obj.getWorldDirection(),
-						new Proton.Vector3( 0, -80, 0 )
+						new Proton.Vector3( 0, 40, 0 )
 					)
 					//
-					move( y, speed - 0.5, true, undefined, false );
+					move( y, speed - 0.5, false, undefined, false );
 					return;
 
 				}
@@ -1587,6 +1587,8 @@ let Proton = {
 			this.onpause();
 
 		}
+
+		Proton.scene.interpreter.pause();
 
 	},
 	resume: function () {
