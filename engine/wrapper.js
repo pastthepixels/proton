@@ -149,6 +149,12 @@ class Proton3DInterpreter {
 	init( params, scene ) {
 
 		var interpreter = this;
+		var postprocessing = {
+			enabled: true,
+			bloom: true,
+			ssao: false,
+			fxaa: true
+		}
 		this.scene = scene;
 
 		// Auto graphics
@@ -197,7 +203,14 @@ class Proton3DInterpreter {
 
 
 		// Postprocessing
-		/* var defaultPipeline = new BABYLON.DefaultRenderingPipeline("default", true, this.scene, [ camera ]); */
+		if ( postprocessing.enabled ) {
+		
+			this.pipeline = new BABYLON.DefaultRenderingPipeline( "default", true, this.scene, [ getMeshByName( this.camera.name ) ] );
+			if ( postprocessing.bloom ) this.pipeline.bloomEnabled = true;
+			if ( postprocessing.fxaa ) this.pipeline.fxaaEnabled = true;
+			if ( postprocessing.ssao ) this.ssao = new BABYLON.SSAORenderingPipeline( "ssao", this.scene, { ssaoRatio: 0.5, combineRatio: 1.0 }, [ getMeshByName( this.camera.name ) ] );
+
+		}
 
 		// Physics
 		var gravityVector = new BABYLON.Vector3( 0,-9.81, 0 );
@@ -304,17 +317,23 @@ class Proton3DInterpreter {
 		var direction = forward.subtract( origin );
 		direction = BABYLON.Vector3.Normalize( direction );
 
-		var length = 2;
+		var length = P3DObject.height != undefined? ( P3DObject.height / 2 ) + 5 : 5;
 
 		var ray = new BABYLON.Ray( origin, direction, length );
 
 		var hits = this.scene.multiPickWithRay( ray );
 
-		var returningObject = [];
+		var hitArray = [];
 
-		hits.forEach( ( hit ) => returningObject.push( hit.pickedMesh.p3dParent ) );
+		// Now is the mesh _really_ colliding with the objects?
+		hits.forEach( ( hit ) => {
+			
+			var mesh = hit.pickedMesh;
+			if ( getMeshByName( P3DObject.name ).intersectsMesh( mesh ) ) hitArray.push( mesh );
 
-		return returningObject;
+		} );
+
+		return hitArray;
 		
 	}
 
@@ -707,7 +726,8 @@ class Proton3DInterpreter {
 		makeInvisible( P3DObject ) {
 
 			P3DObject.material.makeTransparent();
-			if ( P3DObject.material.subMaterials ) P3DObject.material.subMaterials.forEach( ( material ) => material.makeTransparent() )
+			if ( P3DObject.material.subMaterials ) P3DObject.material.subMaterials.forEach( ( material ) => material.makeTransparent() );
+			getMeshByName( P3DObject.name ).isVisible = false
 
 		},
 		getShadowOptions( P3DObject ) {

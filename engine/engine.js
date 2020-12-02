@@ -277,7 +277,7 @@ class Proton3DScene {
 
 			}
 
-			if ( x.keys[ x.mappedKeys.jump ] && obj.physicsObject.getLinearVelocity().y <= 0.5 && Proton.scene.interpreter.getCollidingObjects( obj.physicsObject ).length > 2 ) {
+			if ( x.keys[ x.mappedKeys.jump ] && obj.physicsObject.getLinearVelocity().y <= 0.5 && Proton.scene.interpreter.getCollidingObjects( obj.physicsObject ).length > 1 ) {
 		
 				obj.physicsObject.setLinearVelocity(
 					undefined,
