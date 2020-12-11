@@ -277,7 +277,7 @@ class Proton3DScene {
 
 			}
 
-			if ( x.keys[ x.mappedKeys.jump ] && obj.physicsObject.getLinearVelocity().y <= 0.5 && Proton.scene.interpreter.getCollidingObjects( obj.physicsObject ).length > 1 ) {
+			if ( x.keys[ x.mappedKeys.jump ] && obj.physicsObject.getLinearVelocity().y <= 0.5 && Proton.scene.interpreter.getCollidingObjects( obj.physicsObject ).length > 0 ) {
 		
 				obj.physicsObject.setLinearVelocity(
 					undefined,
@@ -305,7 +305,7 @@ class Proton3DScene {
 
 			} else {
 
-				if ( ( x.keys[ x.mappedKeys.forward ] || x.keys[ x.mappedKeys.backward ] ) && x.keys[ x.keys.jump ] && obj.physicsObject.getLinearVelocity().y <= 0.5 /*&& obj.getCollidingObjects().length > 0*/ ) {
+				if ( ( x.keys[ x.mappedKeys.forward ] || x.keys[ x.mappedKeys.backward ] ) && x.keys[ x.keys.jump ] && obj.physicsObject.getLinearVelocity().y <= 0.5 ) {
 
 					y.x *= 1.1;
 					y.z *= 1.1;
@@ -1073,11 +1073,6 @@ class Proton3DObject {
 	getWorldRotation() {
 
 		return Proton.scene.interpreter.Proton3DObject.getWorldRotation( this );
-
-	}
-	getCollidingObjects() {
-
-		return Proton.scene.interpreter.Proton3DObject.getCollidingObjects( this );
 
 	}
 	add( object ) {

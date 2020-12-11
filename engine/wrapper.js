@@ -308,28 +308,24 @@ class Proton3DInterpreter {
 			return v;
 
 		}
-		
-		var origin = getMeshByName( P3DObject.name ).position;
 
-		var forward = new BABYLON.Vector3( 0, -1, 0 );
-		forward = vecToLocal( forward, getMeshByName( P3DObject.name ) );
+		// Updates the object's bounding box
+		var object = getMeshByName( P3DObject.name );
+		if ( !object.boundingBoxFixed ) {
 
-		var direction = forward.subtract( origin );
-		direction = BABYLON.Vector3.Normalize( direction );
+			var min = object.getBoundingInfo().boundingBox.minimum;
+			var max = object.getBoundingInfo().boundingBox.maximum;
+			min = min.subtract( new BABYLON.Vector3( .05, .05, .05 ) );
+			max = max.add( new BABYLON.Vector3( .05, .05, .05 ) );
+			object.setBoundingInfo( new BABYLON.BoundingInfo( min, max ) );
+			object.boundingBoxFixed = true;
 
-		var length = P3DObject.height != undefined? ( P3DObject.height / 2 ) + 5 : 5;
+		}
 
-		var ray = new BABYLON.Ray( origin, direction, length );
-
-		var hits = this.scene.multiPickWithRay( ray );
-
-		var hitArray = [];
-
-		// Now is the mesh _really_ colliding with the objects?
-		hits.forEach( ( hit ) => {
+		// Checks if said bounding box is colliding with anything
+		this.scene.meshes.forEach( ( mesh ) => {
 			
-			var mesh = hit.pickedMesh;
-			if ( getMeshByName( P3DObject.name ).intersectsMesh( mesh ) ) hitArray.push( mesh );
+			if ( mesh.intersectsMesh( object ) && mesh.id != object.id && object._children.indexOf( mesh ) == -1 && mesh.id != "skybox" ) hitArray.push( mesh );
 
 		} );
 
@@ -343,7 +339,7 @@ class Proton3DInterpreter {
 		var shadowGenerator = new BABYLON.ShadowGenerator( 1024, light );
 		shadowGenerator.usePercentageCloserFiltering = true;
 		shadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_MEDIUM;
-		shadowGenerator.bias = 0.005;
+		shadowGenerator.bias = 0.0005;
 		this.shadowGenerators.push( shadowGenerator )
 
 	}
@@ -988,40 +984,6 @@ class Proton3DInterpreter {
 			// If you use three.js, it should look something like this: return getMeshByName( P3DObject.name ).getWorldQuaternion( new THREE.Euler() );
 
 		},
-		getCollidingObjects( P3DObject ) {
-
-			/*
-				For three.js
-
-			var touches = [],
-				object = getMeshByName( P3DObject.name ),
-				interpreter = this;
-			// modified from https://stackoverflow.com/questions/11473755/how-to-detect-collision-in-three-js/
-			for ( var vertexIndex = 0; vertexIndex < object.geometry.vertices.length; vertexIndex ++ ) {
-
-				// reduced the vertices needed to find a collision
-				if ( vertexIndex % 2 == 0 || vertexIndex % 3 == 0 ) continue;
-				// reduced variable usage
-				var directionVector = object.geometry.vertices[ vertexIndex ].clone().applyMatrix4( object.matrix ).sub( object.position );
-				( new THREE.Raycaster( object.position, directionVector.clone().normalize() ) ).intersectObjects( interpreter.objects.children ).forEach( function ( collision ) {
-
-					if ( touches.find( function ( x ) {
-
-						return x.name === collision.object.name;
-
-					} ) || collision.distance > ( directionVector.distanceTo( new THREE.Vector3() ) + .1 ) || ( collision.object.material && collision.object.material.uniforms && collision.object.material.uniforms.sunPosition ) || collision.object == object || collision.object.parent == object || collision.object.parent.parent == object || collision.object.parent.parent == object ) return;
-					touches.push( collision.object.p3dParent || collision.object );
-
-				} );
-
-			}
-
-			return touches;
-			*/
-			// I haven't worked on this yet :(
-			return [];
-
-		},
 		add( object, P3DObject ) {
 
 			getMeshByName( object.name ).parent = getMeshByName( P3DObject.name );
@@ -1375,7 +1337,7 @@ class Proton3DInterpreter {
 			width: 4px;
 			background: rgba( 255, 255, 255, 0.75 );
 			border-radius: 100%;
-			box-shadow: 0px 0px 10px rgba( 0, 0, 0, 0.7 )
+			border: 1px #222 solid;
 		`;
 		document.body.appendChild( crosshairElement );
 		return crosshairElement;
