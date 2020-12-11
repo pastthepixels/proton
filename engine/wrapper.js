@@ -323,6 +323,7 @@ class Proton3DInterpreter {
 		}
 
 		// Checks if said bounding box is colliding with anything
+		var hitArray = [];
 		this.scene.meshes.forEach( ( mesh ) => {
 			
 			if ( mesh.intersectsMesh( object ) && mesh.id != object.id && object._children.indexOf( mesh ) == -1 && mesh.id != "skybox" ) hitArray.push( mesh );
