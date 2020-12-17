@@ -1115,7 +1115,7 @@ class Proton3DMaterial {
 		}
 
 		// Creates the material
-		Proton.scene.interpreter.create3DMaterial( extras, this, parentObject );
+		Proton.scene.interpreter.create3DMaterial( extras, this, parentObject, Proton.scene.interpreter );
 		
 		// Accessors
 		Object.defineProperty( this, "color", {

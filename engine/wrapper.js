@@ -196,6 +196,10 @@ class Proton3DInterpreter {
 		this.camera = new Proton3DObject( { type: "perspectivecamera", x: 0, y: 0, z: 5 } );
 		this.camera.setPosition( 0, 0, 5 );
 
+		// Reflection probe
+		/*this.rp = new BABYLON.ReflectionProbe( "reflectionprobe", 512, this.scene );
+		this.rp.renderList.push( getMeshByName( scene.sky.name ) );*/
+
 		// Adds ambient lighting
 		var hemisphere = new BABYLON.HemisphericLight( "ambientLight", new BABYLON.Vector3( 0, 1, 0 ), this.scene );
 		hemisphere.intensity = .3;
@@ -1052,7 +1056,12 @@ class Proton3DInterpreter {
 			objects.forEach( ( object ) => {
 
 				// Alters the material before doing anything else to it
-				if ( object.material ) object.material.usePhysicalLightFalloff = false;
+				if ( object.material ) {
+					
+					object.material.usePhysicalLightFalloff = false;
+					if ( interpreter.rp ) object.reflectionTexture = interpreter.rp.cubeTexture;
+
+				}
 				
 				// Merges objects if they've been split from glTF
 				if ( object.name.includes( "_primitive" ) ) {
@@ -1164,7 +1173,7 @@ class Proton3DInterpreter {
 	}
 
 	// creating and modifing Proton3DMaterials
-	create3DMaterial( extras, P3DMaterial, parentObject ) {
+	create3DMaterial( extras, P3DMaterial, parentObject, interpreter ) {
 
 		if ( extras.material == undefined ) {
 
@@ -1172,6 +1181,7 @@ class Proton3DInterpreter {
 			material.usePhysicalLightFalloff = false;
 			material.name = P3DMaterial.name;
 			material.roughness = 1;
+			if ( interpreter.rp ) material.reflectionTexture = interpreter.rp.cubeTexture;
 			materials.push( material );
 			parentObject.material = material;
 
