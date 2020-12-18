@@ -51,14 +51,6 @@ function importScript( url, isModule = true, callback ) {
 
 	import( url ).then( (value) => {
 
-		if ( isModule === "CANNON" ) window[ "CANNON" ] = value
-		
-		for ( var i in value ) {
-
-			if ( isModule && isModule != "CANNON" ) window[ isModule == true ? "window" : isModule ][ i ] = value[ i ];
-
-		}
-
 		// finished!
 		if ( callback ) callback();
 		scriptStats.loadedScripts++;
@@ -149,11 +141,12 @@ class Proton3DInterpreter {
 	init( params, scene ) {
 
 		var interpreter = this;
-		var postprocessing = {
+		this.postprocessing = {
 			enabled: true,
 			bloom: true,
 			ssao: false,
-			fxaa: true
+			fxaa: true,
+			usePCSS: false
 		}
 		this.scene = scene;
 
@@ -207,12 +200,12 @@ class Proton3DInterpreter {
 
 
 		// Postprocessing
-		if ( postprocessing.enabled ) {
+		if ( this.postprocessing.enabled ) {
 		
 			this.pipeline = new BABYLON.DefaultRenderingPipeline( "default", true, this.scene, [ getMeshByName( this.camera.name ) ] );
-			if ( postprocessing.bloom ) this.pipeline.bloomEnabled = true;
-			if ( postprocessing.fxaa ) this.pipeline.fxaaEnabled = true;
-			if ( postprocessing.ssao ) this.ssao = new BABYLON.SSAORenderingPipeline( "ssao", this.scene, { ssaoRatio: 0.5, combineRatio: 1.0 }, [ getMeshByName( this.camera.name ) ] );
+			if ( this.postprocessing.bloom ) this.pipeline.bloomEnabled = true;
+			if ( this.postprocessing.fxaa ) this.pipeline.fxaaEnabled = true;
+			if ( this.postprocessing.ssao ) this.ssao = new BABYLON.SSAORenderingPipeline( "ssao", this.scene, { ssaoRatio: 0.5, combineRatio: 1.0 }, [ getMeshByName( this.camera.name ) ] );
 
 		}
 
@@ -342,9 +335,23 @@ class Proton3DInterpreter {
 	createShadowGenerator( light ) {
 
 		var shadowGenerator = new BABYLON.ShadowGenerator( 1024, light );
-		shadowGenerator.usePercentageCloserFiltering = true;
-		shadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_MEDIUM;
-		shadowGenerator.bias = 0.0005;
+		light.minZ = .01;
+		light.maxZ = 100;
+
+		if ( this.postprocessing.usePCSS ) {
+
+			shadowGenerator.bias = 0.00005;
+			shadowGenerator.useContactHardeningShadow = true;
+			shadowGenerator.contactHardeningLightSizeUVRatio = 0.75;
+
+		} else {
+
+			shadowGenerator.bias = 0.0005;
+			shadowGenerator.usePercentageCloserFiltering = true;
+			shadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_MEDIUM;
+
+		}
+		
 		this.shadowGenerators.push( shadowGenerator )
 
 	}
