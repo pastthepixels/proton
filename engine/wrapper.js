@@ -142,11 +142,12 @@ class Proton3DInterpreter {
 
 		var interpreter = this;
 		this.postprocessing = {
-			enabled: true,
+			enabled: false,
 			bloom: true,
-			ssao: false,
+			ssao: true,
 			fxaa: true,
-			usePCSS: false
+			usePCSS: false,
+			anisotropicFilteringLevel: 4
 		}
 		this.scene = scene;
 
@@ -219,10 +220,24 @@ class Proton3DInterpreter {
 		document.body.appendChild( this.element );
 
 		// Updates the scene
+		var materialLength = 0;
 		this.engine.runRenderLoop( function() {
 
 			//if ( wiz.objects ) { wiz.objects[ 0 ].setAngularVelocity( 0, 0, 0 ); }
 			interpreter.updateScene( scene )
+
+			// Sets anisotropic filtering
+			if ( materialLength != interpreter.scene.materials.length ) {
+
+				materialLength = interpreter.scene.materials.length;
+				interpreter.scene.textures.forEach( ( texture ) => {
+				
+					texture.anisotropicFilteringLevel = interpreter.postprocessing.anisotropicFilteringLevel;
+					texture.updateSamplingMode( BABYLON.Texture.TRILINEAR_SAMPLINGMODE )
+				
+				} )
+
+			}
 
 		} );
 
@@ -1182,9 +1197,11 @@ class Proton3DInterpreter {
 	// creating and modifing Proton3DMaterials
 	create3DMaterial( extras, P3DMaterial, parentObject, interpreter ) {
 
+		var material = extras.material;
+
 		if ( extras.material == undefined ) {
 
-			var material = new BABYLON.PBRMaterial( P3DMaterial.name, this.scene );
+			material = new BABYLON.PBRMaterial( P3DMaterial.name, this.scene );
 			material.usePhysicalLightFalloff = false;
 			material.name = P3DMaterial.name;
 			material.roughness = 1;
@@ -1194,12 +1211,12 @@ class Proton3DInterpreter {
 
 		} else {
 
-			extras.material.name = P3DMaterial.name;
-			materials.push( extras.material );
-			if ( extras.material.subMaterials ) {
+			material.name = P3DMaterial.name;
+			materials.push( material );
+			if ( material.subMaterials ) {
 
 				P3DMaterial.subMaterials = [];
-				extras.material.subMaterials.forEach( function( material ) {
+				material.subMaterials.forEach( function( material ) {
 
 					P3DMaterial.subMaterials.push( new Proton3DMaterial( parentObject, {
 						material: material
@@ -1210,6 +1227,8 @@ class Proton3DInterpreter {
 			}
 
 		}
+
+		// Run whatever you want to alter all materials here
 		
 	}
 
