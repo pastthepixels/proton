@@ -190,10 +190,6 @@ class Proton3DInterpreter {
 		this.camera = new Proton3DObject( { type: "perspectivecamera", x: 0, y: 0, z: 5 } );
 		this.camera.setPosition( 0, 0, 5 );
 
-		// Reflection probe
-		/*this.rp = new BABYLON.ReflectionProbe( "reflectionprobe", 512, this.scene );
-		this.rp.renderList.push( getMeshByName( scene.sky.name ) );*/
-
 		// Adds ambient lighting
 		var hemisphere = new BABYLON.HemisphericLight( "ambientLight", new BABYLON.Vector3( 0, 1, 0 ), this.scene );
 		hemisphere.intensity = .3;
@@ -353,21 +349,23 @@ class Proton3DInterpreter {
 		light.minZ = .01;
 		light.maxZ = 100;
 
+		shadowGenerator.bias = 0.00001
+		shadowGenerator.normalBias= 0.0005
+		
 		if ( this.postprocessing.usePCSS ) {
 
-			shadowGenerator.bias = 0.00005;
 			shadowGenerator.useContactHardeningShadow = true;
-			shadowGenerator.contactHardeningLightSizeUVRatio = 0.75;
+			shadowGenerator.contactHardeningLightSizeUVRatio = 0.5;
 
 		} else {
 
-			shadowGenerator.bias = 0.0005;
+			shadowGenerator.bias = 0.0005
 			shadowGenerator.usePercentageCloserFiltering = true;
 			shadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_MEDIUM;
 
 		}
 		
-		this.shadowGenerators.push( shadowGenerator )
+		this.shadowGenerators.push( shadowGenerator );
 
 	}
 
@@ -382,7 +380,7 @@ class Proton3DInterpreter {
 		return rotatedVect;
 
 	}
-
+	
 	// Sets camera controls
 	setCameraControls( params ) {
 		
@@ -708,7 +706,7 @@ class Proton3DInterpreter {
 
 	init3DObject( extras, object ) {
 
-		// Just initializes physics for now.
+		// Physics
 		switch ( extras.type ) {
 
 			case "cube":
@@ -741,7 +739,9 @@ class Proton3DInterpreter {
 				}
 		
 		}
-		if ( object.onReady ) object.onReady();
+		
+		// onReady: Where the magic happens
+		if ( object.onReady ) object.onReady()
 
 	}
 
@@ -1060,11 +1060,11 @@ class Proton3DInterpreter {
 
 			}
 
-			// Now you can do onReady stuff
+			// Now you can initialize the object
 			if ( extras.onReady ) {
 
 				object.onReady = extras.onReady;
-				object.onReady()
+				object.onReady();
 
 			}
 
@@ -1081,7 +1081,6 @@ class Proton3DInterpreter {
 				if ( object.material ) {
 					
 					object.material.usePhysicalLightFalloff = false;
-					if ( interpreter.rp ) object.reflectionTexture = interpreter.rp.cubeTexture;
 
 				}
 				
@@ -1205,7 +1204,6 @@ class Proton3DInterpreter {
 			material.usePhysicalLightFalloff = false;
 			material.name = P3DMaterial.name;
 			material.roughness = 1;
-			if ( interpreter.rp ) material.reflectionTexture = interpreter.rp.cubeTexture;
 			materials.push( material );
 			parentObject.material = material;
 
