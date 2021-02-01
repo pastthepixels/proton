@@ -6,13 +6,16 @@
 
 	| Section Name               | Location # |
 	| -------------------------- | ---------- |
-	| Proton3D                   | loc:1      |
+	| Proton3DScene              | loc:1      | <- Ctrl+F "loc:#" to get to the location specified.
+	| Proton3DObject             | loc:2      |
+	| Proton3DMaterial           | loc:3      |
+	| Proton                     | loc:4      |
 
 */
 
 /*
 	~> loc:1
-	Proton3D
+	Proton3DScene
 */
 class Proton3DScene {
 
@@ -84,12 +87,8 @@ class Proton3DScene {
 	}
 	getObjectList() {
 
+		console.warn( "Please consider using [scene].children instead, since that's all this function does.." )
 		return this.children;
-
-	}
-	add( object ) {
-
-		return Proton.scene.interpreter.addToScene( object, this );
 
 	}
 	remove( object ) {
@@ -598,7 +597,7 @@ class Proton3DScene {
 
 }
 /*
-	loc:4.1
+	loc:2
 	Proton3DObject
 */
 const meshData = {
@@ -653,9 +652,6 @@ class Proton3DObject {
 		this.setRotation( extras.rotation.x, extras.rotation.y, extras.rotation.z );
 		this.position = null;
 		this.rotation = null;
-
-		// Adds this to the complete list of objects
-		Proton.objects.push( this );
 
 		// Does an event if the object has one for creating an object
 		if ( Proton3DObject.prototype.onCreation != undefined ) this.onCreation();
@@ -845,11 +841,6 @@ class Proton3DObject {
 		return Proton.scene.interpreter.Proton3DObject.setShadowOptions( cast, receive, this );
 
 	}
-	playAudio( src, listener ) {
-
-		return Proton.scene.interpreter.Proton3DObject.playAudio( src, listener, this );
-
-	}
 	applyImpulse( force, offset = new Proton.Vector3( 0, 0, 0 ) ) {
 
 		return Proton.scene.interpreter.Proton3DObject.applyImpulse( force, offset, this );
@@ -910,11 +901,6 @@ class Proton3DObject {
 		return Proton.scene.interpreter.Proton3DObject.getPickup( this );
 
 	}
-	makeListeningObject() {
-
-		return Proton.scene.interpreter.Proton3DObject.makeListeningObject( this );
-
-	}
 	setLinearVelocity( x = 0, y = 0, z = 0 ) {
 
 		return Proton.scene.interpreter.Proton3DObject.setLinearVelocity( x, y, z, this );
@@ -923,11 +909,6 @@ class Proton3DObject {
 	setAngularVelocity( x = 0, y = 0, z = 0 ) {
 
 		return Proton.scene.interpreter.Proton3DObject.setAngularVelocity( x, y, z, this );
-
-	}
-	setDamping( linear = 0, angular = 0 ) {
-
-		return Proton.scene.interpreter.Proton3DObject.setDamping( linear, angular, this );
 
 	}
 	setLinearFactor( x = 0, y = 0, z = 0 ) {
@@ -950,16 +931,6 @@ class Proton3DObject {
 	setAngularFactor( x = 0, y = 0, z = 0 ) {
 
 		return Proton.scene.interpreter.Proton3DObject.setAngularFactor( x, y, z, this );
-
-	}
-	addEventListener( name, callback ) {
-
-		return Proton.scene.interpreter.Proton3DObject.addEventListener( name, callback, this );
-
-	}
-	removeEventListener( name, callback ) {
-
-		return Proton.scene.interpreter.Proton3DObject.removeEventListener( name, callback, this );
 
 	}
 	setRotation( x, y, z ) {
@@ -1030,11 +1001,6 @@ class Proton3DObject {
 		return Proton.scene.interpreter.Proton3DObject.getPosition( this );
 
 	}
-	applyLocRotChange() {
-
-		return Proton.scene.interpreter.Proton3DObject.applyLocRotChange( this );
-
-	}
 	getLinearVelocity() {
 
 		return Proton.scene.interpreter.Proton3DObject.getLinearVelocity( this );
@@ -1043,11 +1009,6 @@ class Proton3DObject {
 	getAngularVelocity() {
 
 		return Proton.scene.interpreter.Proton3DObject.getAngularVelocity( this );
-
-	}
-	isMesh( object ) {
-
-		return Proton.scene.interpreter.Proton3DObject.isMesh( object, this );
 
 	}
 	isPhysicsReady() {
@@ -1088,7 +1049,7 @@ class Proton3DObject {
 
 }
 /*
-	loc:4.2
+	loc:3
 	Proton3DMaterial
 */
 class Proton3DMaterial {
@@ -1369,13 +1330,34 @@ class RepeatingAudio {
 
 }
 /*
-	~> loc:5
+	~> loc:4
 	Proton
 */
 let Proton = {
 	objects: [],
+	paused: false,
 	cache: {
 		// ...
+	},
+	// Wrapper for localStorage
+	storage: {
+		name: "mygame",
+		get( name ) {
+
+			return Proton.scene.interpreter.storage.getItem( Proton.storage.name + "-" + name ) || null;
+
+		},
+		set( name, value ) {
+
+			Proton.scene.interpreter.storage.setItem( Proton.storage.name + "-" + name, value );
+			return value;
+
+		},
+		remove( name ) {
+
+			Proton.scene.interpreter.storage.removeItem( Proton.storage.name + "-" + name );
+
+		}
 	},
 	degToRad( deg ) {
 
@@ -1507,65 +1489,10 @@ let Proton = {
 		};
 
 	},
-	// Wrapper for localStorage
-	storage: {
-		name: "mygame",
-		get( name ) {
-
-			return Proton.scene.interpreter.storage.getItem( Proton.storage.name + "-" + name ) || null;
-
-		},
-		set( name, value ) {
-
-			Proton.scene.interpreter.storage.setItem( Proton.storage.name + "-" + name, value );
-			return value;
-
-		},
-		remove( name ) {
-
-			Proton.scene.interpreter.storage.removeItem( Proton.storage.name + "-" + name );
-
-		}
-	},
-	paused: false,
 	import: function( params ) {
 
 		params.interpreter = Proton.scene.interpreter;
 		return Proton.scene.interpreter.importObject( params );
-
-	},
-	loadingManager: function ( extras = {} ) {
-
-		this.value = 0;
-		this.min = 0;
-		this.max = 0;
-		this.onLoad = null;
-		this.onStart = null;
-		this.onProgress = null;
-		this._onProgress = function ( url, itemsLoaded, itemsTotal ) {
-
-			this.value += itemsLoaded;
-			if ( this.onProgress ) {
-
-				this.onProgress( url, itemsLoaded, itemsTotal );
-
-			}
-
-			if ( this.value >= this.max && this.onLoad ) {
-
-				this.loaded = true;
-				this.onLoad();
-
-			}
-
-		}
-		;
-
-		for ( var i in extras ) {
-
-			this[ i ] = extras[ i ];
-
-		}
 
 	},
 	pause: function () {
@@ -1577,9 +1504,9 @@ let Proton = {
 
 		}
 
-		if ( this.onpause ) {
+		if ( this.onPause ) {
 
-			this.onpause();
+			this.onPause();
 
 		}
 
@@ -1596,9 +1523,9 @@ let Proton = {
 		}
 
 		Proton.scene.interpreter.resume();
-		if ( this.onresume ) {
+		if ( this.onResume ) {
 
-			this.onresume();
+			this.onResume();
 
 		}
 
@@ -1630,83 +1557,6 @@ let Proton = {
 			Proton.player.setDamping( 100 );
 
 		}
-
-	},
-	animate( object, properties = {}, parameters = {} /* = { step: function(){}, callback: () => {}, duration: 10 */ ) {
-
-		if ( object.animatingInterval ) Proton.resetAnimation( object );
-		parameters.duration = parameters.duration ? parameters.duration : 1000;
-		
-		var animations = [],
-			frames = 0,
-			frame = 0;
-		function addAnim( property, value, target ) {
-
-			var animateValue = target - value;
-			animations.push( function () {
-
-				if ( frame >= 1 || object.__isAnimating != 1 ) {
-
-					object[ property ] = animateValue + value;
-					if ( parameters.callback && object.__isAnimating != - 1 ) parameters.callback( frame, object[ property ] );
-					return;
-
-				}
-
-				object[ property ] = ( frame * animateValue ) + value;
-				if ( parameters.step ) parameters.step( frame, object[ property ] );
-
-			} );
-
-		}
-
-		function anim() {
-
-			object.animationInterval = interval( function () {
-
-				frames ++;
-				frame = ease( frames / ( parameters.duration / 16 ) );
-				//
-				animations.forEach( function ( a ) {
-
-					a();
-
-				} );
-				if ( frame >= 1 || object.__isAnimating != 1 ) {
-
-					clearInterval( object.animationInterval );
-					object.__isAnimating = 0;
-
-				}
-
-			}, 16 );
-
-		}
-
-		// https://easings.net/#easeInOutCubic
-		function ease( x ) {
-
-			return x < 0.5 ? 4 * x * x * x : 1 - Math.pow( - 2 * x + 2, 3 ) / 2;
-
-		}
-
-		object.__isAnimating = 1;
-		for ( var i in properties ) {
-
-			if ( object[ i ] != undefined ) {
-
-				addAnim( i, object[ i ], properties[ i ] );
-
-			}
-
-		}
-
-		anim();
-
-	},
-	resetAnimation( object, noCallback ) {
-
-		object.__isAnimating = noCallback ? - 1 : 0;
 
 	},
 

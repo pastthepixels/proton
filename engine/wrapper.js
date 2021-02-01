@@ -10,19 +10,14 @@
 
 	| Section Name               | Location # |
 	| -------------------------- | ---------- |
-	| ???                        | loc:1      |
+	| Scripts                    | loc:1      | <- Ctrl+F "loc:#" to get to the location specified.
+	| Proton3DInterpreter        | loc:2      |
+	| Proton3D Tools             | loc:3      |
 
 */
 
 /*
-
-	# What does "loc" mean? And why isn't there any documentation for Proton?
-	-> If you have any of these symptoms, please consult the `README` in the same directory as this script.
-
-*/
-
-/*
-	~> wrapper/loc:1
+	~> loc:1
 	Loading the default Proton3DInterpreter's dependencies
 */
 
@@ -91,7 +86,7 @@ function init( scripts ) {
 
 }
 /*
-	wrapper/loc:4.3
+	~> loc:2
 	Proton3DInterpreter
 */
 const meshes = [];
@@ -141,7 +136,7 @@ class Proton3DInterpreter {
 	init( params, scene ) {
 
 		var interpreter = this;
-		this.postprocessing = {
+		this.postprocessing = params.postprocessing || {
 			enabled: false,
 			bloom: true,
 			ssao: true,
@@ -150,14 +145,6 @@ class Proton3DInterpreter {
 			anisotropicFilteringLevel: 4
 		}
 		this.scene = scene;
-
-		// Auto graphics
-		switch ( params.graphicsRating ) {
-
-			case 1 / 10:
-				break;
-			
-		}
 
 		// Sets up the scene
 		this.dynamicResize( scene );
@@ -276,13 +263,6 @@ class Proton3DInterpreter {
 			interpreter.engine.resize();
 
 		} );
-
-	}
-
-	// Adds an object to the scene
-	addToScene( /* object, scene */ ) {
-
-		console.error( "In Babylon.js, objects are already initiated to scenes when you create them." )
 
 	}
 
@@ -644,37 +624,6 @@ class Proton3DInterpreter {
 				}
 
 				meshes.push( mesh );
-
-				// Scaling
-				object.getScale = function () {
-
-					return getMeshByName( object.name ).scale;
-
-				};
-
-				object.setScale = function ( x, y, z ) {
-
-					if ( x == undefined ) {
-
-						x = object.getScale().x;
-
-					}
-
-					if ( y == undefined ) {
-
-						y = object.getScale().y;
-
-					}
-
-					if ( z == undefined ) {
-
-						z = object.getScale().z;
-
-					}
-
-					getMeshByName( object.name ).scale = new BABYLON.Vector3( x, y, z );
-
-				};
 			
 		}
 
@@ -776,11 +725,6 @@ class Proton3DInterpreter {
 			}
 
 		},
-		playAudio( src, listener, P3DObject ) {
-			
-			return new BABYLON.Sound( "Audio", url, this.scene, null );
-
-		},
 		applyImpulse( force, offset = new BABYLON.Vector3( 0, 0, 0 ), P3DObject ) {
 
 			getMeshByName( P3DObject.name ).physics.applyImpulse( force, offset )
@@ -833,14 +777,13 @@ class Proton3DInterpreter {
 
 		},
 		getPickupDistance( P3DObject ) {
-			// Should be something here
+			
+			return P3DObject.__pickupDistance;
+
 		},
 		getPickup( P3DObject ) {
-			// Should be something here
-		},
-		makeListeningObject( P3DObject ) {
-
-			// If you use three.js, put something here.
+			
+			return { pickupable: P3DObject.__pickupable, returnAfterPickup: P3DObject.__returnAfterPickup }
 
 		},
 		setLinearVelocity( x = P3DObject.getLinearVelocity().x, y = P3DObject.getLinearVelocity().y, z = P3DObject.getLinearVelocity().z, P3DObject ) {
@@ -853,11 +796,6 @@ class Proton3DInterpreter {
 			getMeshByName( P3DObject.name ).physics.physicsBody.setAngularVelocity( new Ammo.btVector3( x, y, z ) );
 
 		},
-		setDamping( linear, angular, P3DObject ) {
-
-			// If you like Physijs, have a look here.
-
-		},
 		setLinearFactor( x = 0, y = 0, z = 0, P3DObject ) {
 
 			getMeshByName( P3DObject.name ).physics.physicsBody.setLinearFactor( new Ammo.btVector3( x, y, z ) );
@@ -866,16 +804,6 @@ class Proton3DInterpreter {
 		setAngularFactor( x = 0, y = 0, z = 0, P3DObject ) {
 
 			getMeshByName( P3DObject.name ).physics.physicsBody.setAngularFactor( new Ammo.btVector3( x, y, z ) );
-
-		},
-		addEventListener( name, callback, P3DObject ) {
-
-			getMeshByName( P3DObject.name ).addEventListener( name, callback );
-
-		},
-		removeEventListener( name, callback, P3DObject ) {
-
-			getMeshByName( P3DObject.name ).removeEventListener( name, callback );
 
 		},
 		setRotation( x, y, z, P3DObject ) {
@@ -945,11 +873,6 @@ class Proton3DInterpreter {
 			return getMeshByName( P3DObject.name ).position;
 
 		},
-		applyLocRotChange( P3DObject ) {
-
-			// If you use Physijs, have a look here (__dirtyPosition & __dirtyRotation)
-
-		},
 		getLinearVelocity( P3DObject ) {
 
 			return getMeshByName( P3DObject.name ).physics.getLinearVelocity();
@@ -958,12 +881,6 @@ class Proton3DInterpreter {
 		getAngularVelocity( P3DObject ) {
 
 			return getMeshByName( P3DObject.name ).physics.getAngularVelocity();
-
-		},
-		isMesh( object, P3DObject ) {
-
-			// What is this good for? I don't know!
-			return object.name == P3DObject.name;
 
 		},
 		getWorldDirection( P3DObject ) {
@@ -1385,7 +1302,7 @@ class Proton3DInterpreter {
 
 };
 /*
-	~> wrapper/loc:4.5
+	~> loc:3
 	Proton3D Tools
 */
 class GameCode {
