@@ -177,6 +177,10 @@ class Proton3DInterpreter {
 		this.camera = new Proton3DObject( { type: "perspectivecamera", x: 0, y: 0, z: 5 } );
 		this.camera.setPosition( 0, 0, 5 );
 
+		// Creates a camera for third-person view
+		this.thirdCamera = new Proton3DObject( { type: "3rdperspectivecamera", x: 0, y: 0, z: 5 } );
+		this.thirdCamera.setPosition( 0, 0, 5 );
+
 		// Adds ambient lighting
 		var hemisphere = new BABYLON.HemisphericLight( "ambientLight", new BABYLON.Vector3( 0, 1, 0 ), this.scene );
 		hemisphere.intensity = .3;
@@ -364,10 +368,12 @@ class Proton3DInterpreter {
 	// Sets camera controls
 	setCameraControls( params ) {
 		
+		var interpreter = this;
+		
 		// Creates a fake physics mesh
 		var object = new Proton3DObject( {
 			type: "cube",
-			height: 3,
+			height: params.height != undefined? params.height : 3,
 			friction: 1,
 			restitution: 0,
 			mass: 1,
@@ -378,44 +384,102 @@ class Proton3DInterpreter {
 			// But I can.
 			//  'Cause that's the way I like to live my life 🎵
 			// 🎵 and I think that everything's gonna be fine.
-			onReady: () => setTimeout( () => object.setAngularFactor( 0, 0, 0 ), 500 )
+			onReady: () => setTimeout( function() {
+				object.setAngularFactor( 0, 0, 0 );
+				object.material.makeTransparent()
+			}, 500 )
 		} );
 		params.cameraParent.physicsObject = object;
-		params.cameraParent.material.makeTransparent();
 		params.cameraParent.setPosition( 0, 0, 0 );
 		object.add( params.cameraParent );
-		object.add( params.scene.camera );
+		params.type == "firstperson"? object.add( params.scene.camera ) : object.add( params.scene.thirdCamera );
 
 		// Sets the camera's position
 		var cameraPosition = params.cameraParent.position.add( new BABYLON.Vector3( params.distance.x, params.distance.y, params.distance.z ) );
 		params.scene.camera.setPosition( cameraPosition.x, cameraPosition.y, cameraPosition.z );
 		
 		// Does regular stuff
-		this.onMouseMove( function ( e ) {
+		var mouseMoveFunction, beforeRenderFunction;
+		switch( params.type ) {
 
-			if ( ! Proton.paused ) {
+			case "firstperson":
+				
+				mouseMoveFunction = function ( e ) {
 
-				params.scene.camera.rotation.y += Proton.degToRad( e.movementX / params.xSensitivity );
-				if ( params.scene.camera.rotation.x + Proton.degToRad( e.movementY / params.ySensitivity ) < 1.57 &&
-					params.scene.camera.rotation.x + Proton.degToRad( e.movementY / params.ySensitivity ) > -1.57 ) {
+					if ( ! Proton.paused ) {
+
+						params.scene.camera.rotation.y += Proton.degToRad( e.movementX / params.xSensitivity );
+						if ( params.scene.camera.rotation.x + Proton.degToRad( e.movementY / params.ySensitivity ) < 1.57 &&
+							params.scene.camera.rotation.x + Proton.degToRad( e.movementY / params.ySensitivity ) > -1.57 ) {
+							
+							params.scene.camera.rotation.x += Proton.degToRad( e.movementY / params.ySensitivity );
+
+						}
+
+					}
+
+				};
+				beforeRenderFunction = function () {
+
+					// Sets the crosshair's position
+					params.scene.crosshair.localPosition = params.scene.camera.getWorldDirection();
+					params.scene.crosshair.position = object.position.clone().add( params.scene.crosshair.localPosition ).add( params.scene.camera.position );
+
+					// Sets the rotation of the player mesh
+					params.cameraParent.rotation.y = params.scene.camera.rotation.y;			
+
+				};
+
+			case "thirdperson":
+			
+				// Enables/disables controls in Babylon on "pointerlockchange"
+				document.addEventListener( "pointerlockchange", function () {
 					
-					params.scene.camera.rotation.x += Proton.degToRad( e.movementY / params.ySensitivity );
+					if ( !document.pointerLockElement ) {
 
-				}
+						getMeshByName( params.scene.thirdCamera.name ).detachControl( interpreter.canvas );
+						
+					} else {
 
-			}
+						getMeshByName( params.scene.thirdCamera.name ).attachControl( interpreter.canvas );
 
-		} );
-		this.scene.registerBeforeRender( function () {
+					}
 
-			// Sets the crosshair's position
-			params.scene.crosshair.localPosition = params.scene.camera.getWorldDirection();
-			params.scene.crosshair.position = object.position.clone().add( params.scene.crosshair.localPosition ).add( params.scene.camera.position );
+				}, false );			
+						
+				// Sets some camera properties
+				getMeshByName( params.scene.thirdCamera.name ).inertia = 0;
+				getMeshByName( params.scene.thirdCamera.name ).radius = params.distance.x;
+				// Sets this camera as the active one.
+				interpreter.scene.activeCamera = getMeshByName( params.scene.thirdCamera.name );
+				params.scene.thirdCamera.active = true;
 
-			// Sets the rotation of the player mesh
-			params.cameraParent.rotation.y = params.scene.camera.rotation.y;			
+				// Now for the functions.
+				mouseMoveFunction = function ( e ) {
 
-		} );
+					if ( ! Proton.paused ) {
+
+						params.scene.crosshair.localPosition = params.scene.thirdCamera.position.clone().divide( new BABYLON.Vector3( -10, -10, -10 ) );
+
+					}
+
+				};
+				beforeRenderFunction = function () {
+
+					// Sets the crosshair's position
+					params.scene.crosshair.position = object.position.clone().add( params.scene.crosshair.localPosition );
+
+					// Rotates the player
+					var deg = Proton.radToDeg( getMeshByName( Proton.scene.thirdCamera.name ).alpha )
+					if ( deg > 360 ) deg = deg - 360;
+					if ( deg < 360 ) deg = deg + 360;
+					params.cameraParent.rotation.y = Proton.degToRad( -deg + 90 );
+
+				};
+
+		}
+		this.onMouseMove( mouseMoveFunction );
+		this.scene.registerBeforeRender( beforeRenderFunction );
 
 
 	}
@@ -433,6 +497,23 @@ class Proton3DInterpreter {
 				var camera = new BABYLON.UniversalCamera( object.name, new BABYLON.Vector3( 0, 0, 1 ), interpreter.scene );
 				camera.fov = extras.fov != undefined? extras.fov : 1;
 				camera.setTarget( BABYLON.Vector3.Zero() );
+				meshes.push( camera );
+
+				// Adds Proton functions
+				object.changeFOV = ( value ) => {
+
+					object.fov = value;
+
+				};
+
+				// Done
+				break;
+			
+			case "3rdperspectivecamera":
+
+				// Creates the camera
+				var camera = new BABYLON.ArcRotateCamera( object.name, 0, 0, 10, new BABYLON.Vector3( 0, 0, 0 ), interpreter.scene );
+				camera.fov = extras.fov != undefined? extras.fov : 1;
 				meshes.push( camera );
 
 				// Adds Proton functions
@@ -1253,7 +1334,7 @@ class Proton3DInterpreter {
 	// Hides the pointer through requestPointerLock
 	hidePointer() {
 
-		document.body.requestPointerLock();
+		this.canvas.requestPointerLock();
 
 	}
 	

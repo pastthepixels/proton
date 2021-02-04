@@ -47,6 +47,7 @@ class Proton3DScene {
 
 		// Variables
 		this.camera = this.interpreter.camera // Should be a Proton3DObject
+		this.thirdCamera = this.interpreter.thirdCamera
 		
 		
 		// Functions to be called after a render
@@ -291,6 +292,14 @@ class Proton3DScene {
 		// The actual function that moves the player
 		function move( y, speed, negatise = false, forward = false, gunAnimation = true ) {
 
+			if ( x.thirdCamera.active ) {
+				
+				// Converts y from any other kind of Vector3
+				y = new Proton.Vector3( y.x, y.y, y.z )
+				
+				y.multiply( new Proton.Vector3( -1, -1, -1 ) )
+
+			}
 			if ( ! obj.physicsObject.isPhysicsReady() ) {
 
 				return;
@@ -781,10 +790,11 @@ class Proton3DObject {
 		Proton.scene.controls = {
 			camera: Proton.scene.setCameraControls( {
 				type: extras.type,
-				distance: extras.type == "firstperson" ? extras.head : extras.head.clone().add( new Proton.Vector3( 5, 0, 5 ) ),
+				distance: extras.type == "firstperson" ? extras.head : extras.head.clone().add( new Proton.Vector3( 10, 0, 10 ) ),
 				invisibleParent: extras.invisible,
 				cameraParent: object,
-				gun: extras.gun
+				gun: extras.gun,
+				height: extras.height
 			} ),
 			key: Proton.scene.setKeyControls(
 				object,
@@ -796,6 +806,7 @@ class Proton3DObject {
 
 		// Crosshair
 		Proton.crosshair( Proton.scene.crosshair );
+		if ( extras.type != "firstperson" ) Proton.scene.crosshair.hide();
 
 		// Rotates a weapon. Crowbars are included, too.
 		if ( extras.gunRotation ) {
