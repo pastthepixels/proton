@@ -399,7 +399,7 @@ class Proton3DInterpreter {
 		params.scene.camera.setPosition( cameraPosition.x, cameraPosition.y, cameraPosition.z );
 		
 		// Does regular stuff
-		var mouseMoveFunction, beforeRenderFunction;
+		var mouseMoveFunction, beforeRenderFunction, clickFunction, keyDownFunction; // Functions that handle various events. keyDownFunction and clickFunction are optional.
 		switch( params.type ) {
 
 			case "firstperson":
@@ -429,6 +429,14 @@ class Proton3DInterpreter {
 					params.cameraParent.rotation.y = params.scene.camera.rotation.y;			
 
 				};
+				break;
+
+			case "birdseye": // Top-down view with a fixed beta value for the camera.
+
+				params.distance.x = 20;
+				getMeshByName( params.scene.thirdCamera.name ).lowerBetaLimit = getMeshByName( params.scene.thirdCamera.name ).upperBetaLimit = Proton.degToRad( 54.7 )
+				
+				
 
 			case "thirdperson":
 			
@@ -437,19 +445,28 @@ class Proton3DInterpreter {
 					
 					if ( !document.pointerLockElement ) {
 
-						getMeshByName( params.scene.thirdCamera.name ).detachControl( interpreter.canvas );
+						params.scene.thirdCamera.disable();// Disables camera controls when there is no pointer lock
 						
 					} else {
 
-						getMeshByName( params.scene.thirdCamera.name ).attachControl( interpreter.canvas );
+						params.scene.thirdCamera.enable();// Does the exact opposite as above
 
 					}
 
-				}, false );			
+				}, false );		
+				
+				// Sets functions to enable + disable camera controls
+				params.scene.thirdCamera.disable = () => getMeshByName( params.scene.thirdCamera.name ).detachControl( interpreter.canvas );
+				params.scene.thirdCamera.enable = () =>  getMeshByName( params.scene.thirdCamera.name ).attachControl( interpreter.canvas );
 						
+				// Creates variables
+				var animating, deg; // Wether the player is turning around and the angle (almost) in which it should be facing, in degrees (hence the name "deg")
+
 				// Sets some camera properties
 				getMeshByName( params.scene.thirdCamera.name ).inertia = 0;
 				getMeshByName( params.scene.thirdCamera.name ).radius = params.distance.x;
+				getMeshByName( params.scene.thirdCamera.name ).angularSensibilityX = 1000 - 60 * params.xSensitivity;
+				getMeshByName( params.scene.thirdCamera.name ).angularSensibilityY = 1000 - 60 * params.ySensitivity;
 				// Sets this camera as the active one.
 				interpreter.scene.activeCamera = getMeshByName( params.scene.thirdCamera.name );
 				params.scene.thirdCamera.active = true;
@@ -459,7 +476,7 @@ class Proton3DInterpreter {
 
 					if ( ! Proton.paused ) {
 
-						params.scene.crosshair.localPosition = params.scene.thirdCamera.position.clone().divide( new BABYLON.Vector3( -10, -10, -10 ) );
+						params.scene.crosshair.localPosition = params.scene.thirdCamera.position.clone().multiply( new BABYLON.Vector3( -.1, 0, -.1 ) );
 
 					}
 
@@ -470,14 +487,42 @@ class Proton3DInterpreter {
 					params.scene.crosshair.position = object.position.clone().add( params.scene.crosshair.localPosition );
 
 					// Rotates the player
-					var deg = Proton.radToDeg( getMeshByName( Proton.scene.thirdCamera.name ).alpha )
+					deg = Proton.radToDeg( getMeshByName( Proton.scene.thirdCamera.name ).alpha )
 					if ( deg > 360 ) deg = deg - 360;
 					if ( deg < 360 ) deg = deg + 360;
-					params.cameraParent.rotation.y = Proton.degToRad( -deg + 90 );
+					if ( !animating && Object.values( params.scene.keys ).indexOf( true ) > -1 ) params.cameraParent.rotation.y = Proton.degToRad( -deg + 90 );
 
 				};
+				keyDownFunction = function() {
+					if ( Math.abs( params.cameraParent.rotation.y - Proton.degToRad( -deg + 90 ) )>= 1 && animating != true ) {
+					
+						animating = true;
+						var origin = new BABYLON.Vector3( 0, params.cameraParent.rotation.y, 0 );
+						Proton.animate( origin, {
+							x: 0,
+							y: Proton.degToRad( -deg + 90 ),
+							z: 0,
+						}, {
+							step: function () {
+			
+								params.cameraParent.rotation.y = origin.y;
+			
+							},
+							callback: () => animating = false,
+							duration: 400
+						} );
+
+					}
+				}
+				clickFunction = function() {
+					
+					if ( document.pointerLockElement ) keyDownFunction();
+
+				}
 
 		}
+		if ( keyDownFunction ) document.body.addEventListener( "keydown",  keyDownFunction )
+		if ( clickFunction ) document.body.addEventListener( "click",  clickFunction )
 		this.onMouseMove( mouseMoveFunction );
 		this.scene.registerBeforeRender( beforeRenderFunction );
 

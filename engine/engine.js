@@ -356,7 +356,7 @@ class Proton3DScene {
 
 		returningObject.init = function () {
 
-			Proton.scene.interpreter.hidePointer();
+			if ( extras.hidePointer != false ) Proton.scene.interpreter.hidePointer();
 			Proton.resume();
 			init();
 
@@ -794,7 +794,8 @@ class Proton3DObject {
 				invisibleParent: extras.invisible,
 				cameraParent: object,
 				gun: extras.gun,
-				height: extras.height
+				height: extras.height,
+				hidePointer: extras.hidePointer
 			} ),
 			key: Proton.scene.setKeyControls(
 				object,
@@ -1378,6 +1379,79 @@ let Proton = {
 	radToDeg( rad ) {
 
 		return rad * ( 180 / Math.PI );
+
+	},
+	// Animates an object with values to the same object, but just with different values.
+	animate( object, properties = {}, parameters = {} /* = { step: function(){}, callback: () => {}, duration: 10 */ ) {
+
+		if ( object.animatingInterval ) Proton.resetAnimation( object );
+		parameters.duration = parameters.duration ? parameters.duration : 1000;
+		
+		var animations = [],
+			frames = 0,
+			frame = 0;
+		function addAnim( property, value, target ) {
+
+			var animateValue = target - value;
+			animations.push( function () {
+
+				if ( frame >= 1 || object.__isAnimating != 1 ) {
+
+					object[ property ] = animateValue + value;
+					if ( parameters.callback && object.__isAnimating != - 1 ) parameters.callback( frame, object[ property ] );
+					return;
+
+				}
+
+				object[ property ] = ( frame * animateValue ) + value;
+				if ( parameters.step ) parameters.step( frame, object[ property ] );
+
+			} );
+
+		}
+
+		function anim() {
+
+			object.animationInterval = setInterval( function () {
+
+				frames ++;
+				frame = ease( frames / ( parameters.duration / 16 ) );
+				//
+				animations.forEach( function ( a ) {
+
+					a();
+
+				} );
+				if ( frame >= 1 || object.__isAnimating != 1 ) {
+
+					clearInterval( object.animationInterval );
+					object.__isAnimating = 0;
+
+				}
+
+			}, 16 );
+
+		}
+
+		// https://easings.net/#easeInOutCubic
+		function ease( x ) {
+
+			return x < 0.5 ? 4 * x * x * x : 1 - Math.pow( - 2 * x + 2, 3 ) / 2;
+
+		}
+
+		object.__isAnimating = 1;
+		for ( var i in properties ) {
+
+			if ( object[ i ] != undefined ) {
+
+				addAnim( i, object[ i ], properties[ i ] );
+
+			}
+
+		}
+
+		anim();
 
 	},
 	// Port of THREE.Vector3
