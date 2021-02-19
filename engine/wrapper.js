@@ -182,9 +182,7 @@ class Proton3DInterpreter {
 		this.thirdCamera.setPosition( 0, 0, 5 );
 
 		// Adds ambient lighting
-		var hemisphere = new BABYLON.HemisphericLight( "ambientLight", new BABYLON.Vector3( 0, 1, 0 ), this.scene );
-		hemisphere.intensity = .3;
-		hemisphere.specular = new BABYLON.Color3( 0, 0, 0 )
+		this.hemisphereLight = new BABYLON.HemisphericLight( "hemisphere", new BABYLON.Vector3( -1, 1, 0 ), this.scene );
 
 
 		// Postprocessing
@@ -228,6 +226,63 @@ class Proton3DInterpreter {
 
 		} );
 
+		// GI
+			
+		//var probe = new BABYLON.ReflectionProbe("main", 512, this.scene );
+		var interpreter = this;
+		this.scene.reflectionProbes = [];
+		this.scene.reflectionProbeObjects = [];
+		this.rp = new BABYLON.ReflectionProbe( "rp", 512, this.scene );
+		this.scene.registerBeforeRender( function() {
+			
+			interpreter.scene.meshes.forEach( function( mesh ) {
+
+				if ( !mesh.reflectionProbe && mesh.material ) {
+
+					mesh.reflectionProbe = new BABYLON.ReflectionProbe( mesh.id + "_rp", 512, interpreter.scene );
+					mesh.reflectionProbe.parent = mesh;
+					//mesh.reflectionProbe.refreshRate = 6;
+					//mesh.reflectionProbe.samples = 32;
+					mesh.material.reflectionTexture = mesh.reflectionProbe.cubeTexture;
+					//mesh.material.realTimeFiltering = true;
+					interpreter.scene.reflectionProbes.push( mesh.reflectionProbe );
+					interpreter.scene.reflectionProbeObjects.forEach( function( object ) {
+
+						if ( object.name != mesh.name ) mesh.reflectionProbe.renderList.push( object )
+
+					} );
+					if ( mesh.reflectionProbe.renderList.indexOf( mesh ) > -1 ) mesh.reflectionProbe.renderList.splice( mesh.reflectionProbe.renderList.indexOf( mesh ), 1 )
+
+				}
+				if ( interpreter.scene.reflectionProbeObjects.indexOf( mesh ) === -1 ) {
+					
+					interpreter.scene.reflectionProbeObjects.push( mesh )
+					interpreter.scene.reflectionProbes.forEach( function( reflectionProbe ) {
+
+						if ( !reflectionProbe.name.includes( mesh.name ) ) reflectionProbe.renderList.push( mesh )
+
+					} )
+
+				}
+
+			} )
+
+		} );
+		/*
+		var ssr = new BABYLON.ScreenSpaceReflectionPostProcess( "ssr", interpreter.scene, 1.0, getMeshByName( interpreter.thirdCamera.name ) );
+		ssr.reflectionSamples = 100; // High quality.
+		ssr.strength = 1; // Set default strength of reflections.
+		ssr.reflectionSpecularFalloffExponent = 3; // Attenuate the reflections a little bit. (typically in interval [1, 3])
+		this.scene.registerBeforeRender( function() {
+
+			if ( mesh.material && mesh.reflectivityTextureDone == undefined ) {
+
+				mesh.reflectivityTextureDone = true;
+				mesh.material.reflectivityTexture = new BABYLON.Texture("data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII= ", interpreter.scene );
+			} 
+
+		} )
+		*/
 		// Starts the scene
 		this.updateScene( scene );
 
@@ -293,37 +348,29 @@ class Proton3DInterpreter {
 	// Gets objects a mesh is colliding with
 	getCollidingObjects( P3DObject ) {
 
-		function vecToLocal( vector, mesh ) {
-
-			var m = mesh.getWorldMatrix();
-			var v = BABYLON.Vector3.TransformCoordinates( vector, m );
-			return v;
-
-		}
-
-		// Updates the object's bounding box
-		var object = getMeshByName( P3DObject.name );
-		if ( !object.boundingBoxFixed ) {
-
-			var min = object.getBoundingInfo().boundingBox.minimum;
-			var max = object.getBoundingInfo().boundingBox.maximum;
-			min = min.subtract( new BABYLON.Vector3( .05, .05, .05 ) );
-			max = max.add( new BABYLON.Vector3( .05, .05, .05 ) );
-			object.setBoundingInfo( new BABYLON.BoundingInfo( min, max ) );
-			object.boundingBoxFixed = true;
-
-		}
-
-		// Checks if said bounding box is colliding with anything
-		var hitArray = [];
-		this.scene.meshes.forEach( ( mesh ) => {
-			
-			if ( mesh.intersectsMesh( object ) && mesh.id != object.id && object._children.indexOf( mesh ) == -1 && mesh.id != "skybox" ) hitArray.push( mesh );
-
-		} );
-
-		return hitArray;
+		var collisions = [], interpreter = this;
+		this.scene.meshes.forEach( function( mesh ) { // Runs through all the meshes and runs a collision detection function on all of them. If they are colliding with the P3DObject, add them to an array which will be returned at the end of the function.
 		
+			if ( !mesh.p3dParent || !mesh.physics ) return;
+			var contact = new Ammo.ConcreteContactResultCallback();
+			contact.hasContact = false;
+			contact.addSingleResult = function( cp, colObj0Wrap, partId0, index0, colObj1Wrap, partId1, index1 ) { // https://medium.com/@bluemagnificent/collision-detection-in-javascript-3d-physics-using-ammo-js-and-three-js-31a5569291ef
+
+				let contactPoint = Ammo.wrapPointer( cp, Ammo.btManifoldPoint );
+
+				const distance = contactPoint.getDistance();
+
+				if( distance > 0 ) return;
+
+				this.hasContact = true;
+
+			}
+			interpreter.scene.getPhysicsEngine()._physicsPlugin.world.contactPairTest( mesh.physics.physicsBody, getMeshByName( P3DObject.name ).physics.physicsBody, contact );
+			if ( contact.hasContact && mesh.p3dParent != P3DObject ) collisions.push( mesh.p3dParent )
+		
+		} );
+		return collisions
+
 	}
 
 	// Creates a shadow generator
@@ -372,12 +419,14 @@ class Proton3DInterpreter {
 		
 		// Creates a fake physics mesh
 		var object = new Proton3DObject( {
-			type: "cube",
+			type: "capsule",
 			height: params.height != undefined? params.height : 3,
+			radius: 2,
 			friction: 1,
 			restitution: 0,
 			mass: 1,
 			castShadow: false,
+			noPhysics: params.noPhysics,
 			// setTimeout is bad.
 			// I can't use it.
 
@@ -386,7 +435,8 @@ class Proton3DInterpreter {
 			// 🎵 and I think that everything's gonna be fine.
 			onReady: () => setTimeout( function() {
 				object.setAngularFactor( 0, 0, 0 );
-				object.material.makeTransparent()
+				object.material.makeTransparent();
+				params.cameraParent.setPosition( 0, 0, 0 );
 			}, 500 )
 		} );
 		params.cameraParent.physicsObject = object;
@@ -636,6 +686,35 @@ class Proton3DInterpreter {
 				meshes.push( sky );
 				break;
 
+			case "capsule":
+
+				extras.type = "capsule";
+
+				// Makes the capsule
+				var capsule = BABYLON.MeshBuilder.CreateCapsule( object.name, { radius: 1, height: extras.height, capSubdivisions: 12, tessellation: 12, topCapSubdivisions: 12 }, this.scene );
+				meshes.push( capsule );
+				capsule.name = object.name;
+
+				// Shadows
+				capsule.receiveShadows = true;
+
+				// Creates some properties
+				object.radius = extras.radius;
+				object.height = extras.height;
+
+				// Copies parameters to the object
+				for ( var i in extras ) {
+
+					if ( extras[ i ] && object[ i ] == undefined ) {
+
+						object[ i ] = extras[ i ];
+
+					}
+
+				}
+
+				break;
+
 			case "cube":
 
 				extras.type = "cube";
@@ -782,6 +861,8 @@ class Proton3DInterpreter {
 	init3DObject( extras, object ) {
 
 		// Physics
+		var impostorType = "";
+		if ( extras.physicsImpostor != undefined ) impostorType = BABYLON.PhysicsImpostor[ extras.physicsImpostor ];
 		switch ( extras.type ) {
 
 			case "cube":
@@ -790,7 +871,24 @@ class Proton3DInterpreter {
 				// Physics
 				if ( extras.noPhysics != true ) {
 					
-					cube.physics = new BABYLON.PhysicsImpostor( cube, BABYLON.PhysicsImpostor.BoxImpostor, {
+					if ( impostorType == "" ) impostorType = BABYLON.PhysicsImpostor.BoxImpostor;
+					cube.physics = new BABYLON.PhysicsImpostor( cube, impostorType, {
+						mass: extras.mass || 0,
+						restitution: extras.restitution != undefined? extras.restitution : .1,
+						friction: extras.friction != undefined? extras.friction : 1,
+					}, this.scene );
+				
+				}
+				break;
+
+			case "capsule":
+
+				var capsule = getMeshByName( object.name );
+				// Physics
+				if ( extras.noPhysics != true ) {
+					
+					if ( impostorType == "" ) impostorType = BABYLON.PhysicsImpostor.MeshImpostor;
+					capsule.physics = new BABYLON.PhysicsImpostor( capsule, impostorType, {
 						mass: extras.mass || 0,
 						restitution: extras.restitution != undefined? extras.restitution : .1,
 						friction: extras.friction != undefined? extras.friction : 1,
@@ -805,7 +903,8 @@ class Proton3DInterpreter {
 				// Physics
 				if ( extras.noPhysics != true ) {
 				
-					sphere.physics = new BABYLON.PhysicsImpostor( sphere, BABYLON.PhysicsImpostor.SphereImpostor, {
+					if ( impostorType == "" ) impostorType = BABYLON.PhysicsImpostor.SphereImpostor;
+					sphere.physics = new BABYLON.PhysicsImpostor( sphere, impostorType, {
 						mass: extras.mass || 0,
 						restitution: extras.restitution != undefined? extras.restitution : .1,
 						friction: extras.friction != undefined? extras.friction : 1,
