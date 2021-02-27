@@ -181,10 +181,6 @@ class Proton3DInterpreter {
 		this.thirdCamera = new Proton3DObject( { type: "3rdperspectivecamera", x: 0, y: 0, z: 5 } );
 		this.thirdCamera.setPosition( 0, 0, 5 );
 
-		// Adds ambient lighting
-		this.hemisphereLight = new BABYLON.HemisphericLight( "hemisphere", new BABYLON.Vector3( -1, 1, 0 ), this.scene );
-
-
 		// Postprocessing
 		if ( this.postprocessing.enabled ) {
 		
@@ -208,7 +204,6 @@ class Proton3DInterpreter {
 		var materialLength = 0;
 		this.engine.runRenderLoop( function() {
 
-			//if ( wiz.objects ) { wiz.objects[ 0 ].setAngularVelocity( 0, 0, 0 ); }
 			interpreter.updateScene( scene )
 
 			// Sets anisotropic filtering
@@ -226,6 +221,11 @@ class Proton3DInterpreter {
 
 		} );
 
+		// Adds ambient lighting
+		this.hemisphereLight = new BABYLON.HemisphericLight( "hemisphere", new BABYLON.Vector3( -1, 1, 0 ), this.scene );
+		this.hemisphereLight.diffuse = BABYLON.Color3.FromHexString( "#333333" )
+		this.hemisphereLight.intensity = .2
+
 		// GI
 			
 		//var probe = new BABYLON.ReflectionProbe("main", 512, this.scene );
@@ -233,18 +233,21 @@ class Proton3DInterpreter {
 		this.scene.reflectionProbes = [];
 		this.scene.reflectionProbeObjects = [];
 		this.rp = new BABYLON.ReflectionProbe( "rp", 512, this.scene );
-		this.scene.registerBeforeRender( function() {
+		/*this.scene.registerBeforeRender( function() {
 			
 			interpreter.scene.meshes.forEach( function( mesh ) {
 
 				if ( !mesh.reflectionProbe && mesh.material ) {
 
 					mesh.reflectionProbe = new BABYLON.ReflectionProbe( mesh.id + "_rp", 512, interpreter.scene );
-					mesh.reflectionProbe.parent = mesh;
+					//mesh.reflectionProbe.parent = mesh;
+					mesh.reflectionProbe.position.set( mesh.position.x, mesh.position.y, mesh.position.z )
+					console.log( mesh.reflectionProbe )
 					//mesh.reflectionProbe.refreshRate = 6;
 					//mesh.reflectionProbe.samples = 32;
 					mesh.material.reflectionTexture = mesh.reflectionProbe.cubeTexture;
-					//mesh.material.realTimeFiltering = true;
+					mesh.material.realTimeFiltering = true;
+					mesh.material.realTimeFilteringQuality = BABYLON.Constants.TEXTURE_FILTERING_QUALITY_MEDIUM;
 					interpreter.scene.reflectionProbes.push( mesh.reflectionProbe );
 					interpreter.scene.reflectionProbeObjects.forEach( function( object ) {
 
@@ -380,21 +383,23 @@ class Proton3DInterpreter {
 		light.minZ = .01;
 		light.maxZ = 100;
 
-		shadowGenerator.bias = 0.00001
-		shadowGenerator.normalBias= 0.0005
+		//shadowGenerator.bias = .005
 		
-		if ( this.postprocessing.usePCSS ) {
+		shadowGenerator.bias = 0.051 
+		shadowGenerator.usePercentageCloserFiltering = true;
 
-			shadowGenerator.useContactHardeningShadow = true;
-			shadowGenerator.contactHardeningLightSizeUVRatio = 0.5;
+		//if ( this.postprocessing.usePCSS ) {
 
-		} else {
+			//shadowGenerator.useContactHardeningShadow = true;
+			//shadowGenerator.contactHardeningLightSizeUVRatio = 0.5;
+
+		/*} else {
 
 			shadowGenerator.bias = 0.0005
 			shadowGenerator.usePercentageCloserFiltering = true;
 			shadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_MEDIUM;
 
-		}
+		}*/
 		
 		this.shadowGenerators.push( shadowGenerator );
 
@@ -624,9 +629,10 @@ class Proton3DInterpreter {
 			case "spotlight":
 				
 				// Creates the spotlight
-				var light = new BABYLON.SpotLight( object.name, new BABYLON.Vector3( extras.position.x, extras.position.y, extras.position.z ), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 2, this.scene );
+				var light = new BABYLON.SpotLight( object.name, new BABYLON.Vector3( extras.position.x, extras.position.y, extras.position.z ), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 0, this.scene );
 				light.setDirectionToTarget( new BABYLON.Vector3( 0, 0, 0 ) );
 				light.name = object.name;
+				light.falloffType = BABYLON.SpotLight.FALLOFF_GLTF; // Smooth penumbra stuff
 				meshes.push( light );
 
 				object.setIntensity = ( value ) => light.intensity = value;
@@ -837,7 +843,7 @@ class Proton3DInterpreter {
 		
 
 		// Sets the rotation if there is none
-		getMeshByName( object.name ).rotation = getMeshByName( object.name ).rotation || BABYLON.Vector3.Zero();
+		if ( getMeshByName( object.name ).rotation == undefined ) getMeshByName( object.name ).rotation = BABYLON.Vector3.Zero();
 
 		// creates the mesh's material -- must be at the very end to ensure that the material is initialized with an object
 		if ( extras.type != "sky" && extras.type != "camera" && extras.type != undefined ) {
@@ -850,7 +856,7 @@ class Proton3DInterpreter {
 
 		}
 
-		// Sets the mesh's parent
+		// Sets the mesh's "parent"
 		getMeshByName( object.name ).p3dParent = object;
 
 		// Makes the mesh (player) invisible
@@ -1185,7 +1191,7 @@ class Proton3DInterpreter {
 			loadShadows( meshes );
 
 			// Turns the loaded mesh to a Proton3DObject
-			object.objects = meshToProton( meshes );
+			object.objects = meshToProton( meshes, undefined, root );
 
 			// Loads physics
 			if ( ! extras.noPhysics ) loadPhysics( meshes );
@@ -1203,6 +1209,8 @@ class Proton3DInterpreter {
 			}
 
 			// Now you can initialize the object
+			
+			object.realObjects = meshes;
 			if ( extras.onReady ) {
 
 				object.onReady = extras.onReady;
@@ -1300,7 +1308,7 @@ class Proton3DInterpreter {
 
 				if ( mesh.children ) {
 
-					mesh.children.forEach( meshToProton, object );
+					mesh.children.forEach( meshToProton, object, root );
 	
 				}
 	
@@ -1310,11 +1318,8 @@ class Proton3DInterpreter {
 	
 				}
 
-				// Builds the 3DObject
-				var position = mesh.position.clone();
 				var object = new Proton3DObject( { mesh: mesh, noPhysics: extras.noPhysics } );
-				object.setPosition( position.x, position.y, position.z );
-	
+
 				// Adds the object to the output of objects
 				if ( parent == undefined ) {
 

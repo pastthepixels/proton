@@ -652,13 +652,11 @@ class Proton3DObject {
 		this.children = extras.children || [];
 
 		// Creates the mesh
-		if ( extras.position == undefined ) extras.position = new Proton.Vector3();
-		if ( extras.rotation == undefined ) extras.rotation = new Proton.Vector3();
 		Proton.scene.interpreter.create3DObject( extras, this );
 
 		// Sets the mesh's position + rotation to any predefined values
-		this.setPosition( extras.position.x, extras.position.y, extras.position.z );
-		this.setRotation( extras.rotation.x, extras.rotation.y, extras.rotation.z );
+		if ( extras.position != undefined ) this.setPosition( extras.position.x, extras.position.y, extras.position.z );
+		if ( extras.rotation != undefined )this.setRotation( extras.rotation.x, extras.rotation.y, extras.rotation.z );
 		this.position = null;
 		this.rotation = null;
 
@@ -667,7 +665,6 @@ class Proton3DObject {
 
 		// Does any extra stuff to the object
 		Proton.scene.interpreter.init3DObject( extras, this );
-
 		// The Accessors
 		Object.defineProperty( this, "castShadow", {
 			get: function () {
