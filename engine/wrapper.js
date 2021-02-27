@@ -171,7 +171,14 @@ class Proton3DInterpreter {
 		this.shadowGenerators = [];
 
 		// Creates the sky
-		if ( params.sky != false ) scene.sky = new Proton3DObject( { type: "sky" } );
+		if ( params.sky != false && params.backgroundColor == undefined ) scene.sky = new Proton3DObject( { type: "sky" } );
+		// or sets a background color
+		if ( params.backgroundColor != undefined ) {
+
+			this.scene.clearColor = BABYLON.Color3.FromHexString( params.backgroundColor )
+			this.scene.ambientColor = BABYLON.Color3.FromHexString( params.backgroundColor )
+
+		}
 
 		// Creates a camera
 		this.camera = new Proton3DObject( { type: "perspectivecamera", x: 0, y: 0, z: 5 } );
@@ -224,7 +231,7 @@ class Proton3DInterpreter {
 		// Adds ambient lighting
 		this.hemisphereLight = new BABYLON.HemisphericLight( "hemisphere", new BABYLON.Vector3( -1, 1, 0 ), this.scene );
 		this.hemisphereLight.diffuse = BABYLON.Color3.FromHexString( "#333333" )
-		this.hemisphereLight.intensity = .2
+		this.hemisphereLight.intensity = .1
 
 		// GI
 			
