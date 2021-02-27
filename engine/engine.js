@@ -652,11 +652,12 @@ class Proton3DObject {
 		this.children = extras.children || [];
 
 		// Creates the mesh
+		if ( extras.position == undefined ) { extras.position = new Proton.Vector3(); extras.undefinedPosition = true }
+		if ( extras.rotation == undefined ) { extras.rotation = new Proton.Vector3(); extras.undefinedRotation = true }
 		Proton.scene.interpreter.create3DObject( extras, this );
-
 		// Sets the mesh's position + rotation to any predefined values
-		if ( extras.position != undefined ) this.setPosition( extras.position.x, extras.position.y, extras.position.z );
-		if ( extras.rotation != undefined )this.setRotation( extras.rotation.x, extras.rotation.y, extras.rotation.z );
+		if ( extras.undefinedPosition != true ) this.setPosition( extras.position.x, extras.position.y, extras.position.z );
+		if ( extras.undefinedRotation != true ) this.setRotation( extras.rotation.x, extras.rotation.y, extras.rotation.z );
 		this.position = null;
 		this.rotation = null;
 

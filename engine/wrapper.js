@@ -230,8 +230,8 @@ class Proton3DInterpreter {
 
 		// Adds ambient lighting
 		this.hemisphereLight = new BABYLON.HemisphericLight( "hemisphere", new BABYLON.Vector3( -1, 1, 0 ), this.scene );
-		this.hemisphereLight.diffuse = BABYLON.Color3.FromHexString( "#333333" )
-		this.hemisphereLight.intensity = .1
+		this.hemisphereLight.diffuse = BABYLON.Color3.FromHexString( params.backgroundColor || "#ffffff" )
+		this.hemisphereLight.intensity = .2
 
 		// GI
 			
