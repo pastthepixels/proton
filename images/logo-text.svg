@@ -14,7 +14,7 @@
    viewBox="0 0 473.37814 205.37868"
    version="1.1"
    id="svg8"
-   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07, custom)"
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15)"
    sodipodi:docname="logo-text.svg">
   <defs
      id="defs2">
@@ -56,12 +56,45 @@
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient3034"
-       id="linearGradient3172"
+       id="linearGradient1167"
        gradientUnits="userSpaceOnUse"
        x1="64.158043"
        y1="195.79166"
        x2="119.15066"
-       y2="26.458332" />
+       y2="26.458332"
+       gradientTransform="matrix(1,0,0,0.9969685,0,0.11140731)" />
+    <filter
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow"
+       id="filter2401">
+      <feFlood
+         flood-opacity="0.380392"
+         flood-color="rgb(0,0,0)"
+         result="flood"
+         id="feFlood2391" />
+      <feComposite
+         in="flood"
+         in2="SourceGraphic"
+         operator="out"
+         result="composite1"
+         id="feComposite2393" />
+      <feGaussianBlur
+         in="composite1"
+         stdDeviation="1.4"
+         result="blur"
+         id="feGaussianBlur2395" />
+      <feOffset
+         dx="0"
+         dy="1"
+         result="offset"
+         id="feOffset2397" />
+      <feComposite
+         in="offset"
+         in2="SourceGraphic"
+         operator="atop"
+         result="composite2"
+         id="feComposite2399" />
+    </filter>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -70,9 +103,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.81311738"
-     inkscape:cx="915.66472"
-     inkscape:cy="434.50947"
+     inkscape:zoom="0.61709351"
+     inkscape:cx="830.92376"
+     inkscape:cy="269.96892"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
@@ -84,9 +117,9 @@
      fit-margin-bottom="50"
      fit-margin-right="50"
      inkscape:window-width="1920"
-     inkscape:window-height="1015"
+     inkscape:window-height="1016"
      inkscape:window-x="0"
-     inkscape:window-y="32"
+     inkscape:window-y="27"
      inkscape:window-maximized="1">
     <inkscape:grid
        type="axonomgrid"
@@ -109,7 +142,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -118,23 +151,21 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(-16.244161,-19.163167)">
-    <circle
-       style="fill:url(#linearGradient3172);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.32292;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="path28"
-       cx="118.9335"
-       cy="121.85251"
-       r="89.460175" />
+    <path
+       style="fill:#222222;stroke-width:2.90602;fill-opacity:1"
+       d="M 206.00151,123.92544 A 87.18075,87.18075 0 0 1 118.82078,211.10618 87.18075,87.18075 0 0 1 31.640025,123.92544 87.18075,87.18075 0 0 1 118.82078,36.744681 87.18075,87.18075 0 0 1 206.00151,123.92544 Z"
+       id="path1252" />
     <g
        id="g103"
-       transform="matrix(0.8971427,0,0,0.8971427,-152.19853,3.0238414)"
-       style="stroke:#2ef7c8;stroke-width:7.37294;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">
+       transform="matrix(0.71428509,0,0,0.71428509,-96.89153,27.214378)"
+       style="fill:none;fill-opacity:1;stroke:#2ef7c8;stroke-width:11.20000979;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:3;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter2401)">
       <path
-         style="fill:none;stroke:#2ef7c8;stroke-width:7.37294;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         d="m 363.75685,96.901518 -61.29751,35.390132 -40.86501,-23.59342 40.86501,97.67675"
+         style="fill:none;fill-opacity:1;stroke:#2ef7c8;stroke-width:11.20000979;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:3;stroke-dasharray:none;stroke-opacity:1"
+         d="m 340.95419,110.06663 -38.49485,22.22502 -40.86501,-23.59342 40.865,94.71348"
          id="path80"
          sodipodi:nodetypes="cccc" />
       <path
-         style="fill:none;stroke:#2ef7c8;stroke-width:7.37294;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         style="fill:none;fill-opacity:1;stroke:#2ef7c8;stroke-width:11.20000979;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:3;stroke-dasharray:none;stroke-opacity:1"
          d="m 238.30134,169.33332 64.15805,37.04167 64.15804,-37.04167 V 95.249994 l -64.15809,-37.041664 -64.158,37.041664 z"
          id="path92"
          sodipodi:nodetypes="ccccccc" />
@@ -150,5 +181,9 @@
          x="231.52151"
          y="144.70079"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:79.375px;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';fill:#222222;fill-opacity:1;stroke:none;stroke-width:0.264583;stroke-opacity:1">Proton</tspan></text>
+    <path
+       style="opacity:0.1;fill:#ffffff;stroke-width:2.90602"
+       d="m 118.8151,36.744681 a 87.18075,87.18075 0 0 0 -87.175075,87.180759 87.18075,87.18075 0 0 0 0.05162,1.48707 87.18075,87.18075 0 0 1 87.123995,-85.761807 h 0.006 a 87.18075,87.18075 0 0 1 87.10695,85.761807 87.18075,87.18075 0 0 0 0.0681,-1.48707 87.18075,87.18075 0 0 0 -87.17506,-87.180759 z"
+       id="path1260" />
   </g>
 </svg>

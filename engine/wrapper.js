@@ -235,30 +235,26 @@ class Proton3DInterpreter {
 
 		// GI
 			
-		//var probe = new BABYLON.ReflectionProbe("main", 512, this.scene );
 		var interpreter = this;
 		this.scene.reflectionProbes = [];
 		this.scene.reflectionProbeObjects = [];
-		this.rp = new BABYLON.ReflectionProbe( "rp", 512, this.scene );
-		/*this.scene.registerBeforeRender( function() {
+		this.scene.registerBeforeRender( function() {
 			
 			interpreter.scene.meshes.forEach( function( mesh ) {
 
 				if ( !mesh.reflectionProbe && mesh.material ) {
 
-					mesh.reflectionProbe = new BABYLON.ReflectionProbe( mesh.id + "_rp", 512, interpreter.scene );
-					//mesh.reflectionProbe.parent = mesh;
-					mesh.reflectionProbe.position.set( mesh.position.x, mesh.position.y, mesh.position.z )
-					console.log( mesh.reflectionProbe )
-					//mesh.reflectionProbe.refreshRate = 6;
-					//mesh.reflectionProbe.samples = 32;
+					mesh.reflectionProbe = new BABYLON.ReflectionProbe( mesh.id + "_rp", 16, interpreter.scene );
+					mesh.reflectionProbe.parent = mesh;
+					mesh.reflectionProbe.position = mesh.position;
+					mesh.reflectionProbe.refreshRate = 12;
 					mesh.material.reflectionTexture = mesh.reflectionProbe.cubeTexture;
-					mesh.material.realTimeFiltering = true;
+					//mesh.material.realTimeFiltering = true;
 					mesh.material.realTimeFilteringQuality = BABYLON.Constants.TEXTURE_FILTERING_QUALITY_MEDIUM;
 					interpreter.scene.reflectionProbes.push( mesh.reflectionProbe );
 					interpreter.scene.reflectionProbeObjects.forEach( function( object ) {
 
-						if ( object.name != mesh.name ) mesh.reflectionProbe.renderList.push( object )
+						if ( mesh.reflectionProbe.name != object.id + "_rp" ) mesh.reflectionProbe.renderList.push( object )
 
 					} );
 					if ( mesh.reflectionProbe.renderList.indexOf( mesh ) > -1 ) mesh.reflectionProbe.renderList.splice( mesh.reflectionProbe.renderList.indexOf( mesh ), 1 )
@@ -266,10 +262,10 @@ class Proton3DInterpreter {
 				}
 				if ( interpreter.scene.reflectionProbeObjects.indexOf( mesh ) === -1 ) {
 					
-					interpreter.scene.reflectionProbeObjects.push( mesh )
+					interpreter.scene.reflectionProbeObjects.push( mesh );
 					interpreter.scene.reflectionProbes.forEach( function( reflectionProbe ) {
 
-						if ( !reflectionProbe.name.includes( mesh.name ) ) reflectionProbe.renderList.push( mesh )
+						if ( reflectionProbe.id != mesh.name + "_rp" ) reflectionProbe.renderList.push( mesh )
 
 					} )
 
@@ -278,21 +274,75 @@ class Proton3DInterpreter {
 			} )
 
 		} );
-		/*
+		
+
+
+
+		this.pipeline = new BABYLON.DefaultRenderingPipeline(
+			"defaultPipeline", // The name of the pipeline
+			true, // Do you want the pipeline to use HDR texture?
+			this.scene, // The scene instance
+			[ getMeshByName( this.thirdCamera.name ) ] // The list of cameras to be attached to
+		);
+		Proton.scene.interpreter.pipeline.grain.animated = true
+		Proton.scene.interpreter.pipeline.grain.adaptScaleToCurrentViewport = true
+		Proton.scene.interpreter.pipeline.grainEnabled = true
+		Proton.scene.interpreter.pipeline.grain.intensity = 10
+
+		Proton.scene.interpreter.pipeline.chromaticAberration.aberrationAmount = 4
+		Proton.scene.interpreter.pipeline.chromaticAberrationEnabled = true
+		
+		Proton.scene.interpreter.pipeline.bloomEnabled = true
+
+		Proton.scene.interpreter.pipeline.depthOfFieldEnabled = true
+
+
 		var ssr = new BABYLON.ScreenSpaceReflectionPostProcess( "ssr", interpreter.scene, 1.0, getMeshByName( interpreter.thirdCamera.name ) );
-		ssr.reflectionSamples = 100; // High quality.
+		ssr.reflectionSamples = 32; // Medium quality.
 		ssr.strength = 1; // Set default strength of reflections.
 		ssr.reflectionSpecularFalloffExponent = 3; // Attenuate the reflections a little bit. (typically in interval [1, 3])
+		function createImageFromColor( color ) {
+			var canvas = document.createElement( "canvas" );
+			var context = canvas.getContext( "2d" );
+			// Rezies the canvas to 1px by 1px
+			canvas.width = 1;
+			canvas.height = 1;
+			// Fills a square 1px by 1px
+			context.fillStyle = color;
+			context.fillRect( 0, 0, 1, 1 );
+			// returns that as a texture
+			return canvas.toDataURL("image/png");
+		}
 		this.scene.registerBeforeRender( function() {
 
-			if ( mesh.material && mesh.reflectivityTextureDone == undefined ) {
+			interpreter.scene.meshes.forEach( function( mesh ) {
+			
+				if ( mesh.material && mesh.reflectivityTextureDone == undefined ) {
 
-				mesh.reflectivityTextureDone = true;
-				mesh.material.reflectivityTexture = new BABYLON.Texture("data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII= ", interpreter.scene );
-			} 
+					mesh.reflectivityTextureDone = true;
+					var roughness = parseInt( 255 * ( 1 - mesh.material.roughness ) );
+						roughness = roughness.toString( 16 );
+					var color = "#" + roughness + roughness + roughness;
+					console.log( color )
+					mesh.cachedRoughness = mesh.material.roughness;
+					mesh.material.reflectivityTexture = new BABYLON.Texture( createImageFromColor( color ) )//new BABYLON.Texture("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVQI12P4//8/AAX+Av7czFnnAAAAAElFTkSuQmCC", interpreter.scene );
+				
+				}
+				if ( mesh.material != undefined && mesh.material.roughness != undefined && mesh.cachedRoughness != mesh.material.roughness ) {
+
+					var roughness = parseInt( 255 * ( 1 - mesh.material.roughness ) );
+						roughness = roughness.toString( 16 );
+					var color = "#" + roughness + roughness + roughness;
+					mesh.cachedRoughness = mesh.material.roughness;
+					console.log( color )
+					mesh.material.reflectivityTexture = new BABYLON.Texture( createImageFromColor( color ) )//new BABYLON.Texture("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVQI12P4//8/AAX+Av7czFnnAAAAAElFTkSuQmCC", interpreter.scene );
+					
+				}
+
+			} )
 
 		} )
-		*/
+		
 		// Starts the scene
 		this.updateScene( scene );
 
@@ -1432,7 +1482,7 @@ class Proton3DInterpreter {
 		},
 		setMetalness( value, P3DMaterial ) {
 
-			getMaterialByName( P3DMaterial.name ).metalness = value;
+			getMaterialByName( P3DMaterial.name ).metallic = value;
 
 		},
 		getRoughness( value, P3DMaterial ) {
@@ -1442,7 +1492,7 @@ class Proton3DInterpreter {
 		},
 		getMetalness( value, P3DMaterial ) {
 
-			return getMaterialByName( P3DMaterial.name ).metalness;
+			return getMaterialByName( P3DMaterial.name ).metallic;
 
 		},
 		setOpacity( value, P3DMaterial ) {
