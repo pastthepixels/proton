@@ -8,10 +8,7 @@ and
 
 # To-Do
 
-1. [ ] PBR Support.
-2. [ ] Support 3D-sound stuff.
-3. [ ] Support mesh animations.
-4. [ ] Create a terminal tool to help set up a Proton project (?)
+Check out this file on the `beta` branch for more details.
 
 # How can I use Proton?
 Check out the getting started guide at [proton-documentation.readthedocs.io](https://proton-documentation.readthedocs.io/)!
