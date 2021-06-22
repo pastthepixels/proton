@@ -1,4 +1,3 @@
-"use strict";
 /*
 	Proton's wrapper
 	================
@@ -21,95 +20,141 @@
 	Loading the default Proton3DInterpreter's dependencies
 */
 
+class Scripts {
 
-const scriptStats = { loadedScripts: 0, maxScripts: 10 };
-function importScript( url, isModule = true, callback ) {
+	stats = { loadedScripts: 0, maxScripts: 10 };
+	
+	init() {
 
-	scriptStats.maxScripts ++;
-	if ( ! isModule ) {
+		this.stats.maxScripts = 0;
+		
+		// Babylon.js
+		this.import( "https://cdn.babylonjs.com/babylon.js", true, () => {
+			
+			// Stuff that creates the sky + more materials
+			this.import( "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.js", true );
+	
+			// Stuff that loads files like glTF
+			this.import( "https://preview.babylonjs.com/loaders/babylonjs.loaders.js", true );
+	
+			// Physics!
+			this.import( "https://cdn.babylonjs.com/ammo.js", false );
+	
+		} );
+	
+	}
 
-		var script = document.createElement( "script" );
-		script.src = url;
-		document.head.appendChild( script );
-		script.onload = function () {
+	import( url, isModule = true, callback ) {
 
+		this.stats.maxScripts ++;
+		if ( ! isModule ) {
+	
+			var script = document.createElement( "script" );
+			script.src = url;
+			document.head.appendChild( script );
+			script.onload = () => {
+	
+				if ( callback ) callback();
+				this.stats.loadedScripts ++;
+				if ( this.stats.loadedScripts >= this.stats.maxScripts ) window.finishedLoadingScripts = true;
+	
+			}
+			;
+	
+			return;
+	
+		}
+	
+		import( url ).then( (value) => {
+	
+			// finished!
 			if ( callback ) callback();
-			scriptStats.loadedScripts ++;
-			if ( scriptStats.loadedScripts >= scriptStats.maxScripts ) window.finishedLoadingScripts = true;
+			this.stats.loadedScripts++;
+			if ( this.stats.loadedScripts >= this.stats.maxScripts ) window.finishedLoadingScripts = true;
+	
+		} );
+	
+	}
+
+}
+
+class Game {
+
+	constructor( init ) { // init: The function to be called as the "initial" function of your game. Think of it like GDScript's _ready().
+
+		this.code = init;
+
+	}
+
+	_run() {
+
+		if ( typeof this.code == "string" ) {
+
+			eval( this.code );
+
+		} else {
+
+			this.code();
 
 		}
-		;
-
-		return;
 
 	}
 
-	import( url ).then( (value) => {
+	start() {
 
-		// finished!
-		if ( callback ) callback();
-		scriptStats.loadedScripts++;
-		if ( scriptStats.loadedScripts >= scriptStats.maxScripts ) window.finishedLoadingScripts = true;
+		var code = this,
+			scripts = new Scripts(),
+			interval = setInterval( function () {
 
-	} );
+				code.loadingPercentage = ( scripts.stats.loadedScripts / scripts.stats.maxScripts ) * 100;
+				if ( code.loadingPercentage == 100 ) {
 
-}
+					clearInterval( interval );
+					code._run();
 
-// The part that requires an internet connection:
-// Note that you can set which sources Proton uses to local ones.
-function init( scripts ) {
+				}
 
-	scriptStats.maxScripts = 0;
-	if ( ! scripts ) {
-
-		scripts = {
-			ammojs: "https://cdn.babylonjs.com/ammo.js",
-			babylonjs: "https://cdn.babylonjs.com/babylon.js",
-			babylonjs_materials: "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.js",
-			babylonjs_loaders: "https://preview.babylonjs.com/loaders/babylonjs.loaders.js"
-		};
+			}, 1500 );
+		
+		scripts.init();
+		this.scripts = scripts;
 
 	}
-	scriptStats.scripts = scripts;
-
-	// Babylon.js
-	importScript( scripts.babylonjs, true, function() {
-		// Stuff that creates the sky + more materials
-		importScript( scripts.babylonjs_materials, true );
-
-		// Stuff that loads files like glTF
-		importScript( scripts.babylonjs_loaders, true );
-
-		// Physics!
-		importScript( scripts.ammojs, false );
-	} );
 
 }
+
 /*
 	~> loc:2
 	Proton3DInterpreter
 */
-const meshes = [];
-const materials = [];
-function getMeshByName( name ) {
+class ObjectList {
+	
+	meshes = [];
 
-	return meshes.find( function ( x ) {
+	materials = [];
 
-		return x.name === name;
+	getMeshByName( name ) {
 
-	} );
+		return this.meshes.find( function ( x ) {
+
+			return x.name === name;
+
+		} );
+
+	}
+
+	getMaterialByName( name ) {
+
+		return this.materials.find( function ( x ) {
+
+			return x.name === name;
+
+		} );
+
+	}
 
 }
-
-function getMaterialByName( name ) {
-
-	return materials.find( function ( x ) {
-
-		return x.name === name;
-
-	} );
-
-}
+objectList = new ObjectList();
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //\\ Proton3DInterpreter		    //
@@ -133,30 +178,32 @@ function getMaterialByName( name ) {
 //
 class Proton3DInterpreter {
 
-	init( params, scene ) {
+	objects = new ObjectList();
 
-		var interpreter = this;
-		this.postprocessing = params.postprocessing || {
-			enabled: false,
-			bloom: true,
-			ssao: true,
-			fxaa: true,
-			usePCSS: false,
-			anisotropicFilteringLevel: 4
-		}
-		this.scene = scene;
+	element = document.createElement( "scene" );
+
+	canvas = document.createElement( "canvas" );
+
+	shadowGenerators = [];
+
+	postprocessing = {
+		enabled: false,
+		bloom: true,
+		ssao: true,
+		fxaa: true,
+		usePCSS: false,
+		anisotropicFilteringLevel: 4
+	}
+
+	init( params, scene ) {
 
 		// Sets up the scene
 		this.dynamicResize( scene );
 
-		// Creates everything HTML
-		this.element = document.createElement( "scene" );
-		this.canvas = document.createElement( "canvas" );
-
-		// Take a break to resize the canvas
-		this.canvas.style.width = this.canvas.style.height = "100%";
+		// Resizes the canvas + applies CSS to it
+		this.canvas.style.cssText = "position: fixed;top: 0;left: 0;right: 0;bottom: 0;width: 100%;height: 100%;outline: none;"
 		this.canvas.width = window.innerWidth;
-		this.canvas.height = window.innerHeight
+		this.canvas.height = window.innerHeight;
 
 		// Creates the engine + scene
 		this.engine = new BABYLON.Engine( 
@@ -167,63 +214,45 @@ class Proton3DInterpreter {
 		this.scene = new BABYLON.Scene( this.engine );
 		this.scene.clearColor = new BABYLON.Color4( 0, 0, 0, 0 );
 
-		// Sets up shadows
-		this.shadowGenerators = [];
-
-		// Sets up reflections
-		this.scene.reflectionProbes = [];
-		this.scene.reflectionProbeObjects = [];
-
 		// Creates the sky
 		if ( params.sky != false && params.backgroundColor == undefined ) scene.sky = new Proton3DObject( { type: "sky" } );
-		// or sets a background color
-		if ( params.backgroundColor != undefined ) {
-
-			this.scene.clearColor = BABYLON.Color3.FromHexString( params.backgroundColor )
-			this.scene.ambientColor = BABYLON.Color3.FromHexString( params.backgroundColor )
-
-		}
 
 		// Creates a camera
-		this.camera = new Proton3DObject( { type: "perspectivecamera", x: 0, y: 0, z: 5 } );
-		this.camera.setPosition( 0, 0, 5 );
+		this.camera = new Proton3DObject( { type: "perspectivecamera", position: new Proton.Vector3( 0, 0, 5 ) } );
 
 		// Creates a camera for third-person view
-		this.thirdCamera = new Proton3DObject( { type: "3rdperspectivecamera", x: 0, y: 0, z: 5 } );
-		this.thirdCamera.setPosition( 0, 0, 5 );
+		this.thirdCamera = new Proton3DObject( { type: "3rdperspectivecamera", position: new Proton.Vector3( 0, 0, 5 ) } );
 
 		// Postprocessing
 		if ( this.postprocessing.enabled ) {
 		
-			this.pipeline = new BABYLON.DefaultRenderingPipeline( "default", true, this.scene, [ getMeshByName( this.camera.name ) ] );
+			this.pipeline = new BABYLON.DefaultRenderingPipeline( "default", true, this.scene, [ objectList.getMeshByName( this.camera.name ) ] );
 			if ( this.postprocessing.bloom ) this.pipeline.bloomEnabled = true;
 			if ( this.postprocessing.fxaa ) this.pipeline.fxaaEnabled = true;
-			if ( this.postprocessing.ssao ) this.ssao = new BABYLON.SSAORenderingPipeline( "ssao", this.scene, { ssaoRatio: 0.5, combineRatio: 1.0 }, [ getMeshByName( this.camera.name ) ] );
+			if ( this.postprocessing.ssao ) this.ssao = new BABYLON.SSAORenderingPipeline( "ssao", this.scene, { ssaoRatio: 0.5, combineRatio: 1.0 }, [ objectList.getMeshByName( this.camera.name ) ] );
 
 		}
 
 		// Physics
-		var gravityVector = new BABYLON.Vector3( 0,-9.81, 0 );
-		var physicsPlugin = new BABYLON.AmmoJSPlugin();
-		this.scene.enablePhysics( gravityVector, physicsPlugin );
+		this.scene.enablePhysics( new BABYLON.Vector3( 0,-9.81, 0 ), new BABYLON.AmmoJSPlugin() );
 
 		// Sets up the canvas
 		this.element.appendChild( this.canvas );
 		document.body.appendChild( this.element );
 
 		// Updates the scene
-		var materialLength = 0;
-		this.engine.runRenderLoop( function() {
+		var materialLength = 0; // For anisotropic filtering (see below)
+		this.engine.runRenderLoop( () => {
 
-			interpreter.updateScene( scene )
+			this.updateScene( scene )
 
 			// Sets anisotropic filtering
-			if ( materialLength != interpreter.scene.materials.length ) {
+			if ( materialLength != this.scene.materials.length ) {
 
-				materialLength = interpreter.scene.materials.length;
-				interpreter.scene.textures.forEach( ( texture ) => {
+				materialLength = this.scene.materials.length;
+				this.scene.textures.forEach( ( texture ) => {
 				
-					texture.anisotropicFilteringLevel = interpreter.postprocessing.anisotropicFilteringLevel;
+					texture.anisotropicFilteringLevel = this.postprocessing.anisotropicFilteringLevel;
 					texture.updateSamplingMode( BABYLON.Texture.TRILINEAR_SAMPLINGMODE )
 				
 				} )
@@ -231,22 +260,14 @@ class Proton3DInterpreter {
 			}
 
 		} );
-
-		// Adds ambient lighting
-		this.hemisphereLight = new BABYLON.HemisphericLight( "hemisphere", new BABYLON.Vector3( -1, 1, 0 ), this.scene );
-		this.hemisphereLight.diffuse = BABYLON.Color3.FromHexString( params.backgroundColor || "#ffffff" )
-		this.hemisphereLight.intensity = .2
 		
 		// Starts the scene
 		this.updateScene( scene );
 
-		// Done!
-		return this.canvas;
-
 	}
 
 	// Updates a scene in Proton
-	updateScene( scene ) {
+	updateScene( protonScene ) {
 
 		// Pausing
 		if ( Proton && Proton.paused ) {
@@ -256,7 +277,7 @@ class Proton3DInterpreter {
 		}
 
 		// Updates the scene
-		scene.update();
+		protonScene.update();
 
 	}
 
@@ -282,7 +303,7 @@ class Proton3DInterpreter {
 	// Removes an object from a scene
 	removeFromScene( object ) {
 
-		this.scene.removeMesh( getMeshByName( object.name ) );
+		this.scene.removeMesh( objectList.getMeshByName( object.name ) );
 
 	}
 
@@ -302,8 +323,8 @@ class Proton3DInterpreter {
 	// Gets objects a mesh is colliding with
 	getCollidingObjects( P3DObject ) {
 
-		var collisions = [], interpreter = this;
-		this.scene.meshes.forEach( function( mesh ) { // Runs through all the meshes and runs a collision detection function on all of them. If they are colliding with the P3DObject, add them to an array which will be returned at the end of the function.
+		var collisions = [];
+		this.scene.meshes.forEach( ( mesh ) => { // Runs through all the meshes and runs a collision detection function on all of them. If they are colliding with the P3DObject, add them to an array which will be returned at the end of the function.
 		
 			if ( !mesh.p3dParent || !mesh.physics ) return;
 			var contact = new Ammo.ConcreteContactResultCallback();
@@ -319,7 +340,7 @@ class Proton3DInterpreter {
 				this.hasContact = true;
 
 			}
-			interpreter.scene.getPhysicsEngine()._physicsPlugin.world.contactPairTest( mesh.physics.physicsBody, getMeshByName( P3DObject.name ).physics.physicsBody, contact );
+			this.scene.getPhysicsEngine()._physicsPlugin.world.contactPairTest( mesh.physics.physicsBody, objectList.getMeshByName( P3DObject.name ).physics.physicsBody, contact );
 			if ( contact.hasContact && mesh.p3dParent != P3DObject ) collisions.push( mesh.p3dParent )
 		
 		} );
@@ -330,28 +351,10 @@ class Proton3DInterpreter {
 	// Creates a shadow generator
 	createShadowGenerator( light ) {
 
-		var shadowGenerator = new BABYLON.ShadowGenerator( 1024, light );
-		light.minZ = .01;
-		light.maxZ = 100;
-
-		//shadowGenerator.bias = .005
-		
-		shadowGenerator.bias = 0.051 
+		var shadowGenerator = new BABYLON.ShadowGenerator( 2048, light );
+		light.shadowMinZ = .1;
+		light.shadowMaxZ = 100;
 		shadowGenerator.usePercentageCloserFiltering = true;
-
-		//if ( this.postprocessing.usePCSS ) {
-
-			//shadowGenerator.useContactHardeningShadow = true;
-			//shadowGenerator.contactHardeningLightSizeUVRatio = 0.5;
-
-		/*} else {
-
-			shadowGenerator.bias = 0.0005
-			shadowGenerator.usePercentageCloserFiltering = true;
-			shadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_MEDIUM;
-
-		}*/
-		
 		this.shadowGenerators.push( shadowGenerator );
 
 	}
@@ -376,8 +379,8 @@ class Proton3DInterpreter {
 		// Creates a fake physics mesh
 		var object = new Proton3DObject( {
 			type: "capsule",
-			height: params.height != undefined? params.height : 3,
-			radius: 2,
+			height: params.height != undefined? params.height + 2 : 5,
+			radius: 10,
 			friction: 1,
 			restitution: 0,
 			mass: 1,
@@ -440,7 +443,7 @@ class Proton3DInterpreter {
 			case "birdseye": // Top-down view with a fixed beta value for the camera.
 
 				params.distance.x = 20;
-				getMeshByName( params.scene.thirdCamera.name ).lowerBetaLimit = getMeshByName( params.scene.thirdCamera.name ).upperBetaLimit = Proton.degToRad( 54.7 )
+				objectList.getMeshByName( params.scene.thirdCamera.name ).lowerBetaLimit = objectList.getMeshByName( params.scene.thirdCamera.name ).upperBetaLimit = Proton.degToRad( 54.7 )
 				
 				
 
@@ -462,19 +465,19 @@ class Proton3DInterpreter {
 				}, false );		
 				
 				// Sets functions to enable + disable camera controls
-				params.scene.thirdCamera.disable = () => getMeshByName( params.scene.thirdCamera.name ).detachControl( interpreter.canvas );
-				params.scene.thirdCamera.enable = () =>  getMeshByName( params.scene.thirdCamera.name ).attachControl( interpreter.canvas );
+				params.scene.thirdCamera.disable = () => objectList.getMeshByName( params.scene.thirdCamera.name ).detachControl( interpreter.canvas );
+				params.scene.thirdCamera.enable = () =>  objectList.getMeshByName( params.scene.thirdCamera.name ).attachControl( interpreter.canvas );
 						
 				// Creates variables
 				var animating, deg; // Wether the player is turning around and the angle (almost) in which it should be facing, in degrees (hence the name "deg")
 
 				// Sets some camera properties
-				getMeshByName( params.scene.thirdCamera.name ).inertia = 0;
-				getMeshByName( params.scene.thirdCamera.name ).radius = params.distance.x;
-				getMeshByName( params.scene.thirdCamera.name ).angularSensibilityX = 1000 - 60 * params.xSensitivity;
-				getMeshByName( params.scene.thirdCamera.name ).angularSensibilityY = 1000 - 60 * params.ySensitivity;
+				objectList.getMeshByName( params.scene.thirdCamera.name ).inertia = 0;
+				objectList.getMeshByName( params.scene.thirdCamera.name ).radius = params.distance.x;
+				objectList.getMeshByName( params.scene.thirdCamera.name ).angularSensibilityX = 1000 - 60 * params.xSensitivity;
+				objectList.getMeshByName( params.scene.thirdCamera.name ).angularSensibilityY = 1000 - 60 * params.ySensitivity;
 				// Sets this camera as the active one.
-				interpreter.scene.activeCamera = getMeshByName( params.scene.thirdCamera.name );
+				interpreter.scene.activeCamera = objectList.getMeshByName( params.scene.thirdCamera.name );
 				params.scene.thirdCamera.active = true;
 
 				// Now for the functions.
@@ -493,7 +496,7 @@ class Proton3DInterpreter {
 					params.scene.crosshair.position = object.position.clone().add( params.scene.crosshair.localPosition );
 
 					// Rotates the player
-					deg = Proton.radToDeg( getMeshByName( Proton.scene.thirdCamera.name ).alpha )
+					deg = Proton.radToDeg( objectList.getMeshByName( Proton.scene.thirdCamera.name ).alpha )
 					if ( deg > 360 ) deg = deg - 360;
 					if ( deg < 360 ) deg = deg + 360;
 					if ( !animating && Object.values( params.scene.keys ).indexOf( true ) > -1 ) params.cameraParent.rotation.y = Proton.degToRad( -deg + 90 );
@@ -546,9 +549,10 @@ class Proton3DInterpreter {
 				
 				// Creates the camera
 				var camera = new BABYLON.UniversalCamera( object.name, new BABYLON.Vector3( 0, 0, 1 ), interpreter.scene );
+				camera.minZ = 0.01;
 				camera.fov = extras.fov != undefined? extras.fov : 1;
 				camera.setTarget( BABYLON.Vector3.Zero() );
-				meshes.push( camera );
+				objectList.meshes.push( camera );
 
 				// Adds Proton functions
 				object.changeFOV = ( value ) => {
@@ -565,7 +569,7 @@ class Proton3DInterpreter {
 				// Creates the camera
 				var camera = new BABYLON.ArcRotateCamera( object.name, 0, 0, 10, new BABYLON.Vector3( 0, 0, 0 ), interpreter.scene );
 				camera.fov = extras.fov != undefined? extras.fov : 1;
-				meshes.push( camera );
+				objectList.meshes.push( camera );
 
 				// Adds Proton functions
 				object.changeFOV = ( value ) => {
@@ -580,11 +584,11 @@ class Proton3DInterpreter {
 			case "spotlight":
 				
 				// Creates the spotlight
-				var light = new BABYLON.SpotLight( object.name, new BABYLON.Vector3( extras.position.x, extras.position.y, extras.position.z ), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 0, this.scene );
+				var light = new BABYLON.SpotLight( object.name, new BABYLON.Vector3( extras.position.x, extras.position.y, extras.position.z ), new BABYLON.Vector3(0, -1, 0), Proton.degToRad( 60 ), 0, this.scene );
 				light.setDirectionToTarget( new BABYLON.Vector3( 0, 0, 0 ) );
 				light.name = object.name;
-				light.falloffType = BABYLON.SpotLight.FALLOFF_GLTF; // Smooth penumbra stuff
-				meshes.push( light );
+				light.falloffType = BABYLON.SpotLight.FALLOFF_GLTF; // Smooth penumbra stuff (NOT WORKING ANY MORE)
+				objectList.meshes.push( light );
 
 				object.setIntensity = ( value ) => light.intensity = value;
 				object.setAngle = ( value ) => light.angle = value;
@@ -640,7 +644,7 @@ class Proton3DInterpreter {
 				}
 
 				sky.name = object.name;
-				meshes.push( sky );
+				objectList.meshes.push( sky );
 				break;
 
 			case "capsule":
@@ -649,7 +653,7 @@ class Proton3DInterpreter {
 
 				// Makes the capsule
 				var capsule = BABYLON.MeshBuilder.CreateCapsule( object.name, { radius: 1, height: extras.height, capSubdivisions: 12, tessellation: 12, topCapSubdivisions: 12 }, this.scene );
-				meshes.push( capsule );
+				objectList.meshes.push( capsule );
 				capsule.name = object.name;
 
 				// Shadows
@@ -678,7 +682,7 @@ class Proton3DInterpreter {
 
 				// Makes the cube
 				var cube = BABYLON.MeshBuilder.CreateBox( object.name, { width: extras.width, height: extras.height, depth: extras.depth }, this.scene );
-				meshes.push( cube );
+				objectList.meshes.push( cube );
 				cube.name = object.name;
 
 				// Shadows
@@ -708,14 +712,14 @@ class Proton3DInterpreter {
 				
 				// Makes the sphere
 				var sphere = BABYLON.MeshBuilder.CreateSphere( object.name, { diameter: extras.radius * 2 }, this.scene );
-				meshes.push( sphere );
+				objectList.meshes.push( sphere );
 				sphere.name = object.name;
 
 				// Shadows
 				sphere.receiveShadows = true;
 
 				sphere.name = object.name;
-				meshes.push( sphere );
+				objectList.meshes.push( sphere );
 
 				// Creates some properties
 				object.radius = 1;
@@ -748,14 +752,14 @@ class Proton3DInterpreter {
 
 				function namecheck( p3dobject ) {
 
-					if ( getMeshByName( mesh.name ) ) {
+					if ( objectList.getMeshByName( mesh.name ) ) {
 
 						p3dobject.name += "_copy";
 						mesh.name += "_copy";
 
 					}
 
-					if ( getMeshByName( mesh.name ) ) {
+					if ( objectList.getMeshByName( mesh.name ) ) {
 
 						namecheck( p3dobject );
 
@@ -785,30 +789,30 @@ class Proton3DInterpreter {
 
 				}
 
-				meshes.push( mesh );
+				objectList.meshes.push( mesh );
 			
 		}
 
 		// Shadows
-		if ( getMeshByName( object.name ).geometry && extras.type != "sky" && extras.castShadow != false ) interpreter.shadowGenerators.forEach( ( generator ) => generator.addShadowCaster( getMeshByName( object.name ) ) );
+		if ( objectList.getMeshByName( object.name ).geometry && extras.type != "sky" && extras.castShadow != false ) interpreter.shadowGenerators.forEach( ( generator ) => generator.addShadowCaster( objectList.getMeshByName( object.name ), true ) );
 		
 
 		// Sets the rotation if there is none
-		if ( getMeshByName( object.name ).rotation == undefined ) getMeshByName( object.name ).rotation = BABYLON.Vector3.Zero();
+		if ( objectList.getMeshByName( object.name ).rotation == undefined ) objectList.getMeshByName( object.name ).rotation = BABYLON.Vector3.Zero();
 
 		// creates the mesh's material -- must be at the very end to ensure that the material is initialized with an object
 		if ( extras.type != "sky" && extras.type != "camera" && extras.type != undefined ) {
 
-			object.material = extras.material || new Proton3DMaterial( getMeshByName( object.name ), {
+			object.material = extras.material || new Proton3DMaterial( objectList.getMeshByName( object.name ), {
 				name: extras.materialName,
-				material: getMeshByName( object.name ).material,
+				material: objectList.getMeshByName( object.name ).material,
 				materialType: extras.materialType
 			} );
 
 		}
 
 		// Sets the mesh's "parent"
-		getMeshByName( object.name ).p3dParent = object;
+		objectList.getMeshByName( object.name ).p3dParent = object;
 
 		// Makes the mesh (player) invisible
 		if ( extras.invisible ) object.makeInvisible();
@@ -826,7 +830,7 @@ class Proton3DInterpreter {
 
 			case "cube":
 
-				var cube = getMeshByName( object.name );
+				var cube = objectList.getMeshByName( object.name );
 				// Physics
 				if ( extras.noPhysics != true ) {
 					
@@ -842,7 +846,7 @@ class Proton3DInterpreter {
 
 			case "capsule":
 
-				var capsule = getMeshByName( object.name );
+				var capsule = objectList.getMeshByName( object.name );
 				// Physics
 				if ( extras.noPhysics != true ) {
 					
@@ -858,7 +862,7 @@ class Proton3DInterpreter {
 
 			case "sphere":
 				
-				var sphere = getMeshByName( object.name );
+				var sphere = objectList.getMeshByName( object.name );
 				// Physics
 				if ( extras.noPhysics != true ) {
 				
@@ -874,7 +878,7 @@ class Proton3DInterpreter {
 		}
 
 		// Sets reflections (where possible)
-		this.setReflections( getMeshByName( object.name ), this );
+		this.setReflections( objectList.getMeshByName( object.name ), this );
 		
 		// onReady: Where the magic happens
 		if ( object.onReady ) object.onReady()
@@ -887,31 +891,21 @@ class Proton3DInterpreter {
 
 		if ( !mesh.reflectionProbe && ( mesh.material != undefined && mesh.material.azimuth/*Determines if the material is a sky by a property of a SkyMaterial*/ == undefined ) ) {
 
+			if ( mesh.material.roughness == 0 ) { mesh.material.roughness = 1 }
+			// Creates a reflection probe
 			mesh.reflectionProbe = new BABYLON.ReflectionProbe( mesh.id + "_rp", 128, interpreter.scene );
-			mesh.reflectionProbe.parent = mesh;
-			mesh.reflectionProbe.position = mesh.position;
-			mesh.reflectionProbe.refreshRate = 0;
+			mesh.reflectionProbe.attachToMesh( mesh );
 			mesh.material.reflectionTexture = mesh.reflectionProbe.cubeTexture;
+
+			// Sets its refresh rate to zero
+			mesh.reflectionProbe.refreshRate = BABYLON.RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+
+			// Real time filtering blurs the reflection texture depending on the object's roughness value.
 			mesh.material.realTimeFiltering = true;
-			mesh.material.realTimeFilteringQuality = BABYLON.Constants.TEXTURE_FILTERING_QUALITY_MEDIUM;
-			interpreter.scene.reflectionProbes.push( mesh.reflectionProbe );
-			interpreter.scene.reflectionProbeObjects.forEach( function( object ) {
+			mesh.material.realTimeFilteringQuality = BABYLON.Constants.TEXTURE_FILTERING_QUALITY_HIGH;
 
-				if ( mesh.reflectionProbe.name != object.id + "_rp" ) mesh.reflectionProbe.renderList.push( object )
-
-			} );
-			if ( mesh.reflectionProbe.renderList.indexOf( mesh ) > -1 ) mesh.reflectionProbe.renderList.splice( mesh.reflectionProbe.renderList.indexOf( mesh ), 1 )
-
-		}
-		
-		if ( interpreter.scene.reflectionProbeObjects.indexOf( mesh ) === -1 ) {
-			
-			interpreter.scene.reflectionProbeObjects.push( mesh );
-			interpreter.scene.reflectionProbes.forEach( function( reflectionProbe ) {
-
-				if ( reflectionProbe.id != mesh.name + "_rp" ) reflectionProbe.renderList.push( mesh )
-
-			} )
+			// Adds all objects in the scene to the reflection probe
+			interpreter.scene.meshes.forEach( ( object ) => { mesh.reflectionProbe.renderList.push( object ) } );
 
 		}
 
@@ -922,50 +916,50 @@ class Proton3DInterpreter {
 
 			P3DObject.material.makeTransparent();
 			if ( P3DObject.material.subMaterials ) P3DObject.material.subMaterials.forEach( ( material ) => material.makeTransparent() );
-			getMeshByName( P3DObject.name ).isVisible = false
+			objectList.getMeshByName( P3DObject.name ).isVisible = false
 
 		},
 		getShadowOptions( P3DObject ) {
 
 			return {
-				cast: getMeshByName( P3DObject.name ).castShadow || false,
-				receive: getMeshByName( P3DObject.name ).receiveShadow
+				cast: objectList.getMeshByName( P3DObject.name ).castShadow || false,
+				receive: objectList.getMeshByName( P3DObject.name ).receiveShadow
 			};
 
 		},
 		setShadowOptions( cast = null, receive = null, P3DObject ) {
 
 			// Casting will be set when an object is added to a scene
-			getMeshByName( P3DObject.name ).receiveShadow = receive != undefined ? receive : getMeshByName( P3DObject.name ).receiveShadow;
+			objectList.getMeshByName( P3DObject.name ).receiveShadow = receive != undefined ? receive : objectList.getMeshByName( P3DObject.name ).receiveShadow;
 			if ( cast ) {
 
-				Proton.scene.interpreter.shadowGenerators.forEach( ( generator ) => generator.addShadowCaster( getMeshByName( P3DObject.name ) ) );
+				Proton.scene.interpreter.shadowGenerators.forEach( ( generator ) => generator.addShadowCaster( objectList.getMeshByName( P3DObject.name ) ) );
 
 			} else {
 
-				Proton.scene.interpreter.shadowGenerators.forEach( ( generator ) => generator.removeShadowCaster( getMeshByName( P3DObject.name ) ) );
+				Proton.scene.interpreter.shadowGenerators.forEach( ( generator ) => generator.removeShadowCaster( objectList.getMeshByName( P3DObject.name ) ) );
 
 			}
 
 		},
 		applyImpulse( force, offset = new BABYLON.Vector3( 0, 0, 0 ), P3DObject ) {
 
-			getMeshByName( P3DObject.name ).physics.applyImpulse( force, offset )
+			objectList.getMeshByName( P3DObject.name ).physics.applyImpulse( force, offset )
 
 		},
 		delete( P3DObject ) {
 
-			getMeshByName( P3DObject.name ).dispose();
+			objectList.getMeshByName( P3DObject.name ).dispose();
 
 		},
 		setMass( value, P3DObject ) {
 
-			getMeshByName( P3DObject.name ).physics.mass = value;
+			objectList.getMeshByName( P3DObject.name ).physics.mass = value;
 
 		},
 		getMass( P3DObject ) {
 
-			return getMeshByName( P3DObject.name ).physics.mass;
+			return objectList.getMeshByName( P3DObject.name ).physics.mass;
 
 		},
 		setOnUse( useFunction, P3DObject ) {
@@ -1011,22 +1005,22 @@ class Proton3DInterpreter {
 		},
 		setLinearVelocity( x = P3DObject.getLinearVelocity().x, y = P3DObject.getLinearVelocity().y, z = P3DObject.getLinearVelocity().z, P3DObject ) {
 
-			getMeshByName( P3DObject.name ).physics.physicsBody.setLinearVelocity( new Ammo.btVector3( x, y, z ) );
+			objectList.getMeshByName( P3DObject.name ).physics.physicsBody.setLinearVelocity( new Ammo.btVector3( x, y, z ) );
 
 		},
-		setAngularVelocity( x = getMeshByName( P3DObject.name ).getAngularVelocity().x, y = getMeshByName( P3DObject.name ).getAngularVelocity().y, z = getMeshByName( P3DObject.name ).getAngularVelocity().z, P3DObject ) {
+		setAngularVelocity( x = objectList.getMeshByName( P3DObject.name ).getAngularVelocity().x, y = objectList.getMeshByName( P3DObject.name ).getAngularVelocity().y, z = objectList.getMeshByName( P3DObject.name ).getAngularVelocity().z, P3DObject ) {
 
-			getMeshByName( P3DObject.name ).physics.physicsBody.setAngularVelocity( new Ammo.btVector3( x, y, z ) );
+			objectList.getMeshByName( P3DObject.name ).physics.physicsBody.setAngularVelocity( new Ammo.btVector3( x, y, z ) );
 
 		},
 		setLinearFactor( x = 0, y = 0, z = 0, P3DObject ) {
 
-			getMeshByName( P3DObject.name ).physics.physicsBody.setLinearFactor( new Ammo.btVector3( x, y, z ) );
+			objectList.getMeshByName( P3DObject.name ).physics.physicsBody.setLinearFactor( new Ammo.btVector3( x, y, z ) );
 
 		},
 		setAngularFactor( x = 0, y = 0, z = 0, P3DObject ) {
 
-			getMeshByName( P3DObject.name ).physics.physicsBody.setAngularFactor( new Ammo.btVector3( x, y, z ) );
+			objectList.getMeshByName( P3DObject.name ).physics.physicsBody.setAngularFactor( new Ammo.btVector3( x, y, z ) );
 
 		},
 		setRotation( x, y, z, P3DObject ) {
@@ -1049,14 +1043,14 @@ class Proton3DInterpreter {
 
 			}
 
-			getMeshByName( P3DObject.name ).rotation.set( x, y, z );
+			objectList.getMeshByName( P3DObject.name ).rotation.set( x, y, z );
 
 		},
 		setPosition( x, y, z, P3DObject ) {
 
 			if ( typeof x === "object" ) {
 
-				getMeshByName( P3DObject.name ).position.set( x.x, x.y, x.z );
+				objectList.getMeshByName( P3DObject.name ).position.set( x.x, x.y, x.z );
 
 			}
 
@@ -1078,32 +1072,32 @@ class Proton3DInterpreter {
 
 			}
 
-			getMeshByName( P3DObject.name ).position.set( x, y, z );
+			objectList.getMeshByName( P3DObject.name ).position.set( x, y, z );
 
 		},
 		isPhysicsReady( P3DObject ) {
 			
-			return getMeshByName( P3DObject.name ).physics != undefined;
+			return objectList.getMeshByName( P3DObject.name ).physics != undefined;
 
 		},
 		getRotation( P3DObject ) {
 
-			return getMeshByName( P3DObject.name ).rotation;
+			return objectList.getMeshByName( P3DObject.name ).rotation;
 
 		},
 		getPosition( P3DObject ) {
 
-			return getMeshByName( P3DObject.name ).position;
+			return objectList.getMeshByName( P3DObject.name ).position;
 
 		},
 		getLinearVelocity( P3DObject ) {
 
-			return getMeshByName( P3DObject.name ).physics.getLinearVelocity();
+			return objectList.getMeshByName( P3DObject.name ).physics.getLinearVelocity();
 
 		},
 		getAngularVelocity( P3DObject ) {
 
-			return getMeshByName( P3DObject.name ).physics.getAngularVelocity();
+			return objectList.getMeshByName( P3DObject.name ).physics.getAngularVelocity();
 
 		},
 		getWorldDirection( P3DObject ) {
@@ -1116,21 +1110,21 @@ class Proton3DInterpreter {
 		},
 		lookAt( x = 0, y = 0, z = 0, P3DObject ) {
 
-			if ( getMeshByName( P3DObject.name ).setDirectionToTarget ) {
+			if ( objectList.getMeshByName( P3DObject.name ).setDirectionToTarget ) {
 			
-				getMeshByName( P3DObject.name ).setDirectionToTarget( new BABYLON.Vector3( x, y, z ) );
-			
-			}
-
-			if ( getMeshByName( P3DObject.name ).setTarget ) {
-			
-				getMeshByName( P3DObject.name ).setTarget( new BABYLON.Vector3( x, y, z ) );
+				objectList.getMeshByName( P3DObject.name ).setDirectionToTarget( new BABYLON.Vector3( x, y, z ) );
 			
 			}
 
-			if ( getMeshByName( P3DObject.name ).lookAt ) {
+			if ( objectList.getMeshByName( P3DObject.name ).setTarget ) {
+			
+				objectList.getMeshByName( P3DObject.name ).setTarget( new BABYLON.Vector3( x, y, z ) );
+			
+			}
 
-				getMeshByName( P3DObject.name ).lookAt( new BABYLON.Vector3( x, y, z ) );
+			if ( objectList.getMeshByName( P3DObject.name ).lookAt ) {
+
+				objectList.getMeshByName( P3DObject.name ).lookAt( new BABYLON.Vector3( x, y, z ) );
 
 			}
 
@@ -1138,7 +1132,7 @@ class Proton3DInterpreter {
 		getWorldPosition( P3DObject ) {
 
 			// https://forum.babylonjs.com/t/understanding-how-to-get-set-world-position-rotation-and-scale-in-a-hierarchy/5087
-			var worldMatrix = getMeshByName( P3DObject.name ).getWorldMatrix();
+			var worldMatrix = objectList.getMeshByName( P3DObject.name ).getWorldMatrix();
 			var quatRotation =  new BABYLON.Quaternion();
 			var position = new BABYLON.Vector3();
 			var scale = new BABYLON.Vector3();
@@ -1148,18 +1142,18 @@ class Proton3DInterpreter {
 		},
 		getWorldRotation( P3DObject ) {
 
-			// If you use three.js, it should look something like this: return getMeshByName( P3DObject.name ).getWorldQuaternion( new THREE.Euler() );
+			// If you use three.js, it should look something like this: return objectList.getMeshByName( P3DObject.name ).getWorldQuaternion( new THREE.Euler() );
 
 		},
 		add( object, P3DObject ) {
 
-			getMeshByName( object.name ).parent = getMeshByName( P3DObject.name );
+			objectList.getMeshByName( object.name ).parent = objectList.getMeshByName( P3DObject.name );
 			object.parent = P3DObject;
 
 		},
 		remove( object, P3DObject ) {
 
-			getMeshByName( object.name ).dispose();
+			objectList.getMeshByName( object.name ).dispose();
 
 		}
 	}
@@ -1344,13 +1338,13 @@ class Proton3DInterpreter {
 			material.usePhysicalLightFalloff = false;
 			material.name = P3DMaterial.name;
 			material.roughness = 1;
-			materials.push( material );
+			objectList.materials.push( material );
 			parentObject.material = material;
 
 		} else {
 
 			material.name = P3DMaterial.name;
-			materials.push( material );
+			objectList.materials.push( material );
 			if ( material.subMaterials ) {
 
 				P3DMaterial.subMaterials = [];
@@ -1373,73 +1367,73 @@ class Proton3DInterpreter {
 	Proton3DMaterial = {
 		setEmissiveColor( color, P3DMaterial ) {
 
-			getMaterialByName( P3DMaterial.name ).emissiveColor = new BABYLON.Color3.FromHexString( color );
+			objectList.getMaterialByName( P3DMaterial.name ).emissiveColor = new BABYLON.Color3.FromHexString( color );
 
 		},
 		getEmissiveColor( P3DMaterial ) {
 
-			return getMaterialByName( P3DMaterial.name ).emissiveColor.toHexString();
+			return objectList.getMaterialByName( P3DMaterial.name ).emissiveColor.toHexString();
 
 		},
 		setWireframe( value, P3DMaterial ) {
 
-			getMaterialByName( P3DMaterial.name ).wireframe = value;
+			objectList.getMaterialByName( P3DMaterial.name ).wireframe = value;
 
 		},
 		getWireframe( P3DMaterial ) {
 
-			return getMaterialByName( P3DMaterial.name ).wireframe;
+			return objectList.getMaterialByName( P3DMaterial.name ).wireframe;
 
 		},
 		setEmissive( value, P3DMaterial ) {
 
-			getMaterialByName( P3DMaterial.name ).emissiveIntensity = value;
+			objectList.getMaterialByName( P3DMaterial.name ).emissiveIntensity = value;
 
 		},
 		getEmissive( P3DMaterial ) {
 
-			return getMaterialByName( P3DMaterial.name ).emissiveIntensity;
+			return objectList.getMaterialByName( P3DMaterial.name ).emissiveIntensity;
 
 		},
 		setColor( hexString, P3DMaterial ) {
 
-			getMaterialByName( P3DMaterial.name ).albedoColor = new BABYLON.Color3.FromHexString( hexString );
+			objectList.getMaterialByName( P3DMaterial.name ).albedoColor = new BABYLON.Color3.FromHexString( hexString );
 
 		},
 		getColor( P3DMaterial ) {
 
-			return getMaterialByName( P3DMaterial.name ).albedoColor.toHexString();
+			return objectList.getMaterialByName( P3DMaterial.name ).albedoColor.toHexString();
 
 		},
 		setRoughness( value, P3DMaterial ) {
 
-			getMaterialByName( P3DMaterial.name ).roughness = value;
+			objectList.getMaterialByName( P3DMaterial.name ).roughness = value;
 
 		},
 		setMetalness( value, P3DMaterial ) {
 
-			getMaterialByName( P3DMaterial.name ).metallic = value;
+			objectList.getMaterialByName( P3DMaterial.name ).metallic = value;
 
 		},
 		getRoughness( value, P3DMaterial ) {
 
-			return getMaterialByName( P3DMaterial.name ).roughness;
+			return objectList.getMaterialByName( P3DMaterial.name ).roughness;
 
 		},
 		getMetalness( value, P3DMaterial ) {
 
-			return getMaterialByName( P3DMaterial.name ).metallic;
+			return objectList.getMaterialByName( P3DMaterial.name ).metallic;
 
 		},
 		setOpacity( value, P3DMaterial ) {
 
-			getMaterialByName( P3DMaterial.name ).forceAlphaTest = true;
-			getMaterialByName( P3DMaterial.name ).alpha = value;
+			objectList.getMaterialByName( P3DMaterial.name ).forceAlphaTest = true;
+			objectList.getMaterialByName( P3DMaterial.name ).alpha = value;
 
 		},
 		getOpacity( P3DMaterial ) {
 
-			return getMaterialByName( P3DMaterial.name ).alpha;
+			return objectList.getMaterialByName( P3DMaterial.name ).alpha;
 
 		},
 		makeTransparent( value, P3DMaterial ) {
@@ -1525,50 +1519,3 @@ class Proton3DInterpreter {
 	storage = localStorage
 
 };
-/*
-	~> loc:3
-	Proton3D Tools
-*/
-class GameCode {
-
-	constructor( code ) {
-
-		this.code = code;
-
-	}
-	load( url ) {
-
-		import( url );
-
-	}
-	run() {
-
-		if ( typeof this.code == "string" ) {
-
-			eval( this.code );
-
-		} else {
-
-			this.code();
-
-		}
-
-	}
-	autoStart() {
-
-		var code = this,
-			interval = setInterval( function () {
-
-				code.loadingPercentage = ( scriptStats.loadedScripts / scriptStats.maxScripts ) * 100;
-				if ( code.loadingPercentage == 100 ) {
-
-					clearInterval( interval );
-					code.run();
-
-				}
-
-			}, 1500 );
-
-	}
-
-}

@@ -630,7 +630,7 @@ class Proton3DObject {
 
 		}
 
-		if ( getMeshByName( this.name ) ) {
+		if ( objectList.getMeshByName( this.name ) ) {
 
 			if ( meshData.genericMeshNameInstances > 0 ) {
 
