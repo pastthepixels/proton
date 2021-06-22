@@ -170,6 +170,10 @@ class Proton3DInterpreter {
 		// Sets up shadows
 		this.shadowGenerators = [];
 
+		// Sets up reflections
+		this.scene.reflectionProbes = [];
+		this.scene.reflectionProbeObjects = [];
+
 		// Creates the sky
 		if ( params.sky != false && params.backgroundColor == undefined ) scene.sky = new Proton3DObject( { type: "sky" } );
 		// or sets a background color
@@ -232,116 +236,6 @@ class Proton3DInterpreter {
 		this.hemisphereLight = new BABYLON.HemisphericLight( "hemisphere", new BABYLON.Vector3( -1, 1, 0 ), this.scene );
 		this.hemisphereLight.diffuse = BABYLON.Color3.FromHexString( params.backgroundColor || "#ffffff" )
 		this.hemisphereLight.intensity = .2
-
-		// GI
-			
-		var interpreter = this;
-		this.scene.reflectionProbes = [];
-		this.scene.reflectionProbeObjects = [];
-		this.scene.registerBeforeRender( function() {
-			
-			interpreter.scene.meshes.forEach( function( mesh ) {
-
-				if ( !mesh.reflectionProbe && mesh.material ) {
-
-					mesh.reflectionProbe = new BABYLON.ReflectionProbe( mesh.id + "_rp", 16, interpreter.scene );
-					mesh.reflectionProbe.parent = mesh;
-					mesh.reflectionProbe.position = mesh.position;
-					mesh.reflectionProbe.refreshRate = 12;
-					mesh.material.reflectionTexture = mesh.reflectionProbe.cubeTexture;
-					//mesh.material.realTimeFiltering = true;
-					mesh.material.realTimeFilteringQuality = BABYLON.Constants.TEXTURE_FILTERING_QUALITY_MEDIUM;
-					interpreter.scene.reflectionProbes.push( mesh.reflectionProbe );
-					interpreter.scene.reflectionProbeObjects.forEach( function( object ) {
-
-						if ( mesh.reflectionProbe.name != object.id + "_rp" ) mesh.reflectionProbe.renderList.push( object )
-
-					} );
-					if ( mesh.reflectionProbe.renderList.indexOf( mesh ) > -1 ) mesh.reflectionProbe.renderList.splice( mesh.reflectionProbe.renderList.indexOf( mesh ), 1 )
-
-				}
-				if ( interpreter.scene.reflectionProbeObjects.indexOf( mesh ) === -1 ) {
-					
-					interpreter.scene.reflectionProbeObjects.push( mesh );
-					interpreter.scene.reflectionProbes.forEach( function( reflectionProbe ) {
-
-						if ( reflectionProbe.id != mesh.name + "_rp" ) reflectionProbe.renderList.push( mesh )
-
-					} )
-
-				}
-
-			} )
-
-		} );
-		
-
-
-
-		this.pipeline = new BABYLON.DefaultRenderingPipeline(
-			"defaultPipeline", // The name of the pipeline
-			true, // Do you want the pipeline to use HDR texture?
-			this.scene, // The scene instance
-			[ getMeshByName( this.thirdCamera.name ) ] // The list of cameras to be attached to
-		);
-		Proton.scene.interpreter.pipeline.grain.animated = true
-		Proton.scene.interpreter.pipeline.grain.adaptScaleToCurrentViewport = true
-		Proton.scene.interpreter.pipeline.grainEnabled = true
-		Proton.scene.interpreter.pipeline.grain.intensity = 10
-
-		Proton.scene.interpreter.pipeline.chromaticAberration.aberrationAmount = 4
-		Proton.scene.interpreter.pipeline.chromaticAberrationEnabled = true
-		
-		Proton.scene.interpreter.pipeline.bloomEnabled = true
-
-		Proton.scene.interpreter.pipeline.depthOfFieldEnabled = true
-
-
-		var ssr = new BABYLON.ScreenSpaceReflectionPostProcess( "ssr", interpreter.scene, 1.0, getMeshByName( interpreter.thirdCamera.name ) );
-		ssr.reflectionSamples = 32; // Medium quality.
-		ssr.strength = 1; // Set default strength of reflections.
-		ssr.reflectionSpecularFalloffExponent = 3; // Attenuate the reflections a little bit. (typically in interval [1, 3])
-		function createImageFromColor( color ) {
-			var canvas = document.createElement( "canvas" );
-			var context = canvas.getContext( "2d" );
-			// Rezies the canvas to 1px by 1px
-			canvas.width = 1;
-			canvas.height = 1;
-			// Fills a square 1px by 1px
-			context.fillStyle = color;
-			context.fillRect( 0, 0, 1, 1 );
-			// returns that as a texture
-			return canvas.toDataURL("image/png");
-		}
-		this.scene.registerBeforeRender( function() {
-
-			interpreter.scene.meshes.forEach( function( mesh ) {
-			
-				if ( mesh.material && mesh.reflectivityTextureDone == undefined ) {
-
-					mesh.reflectivityTextureDone = true;
-					var roughness = parseInt( 255 * ( 1 - mesh.material.roughness ) );
-						roughness = roughness.toString( 16 );
-					var color = "#" + roughness + roughness + roughness;
-					console.log( color )
-					mesh.cachedRoughness = mesh.material.roughness;
-					mesh.material.reflectivityTexture = new BABYLON.Texture( createImageFromColor( color ) )//new BABYLON.Texture("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVQI12P4//8/AAX+Av7czFnnAAAAAElFTkSuQmCC", interpreter.scene );
-				
-				}
-				if ( mesh.material != undefined && mesh.material.roughness != undefined && mesh.cachedRoughness != mesh.material.roughness ) {
-
-					var roughness = parseInt( 255 * ( 1 - mesh.material.roughness ) );
-						roughness = roughness.toString( 16 );
-					var color = "#" + roughness + roughness + roughness;
-					mesh.cachedRoughness = mesh.material.roughness;
-					console.log( color )
-					mesh.material.reflectivityTexture = new BABYLON.Texture( createImageFromColor( color ) )//new BABYLON.Texture("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVQI12P4//8/AAX+Av7czFnnAAAAAElFTkSuQmCC", interpreter.scene );
-					
-				}
-
-			} )
-
-		} )
 		
 		// Starts the scene
 		this.updateScene( scene );
@@ -921,6 +815,8 @@ class Proton3DInterpreter {
 
 	}
 
+
+
 	init3DObject( extras, object ) {
 
 		// Physics
@@ -976,9 +872,48 @@ class Proton3DInterpreter {
 				}
 		
 		}
+
+		// Sets reflections (where possible)
+		this.setReflections( getMeshByName( object.name ), this );
 		
 		// onReady: Where the magic happens
 		if ( object.onReady ) object.onReady()
+
+	}
+
+	setReflections( mesh, interpreter ) {
+
+		if ( interpreter.scene.meshes.indexOf( mesh ) == -1 ) return; // First needs to see if the object is a mesh in the first place.
+
+		if ( !mesh.reflectionProbe && ( mesh.material != undefined && mesh.material.azimuth/*Determines if the material is a sky by a property of a SkyMaterial*/ == undefined ) ) {
+
+			mesh.reflectionProbe = new BABYLON.ReflectionProbe( mesh.id + "_rp", 128, interpreter.scene );
+			mesh.reflectionProbe.parent = mesh;
+			mesh.reflectionProbe.position = mesh.position;
+			mesh.reflectionProbe.refreshRate = 0;
+			mesh.material.reflectionTexture = mesh.reflectionProbe.cubeTexture;
+			mesh.material.realTimeFiltering = true;
+			mesh.material.realTimeFilteringQuality = BABYLON.Constants.TEXTURE_FILTERING_QUALITY_MEDIUM;
+			interpreter.scene.reflectionProbes.push( mesh.reflectionProbe );
+			interpreter.scene.reflectionProbeObjects.forEach( function( object ) {
+
+				if ( mesh.reflectionProbe.name != object.id + "_rp" ) mesh.reflectionProbe.renderList.push( object )
+
+			} );
+			if ( mesh.reflectionProbe.renderList.indexOf( mesh ) > -1 ) mesh.reflectionProbe.renderList.splice( mesh.reflectionProbe.renderList.indexOf( mesh ), 1 )
+
+		}
+		
+		if ( interpreter.scene.reflectionProbeObjects.indexOf( mesh ) === -1 ) {
+			
+			interpreter.scene.reflectionProbeObjects.push( mesh );
+			interpreter.scene.reflectionProbes.forEach( function( reflectionProbe ) {
+
+				if ( reflectionProbe.id != mesh.name + "_rp" ) reflectionProbe.renderList.push( mesh )
+
+			} )
+
+		}
 
 	}
 
@@ -1241,6 +1176,7 @@ class Proton3DInterpreter {
 			
 			// Loads the mesh
 			var mesh = await BABYLON.SceneLoader.ImportMeshAsync( "", extras.path, "", interpreter.scene );
+			console.log( extras.path );
 			var meshes = mergeSameMaterials( mesh.meshes );
 			
 			// Loads shadows
@@ -1574,9 +1510,10 @@ class Proton3DInterpreter {
 			transform: translate(  -50%, -50%  );
 			height: 4px;
 			width: 4px;
-			background: rgba( 255, 255, 255, 0.75 );
+			background: rgba( 255, 255, 255, 0.25 );
 			border-radius: 100%;
-			border: 1px #222 solid;
+			box-shadow: white 0 0px 7px;
+			backdrop-filter: invert( 1 );
 		`;
 		document.body.appendChild( crosshairElement );
 		return crosshairElement;

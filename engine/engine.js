@@ -86,12 +86,6 @@ class Proton3DScene {
 		}
 
 	}
-	getObjectList() {
-
-		console.warn( "Please consider using [scene].children instead, since that's all this function does.." )
-		return this.children;
-
-	}
 	remove( object ) {
 
 		return Proton.scene.interpreter.removeFromScene( object, this );
@@ -448,7 +442,7 @@ class Proton3DScene {
 			if ( x.pickingUpObject && x.pickingUpObject.boundingBox ) {
 
 				objectCollision = false;
-				x.getObjectList().forEach( function ( child ) {
+				x.children.forEach( function ( child ) {
 
 					if ( child.boundingBox && child != x.camera.parent && child != x.pickingUpObject && child.parent != x.camera.parent && child.parent != x.camera ) {
 
@@ -494,7 +488,7 @@ class Proton3DScene {
 
 		Proton.scene.interpreter.onKeyUp( function () {
 
-			x.getObjectList().forEach( function ( child ) {
+			x.children.forEach( function ( child ) {
 
 				checkKeypress( child );
 
