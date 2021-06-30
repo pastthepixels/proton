@@ -206,8 +206,7 @@ class Proton3DInterpreter {
 		var materialLength = 0;
 		this.engine.runRenderLoop( function() {
 
-			//if ( wiz.objects ) { wiz.objects[ 0 ].setAngularVelocity( 0, 0, 0 ); }
-			interpreter.updateScene( scene )
+			interpreter.updateScene( scene );
 
 			// Sets anisotropic filtering
 			if ( materialLength != interpreter.scene.materials.length ) {
