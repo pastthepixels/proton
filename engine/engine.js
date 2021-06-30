@@ -86,6 +86,11 @@ class Proton3DScene {
 		}
 
 	}
+	setEnvironmentMap( url ) {
+
+		return this.interpreter.setEnvironmentMap( url );
+
+	}
 	remove( object ) {
 
 		return Proton.scene.interpreter.removeFromScene( object, this );

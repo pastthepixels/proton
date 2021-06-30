@@ -32,10 +32,10 @@ class Scripts {
 		this.import( "https://cdn.babylonjs.com/babylon.js", true, () => {
 			
 			// Stuff that creates the sky + more materials
-			this.import( "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.js", true );
+			this.import( "https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.js", true );
 	
 			// Stuff that loads files like glTF
-			this.import( "https://preview.babylonjs.com/loaders/babylonjs.loaders.js", true );
+			this.import( "https://cdn.babylonjs.com/loaders/babylonjs.loaders.js", true );
 	
 			// Physics!
 			this.import( "https://cdn.babylonjs.com/ammo.js", false );
@@ -246,16 +246,17 @@ class Proton3DInterpreter {
 
 			this.updateScene( scene )
 
-			// Sets anisotropic filtering
+			// Sets texture properties
 			if ( materialLength != this.scene.materials.length ) {
 
 				materialLength = this.scene.materials.length;
 				this.scene.textures.forEach( ( texture ) => {
 				
+					// Anisotropic filtering
 					texture.anisotropicFilteringLevel = this.postprocessing.anisotropicFilteringLevel;
-					texture.updateSamplingMode( BABYLON.Texture.TRILINEAR_SAMPLINGMODE )
-				
-				} )
+					texture.updateSamplingMode( BABYLON.Texture.TRILINEAR_SAMPLINGMODE );
+
+				} );
 
 			}
 
@@ -891,23 +892,29 @@ class Proton3DInterpreter {
 
 		if ( !mesh.reflectionProbe && ( mesh.material != undefined && mesh.material.azimuth/*Determines if the material is a sky by a property of a SkyMaterial*/ == undefined ) ) {
 
-			if ( mesh.material.roughness == 0 ) { mesh.material.roughness = 1 }
-			// Creates a reflection probe
-			mesh.reflectionProbe = new BABYLON.ReflectionProbe( mesh.id + "_rp", 128, interpreter.scene );
-			mesh.reflectionProbe.attachToMesh( mesh );
-			mesh.material.reflectionTexture = mesh.reflectionProbe.cubeTexture;
+			if ( mesh.p3dParent.mirror == true ) {
 
-			// Sets its refresh rate to zero
-			mesh.reflectionProbe.refreshRate = BABYLON.RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+				if ( mesh.material.roughness == 0 ) { mesh.material.roughness = 1 }
+				// Creates a reflection probe
+				mesh.reflectionProbe = new BABYLON.ReflectionProbe( mesh.id + "_rp", 128, this.scene );
+				mesh.reflectionProbe.attachToMesh( mesh );
+				mesh.material.reflectionTexture = mesh.reflectionProbe.cubeTexture;
+
+				// Adds all objects in the scene to the reflection probe
+				this.scene.meshes.forEach( ( object ) => { mesh.reflectionProbe.renderList.push( object ) } );
+
+			}
 
 			// Real time filtering blurs the reflection texture depending on the object's roughness value.
 			mesh.material.realTimeFiltering = true;
-			mesh.material.realTimeFilteringQuality = BABYLON.Constants.TEXTURE_FILTERING_QUALITY_HIGH;
-
-			// Adds all objects in the scene to the reflection probe
-			interpreter.scene.meshes.forEach( ( object ) => { mesh.reflectionProbe.renderList.push( object ) } );
 
 		}
+
+	}
+
+	setEnvironmentMap( url ) { // Must be HDR
+
+		this.scene.environmentTexture =  new BABYLON.HDRCubeTexture( url, this.scene, 128, false, true, false, true ); // Preset parameters from https://doc.babylonjs.com/divingDeeper/materials/using/HDREnvironment
 
 	}
 
@@ -1170,7 +1177,6 @@ class Proton3DInterpreter {
 			
 			// Loads the mesh
 			var mesh = await BABYLON.SceneLoader.ImportMeshAsync( "", extras.path, "", interpreter.scene );
-			console.log( extras.path );
 			var meshes = mergeSameMaterials( mesh.meshes );
 			
 			// Loads shadows
@@ -1178,7 +1184,7 @@ class Proton3DInterpreter {
 			loadShadows( meshes );
 
 			// Turns the loaded mesh to a Proton3DObject
-			object.objects = meshToProton( meshes, undefined, root );
+			object.objects = meshToProton( meshes );
 
 			// Loads physics
 			if ( ! extras.noPhysics ) loadPhysics( meshes );
@@ -1288,7 +1294,7 @@ class Proton3DInterpreter {
 		}
 
 		// Converts the meshes to Proton object
-		function meshToProton( meshes, parent ) {
+		function meshToProton( meshes, parent=undefined ) {//parent==Something you don't have to worry about.
 
 			var objects = [];
 			meshes.forEach( ( mesh ) => {
