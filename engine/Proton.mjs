@@ -9,14 +9,13 @@
 	| Scenes                     | loc:1      | <- Ctrl+F "loc:#" to get to the location specified.
 	| Meshes                     | loc:2      |
 	| Materials                  | loc:3      |
-	| Proton                     | loc:4      |
-	| Loading dependencies       | loc:5      |
-	| Running code               | loc:6      |
+	| Loading dependencies       | loc:4      |
+	| Running code               | loc:5      |
 
 */
 
 /* CONSTANTS */
-const DEFAULT_KEY_CONTROLS = {
+export const DEFAULT_KEY_CONTROLS = {
 	forward: 87, // W
 	sprint: 16, // Shift
 	backward: 83, // S
@@ -26,7 +25,7 @@ const DEFAULT_KEY_CONTROLS = {
 	use: 69, // E
 	flashlight: 70 // F
 };
-const OBJECT_TYPES = {
+export const OBJECT_TYPES = {
 	// Primitive mesh types
 	Cube: 0,
 	Sphere: 1,
@@ -36,15 +35,16 @@ const OBJECT_TYPES = {
 	ThirdPerspectiveCamera: 4,
 	// Lights and sky stuff
 	SpotLight: 5,
-	Sky: 6
+	DirectionalLight: 6,
+	Sky: 7
 }
-const CAMERA_TYPES = {
+export const CAMERA_TYPES = {
 	first: 0,
 	third: 1
 }
 
 /* UTILITIES */
-const UTILS = {
+export const UTILS = {
 	degToRad( deg ) {
 
 		return deg * ( Math.PI / 180 );
@@ -124,7 +124,7 @@ const UTILS = {
 
 /* VECTOR3 */
 // Port of THREE.Vector3
-class Vector3 {
+export class Vector3 {
 
  	constructor ( x, y, z ) {
 
@@ -251,9 +251,9 @@ class Vector3 {
 
 /*
 	~> loc:1
-	Scene
+	Scenes
 */
-class Scene {
+export class Scene {
 
 	mappedKeys = DEFAULT_KEY_CONTROLS;
 
@@ -261,17 +261,22 @@ class Scene {
 
 	loopFunctions = []; // Array of functions to be ran when the scene loops
 
-	constructor( interpreter = new Proton3DInterpreter() ) {
+	constructor( interpreter ) {
 
 		// Creating the interpreter
 		this.interpreter = interpreter;
 
 		// Initializing the interpreter
-		this.interpreter.init( this )
+		this.interpreter.init( this );
 
-		// Variables
-		this.camera = this.interpreter.camera // Should be a Object
-		this.thirdCamera = this.interpreter.thirdCamera
+		// Creates the sky
+		this.sky = new Mesh( "sky", { type: OBJECT_TYPES.Sky }, this );
+
+		// Creates a camera -- This should be the default camera, especially if you are making games that don't use a traditional first- or third-person camera views.
+		this.camera = new Mesh( "camera", { type: OBJECT_TYPES.PerspectiveCamera, position: new Vector3( 0, 0, 5 ) }, this );
+
+		// Creates a camera for third-person views
+		this.thirdCamera = new Mesh( "thirdCamera", { type: OBJECT_TYPES.ThirdPerspectiveCamera, position: new Vector3( 0, 0, 5 ) }, this );
 
 	}
 
@@ -662,7 +667,7 @@ class Scene {
 	loc:2
 	Meshes
 */
-class Mesh {
+export class Mesh {
 
 	constructor( name, options, scene ) {
 
@@ -773,7 +778,7 @@ class Mesh {
 	Materials
 */
 
-class Material {
+export class Material {
 
 	constructor( parentObject, options, scene ) {
 
@@ -817,17 +822,21 @@ class Material {
 
 /*
 
-	loc:5
+	loc:4
 
 	~> Loading dependencies
 
 */
-class ScriptLoader {
+export class ScriptLoader {
 
 	stats = { loadedScripts: 0, maxScripts: 0 };
 
-	sources = SCRIPT_SOURCES
+	constructor( sources ) {
+		
+		this.sources = sources
 	
+	}
+
 	init() {
 
 		this.stats.maxScripts = 0;
@@ -877,12 +886,12 @@ class ScriptLoader {
 }
 
 /*
-	~> loc:6
+	~> loc:5
 	Running code (for the first time).
 	This is needed because you may want to import scripts before you run your game.
 	This is why the class below is called MainActivity -- it is constructed using an init function for your game. This then waits until all scripts have loaded to automatically start your init function.
 */
-class MainActivity {
+export class MainActivity {
 
 	constructor( init ) { // init: The function to be called as the "initial" function of your game. Think of it like GDScript's _ready().
 
@@ -904,10 +913,10 @@ class MainActivity {
 
 	}
 
-	start() {
+	start( scriptSources ) {
 
 		var code = this,
-			scripts = new ScriptLoader(),
+			scripts = new ScriptLoader( scriptSources ),
 			interval = setInterval( function () {
 
 				code.loadingPercentage = ( scripts.stats.loadedScripts / scripts.stats.maxScripts ) * 100;

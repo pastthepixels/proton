@@ -15,8 +15,10 @@
 
 */
 
+import { Mesh, Material, UTILS, OBJECT_TYPES, CAMERA_TYPES } from "./Proton.mjs";
+
 /* CONSTANTS */
-const SCRIPT_SOURCES = {
+export const SCRIPT_SOURCES = {
 	primary: [ "https://cdn.babylonjs.com/babylon.js", true ], // Format== [url, isModule]
 	secondary: [
 		[ "https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.js", true ],
@@ -29,7 +31,7 @@ const SCRIPT_SOURCES = {
 	~> loc:2
 	Proton3DInterpreter
 */
-class ObjectList {
+export class ObjectList {
 	
 	meshes = [];
 
@@ -66,7 +68,7 @@ class ObjectList {
 }
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//
-//\\ Proton3DInterpreter		    //
+//\\ Proton's default interpreter   //
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//
 // 	README
 // 		[!] All functions shown below that have parameters and that
@@ -85,7 +87,7 @@ class ObjectList {
 // 				that value must have the same structure as when it was found by
 // 				the user.
 //
-class Proton3DInterpreter {
+export class Interpreter {
 
 	element = document.createElement( "scene" );
 
@@ -124,25 +126,6 @@ class Proton3DInterpreter {
 		this.scene = new BABYLON.Scene( this.engine );
 		this.scene.clearColor = new BABYLON.Color4( 0, 0, 0, 0 );
 
-		// Creates the sky
-		scene.sky = new Mesh( "sky", { type: OBJECT_TYPES.Sky }, scene );
-
-		// Creates a camera
-		this.camera = new Mesh( "camera", { type: OBJECT_TYPES.PerspectiveCamera, position: new Vector3( 0, 0, 5 ) }, scene );
-
-		// Creates a camera for third-person view
-		this.thirdCamera = new Mesh( "thirdCamera", { type: OBJECT_TYPES.ThirdPerspectiveCamera, position: new Vector3( 0, 0, 5 ) }, scene );
-
-		// Postprocessing
-		if ( this.postprocessing.enabled ) {
-		
-			this.pipeline = new BABYLON.DefaultRenderingPipeline( "default", true, this.scene, [ this.objectList.getMesh( this.camera ) ] );
-			if ( this.postprocessing.bloom ) this.pipeline.bloomEnabled = true;
-			if ( this.postprocessing.fxaa ) this.pipeline.fxaaEnabled = true;
-			if ( this.postprocessing.ssao ) this.ssao = new BABYLON.SSAORenderingPipeline( "ssao", this.scene, { ssaoRatio: 0.5, combineRatio: 1.0 }, [ this.objectList.getMesh( this.camera ) ] );
-
-		}
-
 		// Physics
 		this.scene.enablePhysics( new BABYLON.Vector3( 0,-9.81, 0 ), new BABYLON.AmmoJSPlugin() );
 
@@ -153,17 +136,23 @@ class Proton3DInterpreter {
 		// Updates the scene
 		var materialLength = 0; // For anisotropic filtering (see below)
 		this.engine.runRenderLoop( () => { this.updateScene( scene ) } );
-		
-		// Starts the scene
-		this.updateScene( scene );
+
+	}
+
+	setPostprocessing() {
+
+		this.pipeline = new BABYLON.DefaultRenderingPipeline( "default", true, this.scene, [ this.objectList.getMesh( this.protonScene.camera ) ] );
+		if ( this.postprocessing.bloom ) this.pipeline.bloomEnabled = true;
+		if ( this.postprocessing.fxaa ) this.pipeline.fxaaEnabled = true;
+		if ( this.postprocessing.ssao ) this.ssao = new BABYLON.SSAORenderingPipeline( "ssao", this.scene, { ssaoRatio: 0.5, combineRatio: 1.0 }, [ this.objectList.getMesh( this.camera ) ] );
 
 	}
 
 	// Updates a scene in Proton
 	updateScene( protonScene ) {
 
-		// Pausing
-		if ( protonScene.paused == true ) {
+		// Pausing (or skips if no camera as available). Note that the activeCamera property belongs to a BabylonJS scene and not one created by Proton!
+		if ( protonScene.paused == true || this.scene.activeCamera == undefined ) {
 
 			return;
 
@@ -241,9 +230,6 @@ class Proton3DInterpreter {
 	createShadowGenerator( light ) {
 
 		var shadowGenerator = new BABYLON.ShadowGenerator( 1024, light );
-		light.shadowMinZ = .1;
-		light.shadowMaxZ = 100;
-		shadowGenerator.usePercentageCloserFiltering = true;
 		this.shadowGenerators.push( shadowGenerator );
 
 	}
@@ -421,17 +407,18 @@ class Proton3DInterpreter {
 
 
 	// Creating and modifing Proton3DObjects
-	create3DObject( extras, object ) {
+	create3DObject( options, object ) {
 
 		var interpreter = this;
-		switch ( extras.type ) {
+		switch ( options.type ) {
 
 			case OBJECT_TYPES.PerspectiveCamera:
 				
 				// Creates the camera
 				var camera = new BABYLON.UniversalCamera( object.name, new BABYLON.Vector3( 0, 0, 1 ), interpreter.scene );
-				camera.minZ = 0.01;
-				camera.fov = extras.fov != undefined? extras.fov : 1;
+				camera.minZ = .1;
+				camera.maxZ = 1000;
+				camera.fov = options.fov != undefined? options.fov : 1;
 				camera.setTarget( BABYLON.Vector3.Zero() );
 				camera.protonID = object.id;
 				this.objectList.meshes.push( camera );
@@ -450,7 +437,9 @@ class Proton3DInterpreter {
 
 				// Creates the camera
 				var camera = new BABYLON.ArcRotateCamera( object.name, 0, 0, 10, new BABYLON.Vector3( 0, 0, 0 ), interpreter.scene );
-				camera.fov = extras.fov != undefined? extras.fov : 1;
+				camera.minZ = .1;
+				camera.maxZ = 1000;
+				camera.fov = options.fov != undefined? options.fov : 1;
 				camera.protonID = object.id;
 				this.objectList.meshes.push( camera );
 
@@ -467,7 +456,7 @@ class Proton3DInterpreter {
 			case OBJECT_TYPES.SpotLight:
 				
 				// Creates the spotlight
-				var light = new BABYLON.SpotLight( object.name, new BABYLON.Vector3( extras.position.x, extras.position.y, extras.position.z ), new BABYLON.Vector3(0, -1, 0), UTILS.degToRad( 60 ), 0, this.scene );
+				var light = new BABYLON.SpotLight( object.name, new BABYLON.Vector3( options.position.x, options.position.y, options.position.z ), new BABYLON.Vector3(0, -1, 0), UTILS.degToRad( 60 ), 0, this.scene );
 				light.setDirectionToTarget( new BABYLON.Vector3( 0, 0, 0 ) );
 				light.protonID = object.id;
 				this.objectList.meshes.push( light );
@@ -476,7 +465,25 @@ class Proton3DInterpreter {
 				object.setAngle = ( value ) => light.angle = value;
 
 				// Adds shadows
-				this.createShadowGenerator( light );
+				if ( options.shadows != false ) this.createShadowGenerator( light );
+
+				// Done
+				break;
+
+			case OBJECT_TYPES.DirectionalLight:
+			
+				// Creates the directional light
+				var light = new BABYLON.DirectionalLight( object.name, new BABYLON.Vector3(0, 0, 0), this.scene );
+				light.position = new BABYLON.Vector3( options.position.x, options.position.y, options.position.z );
+				light.protonID = object.id;
+				this.objectList.meshes.push( light );
+
+				object.setIntensity = ( value ) => light.intensity = value;
+				object.setAngle = ( value ) => light.angle = value;
+				object.setTarget = ( vector ) => light.setDirectionToTarget( new BABYLON.Vector3( vector.x, vector.y, vector.z ) );
+
+				// Adds shadows
+				if ( options.shadows != false ) this.createShadowGenerator( light );
 
 				// Done
 				break;
@@ -498,9 +505,9 @@ class Proton3DInterpreter {
 
 				};
 
-				if ( extras.sun != undefined ) {
+				if ( options.sun != undefined ) {
 
-					sky.sun = extras.sun;
+					sky.sun = options.sun;
 					sky.sun.position.set(
 						sky.sunPosition.x,
 						sky.sunPosition.y,
@@ -529,42 +536,12 @@ class Proton3DInterpreter {
 				this.objectList.meshes.push( sky );
 				break;
 
-			case OBJECT_TYPES.Capsule:
-
-				extras.type = "capsule";
-
-				// Makes the capsule
-				var capsule = BABYLON.MeshBuilder.CreateCapsule( object.name, { radius: 1, height: extras.height, capSubdivisions: 12, tessellation: 12, topCapSubdivisions: 12 }, this.scene );
-				capsule.protonID = object.id
-				this.objectList.meshes.push( capsule );
-				capsule.name = object.name;
-
-				// Shadows
-				capsule.receiveShadows = true;
-
-				// Creates some properties
-				object.radius = extras.radius;
-				object.height = extras.height;
-
-				// Copies parameters to the object
-				for ( var i in extras ) {
-
-					if ( extras[ i ] && object[ i ] == undefined ) {
-
-						object[ i ] = extras[ i ];
-
-					}
-
-				}
-
-				break;
-
 			case OBJECT_TYPES.Cube:
 
-				extras.type = "cube";
+				options.type = "cube";
 
 				// Makes the cube
-				var cube = BABYLON.MeshBuilder.CreateBox( object.name, { width: extras.width, height: extras.height, depth: extras.depth }, this.scene );
+				var cube = BABYLON.MeshBuilder.CreateBox( object.name, { width: options.width, height: options.height, depth: options.depth }, this.scene );
 				cube.protonID = object.id;
 				this.objectList.meshes.push( cube );
 
@@ -572,16 +549,16 @@ class Proton3DInterpreter {
 				cube.receiveShadows = true;
 
 				// cube stuff
-				object.width = extras.width;
-				object.height = extras.height;
-				object.depth = extras.depth;
+				object.width = options.width;
+				object.height = options.height;
+				object.depth = options.depth;
 
 				// Copies parameters to the object
-				for ( var i in extras ) {
+				for ( var i in options ) {
 
-					if ( extras[ i ] && object[ i ] == undefined ) {
+					if ( options[ i ] && object[ i ] == undefined ) {
 
-						object[ i ] = extras[ i ];
+						object[ i ] = options[ i ];
 
 					}
 
@@ -591,10 +568,10 @@ class Proton3DInterpreter {
 
 			case OBJECT_TYPES.Sphere:
 				
-				extras.type = "sphere";
+				options.type = "sphere";
 				
 				// Makes the sphere
-				var sphere = BABYLON.MeshBuilder.CreateSphere( object.name, { diameter: extras.radius * 2 }, this.scene );
+				var sphere = BABYLON.MeshBuilder.CreateSphere( object.name, { diameter: options.radius * 2 }, this.scene );
 				sphere.protonID = object.id;
 				this.objectList.meshes.push( sphere );
 
@@ -605,11 +582,41 @@ class Proton3DInterpreter {
 				object.radius = 1;
 
 				// Copies parameters to the object
-				for ( var i in extras ) {
+				for ( var i in options ) {
 
-					if ( extras[ i ] && object[ i ] == undefined ) {
+					if ( options[ i ] && object[ i ] == undefined ) {
 
-						object[ i ] = extras[ i ];
+						object[ i ] = options[ i ];
+
+					}
+
+				}
+
+				break;
+
+			case OBJECT_TYPES.Capsule:
+
+				options.type = "capsule";
+
+				// Makes the capsule
+				var capsule = BABYLON.MeshBuilder.CreateCapsule( object.name, { radius: 1, height: options.height, capSubdivisions: 12, tessellation: 12, topCapSubdivisions: 12 }, this.scene );
+				capsule.protonID = object.id
+				this.objectList.meshes.push( capsule );
+				capsule.name = object.name;
+
+				// Shadows
+				capsule.receiveShadows = true;
+
+				// Creates some properties
+				object.radius = options.radius;
+				object.height = options.height;
+
+				// Copies parameters to the object
+				for ( var i in options ) {
+
+					if ( options[ i ] && object[ i ] == undefined ) {
+
+						object[ i ] = options[ i ];
 
 					}
 
@@ -619,7 +626,7 @@ class Proton3DInterpreter {
 
 			default: // For imported meshes
 
-				var mesh = extras.mesh;
+				var mesh = options.mesh;
 
 				if ( ! mesh.material[ 0 ] ) {
 
@@ -648,19 +655,19 @@ class Proton3DInterpreter {
 		}
 
 		// Shadows
-		if ( this.objectList.getMesh( object ).geometry && extras.type != "sky" && extras.castShadow != false ) interpreter.shadowGenerators.forEach( ( generator ) => generator.addShadowCaster( this.objectList.getMesh( object ), true ) );
+		if ( this.objectList.getMesh( object ).geometry && options.type != "sky" && options.castShadow != false ) interpreter.shadowGenerators.forEach( ( generator ) => generator.addShadowCaster( this.objectList.getMesh( object ), true ) );
 		
 
 		// Sets the rotation if there is none
 		if ( this.objectList.getMesh( object ).rotation == undefined ) this.objectList.getMesh( object ).rotation = BABYLON.Vector3.Zero();
 
 		// creates the mesh's material -- must be at the very end to ensure that the material is initialized with an object
-		if ( extras.type != "sky" && extras.type != "camera" && extras.type != undefined ) {
+		if ( options.type != "sky" && options.type != "camera" && options.type != undefined ) {
 
-			object.material = extras.material || new Material( this.objectList.getMesh( object ), {
-				name: extras.materialName,
+			object.material = options.material || new Material( this.objectList.getMesh( object ), {
+				name: options.materialName,
 				material: this.objectList.getMesh( object ).material,
-				materialType: extras.materialType
+				materialType: options.materialType
 			}, this.protonScene );
 
 		}
@@ -669,7 +676,7 @@ class Proton3DInterpreter {
 		this.objectList.getMesh( object ).p3dParent = object;
 
 		// Makes the mesh (player) invisible
-		if ( extras.invisible ) object.makeInvisible();
+		if ( options.invisible ) object.makeInvisible();
 
 	}
 
@@ -941,7 +948,7 @@ class Proton3DInterpreter {
 		},
 		getWorldDirection( P3DObject ) {
 
-			return Proton3DInterpreter.prototype.rotateVector3(
+			return this.interpreter.rotateVector3(
 				new BABYLON.Vector3( 0, 0, 1 ),
 				P3DObject.rotation
 			);
