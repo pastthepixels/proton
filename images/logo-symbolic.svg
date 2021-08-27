@@ -6,10 +6,9 @@
    version="1.1"
    id="svg8"
    inkscape:version="1.1 (c68e22c387, 2021-05-23)"
-   sodipodi:docname="logo.svg"
+   sodipodi:docname="logo-symbolic.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -17,18 +16,6 @@
    xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs2">
-    <linearGradient
-       inkscape:collect="always"
-       id="linearGradient3034">
-      <stop
-         style="stop-color:#26a269;stop-opacity:1"
-         offset="0"
-         id="stop3030" />
-      <stop
-         style="stop-color:#8ff0a4;stop-opacity:1"
-         offset="1"
-         id="stop3032" />
-    </linearGradient>
     <linearGradient
        id="linearGradient2878"
        inkscape:swatch="solid">
@@ -52,15 +39,6 @@
        inkscape:vp_z="529.16667 : 73.087007 : 1"
        inkscape:persp3d-origin="264.58334 : 28.989789 : 1"
        id="perspective32" />
-    <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient3034"
-       id="linearGradient3172"
-       gradientUnits="userSpaceOnUse"
-       x1="119.15066"
-       y1="206.375"
-       x2="119.15066"
-       y2="37.041664" />
     <filter
        style="color-interpolation-filters:sRGB;"
        inkscape:label="Drop Shadow"
@@ -225,13 +203,6 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(-16.244161,-19.163167)">
-    <circle
-       style="fill:url(#linearGradient3172);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.32292;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter2348)"
-       id="path28"
-       cx="118.9335"
-       cy="121.85251"
-       r="89.460175"
-       transform="matrix(1.0016402,0,0,1.0016402,-0.19507673,-2.7039656)" />
     <g
        id="g103"
        transform="matrix(0.8571491,0,0,0.8571491,-140.31929,6.3159582)"
